@@ -2,7 +2,6 @@ import { defineConfig } from 'vite'
 import path from 'path'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
-import contentApiPlugin from './backend/content-api-plugin.mjs'
 
 
 function figmaAssetResolver() {
@@ -19,7 +18,6 @@ function figmaAssetResolver() {
 
 export default defineConfig({
   plugins: [
-    contentApiPlugin(),
     figmaAssetResolver(),
     // The React and Tailwind plugins are both required for Make, even if
     // Tailwind is not being actively used – do not remove them
@@ -30,6 +28,12 @@ export default defineConfig({
     alias: {
       // Alias @ to the src directory
       '@': path.resolve(__dirname, './src'),
+    },
+  },
+  server: {
+    proxy: {
+      '/api/content': 'http://127.0.0.1:8000',
+      '/uploads': 'http://127.0.0.1:8000',
     },
   },
 

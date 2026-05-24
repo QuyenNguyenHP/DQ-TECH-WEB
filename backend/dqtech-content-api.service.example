@@ -1,0 +1,18 @@
+[Unit]
+Description=DQ TECH Content API
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/dqtech-app
+Environment=CONTENT_API_HOST=127.0.0.1
+Environment=CONTENT_API_PORT=8000
+Environment=CONTENT_API_MAX_BODY_MB=20
+ExecStart=/usr/bin/python3 /var/www/dqtech-app/backend/server.py
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
