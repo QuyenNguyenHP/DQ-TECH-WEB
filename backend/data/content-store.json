@@ -1,0 +1,274 @@
+{
+  "products": [
+    {
+      "id": "macbook-air-m2",
+      "name": "MacBook Air M2 13\"",
+      "brand": "Apple",
+      "price": 12000000,
+      "originalPrice": 15000000,
+      "condition": "Excellent",
+      "category": "creator",
+      "image": "https://images.unsplash.com/photo-1773418517695-c3d0c21b7246?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=800",
+      "images": [
+        "https://images.unsplash.com/photo-1773418517695-c3d0c21b7246?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=800",
+        "https://images.unsplash.com/photo-1758979919845-9d688cceb7da?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=800",
+        "https://images.unsplash.com/photo-1603302576837-37561b2e2302?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=800"
+      ],
+      "specs": {
+        "cpu": "Apple M2 8-Core",
+        "ram": "16GB Unified Memory",
+        "ssd": "512GB NVMe SSD",
+        "gpu": "10-Core GPU",
+        "screen": "13.6\" Liquid Retina",
+        "os": "macOS Sonoma",
+        "weight": "1.24 kg"
+      },
+      "batteryHealth": 92,
+      "warranty": "3 tháng",
+      "description": "Mẫu ultrabook mỏng nhẹ dành cho người dùng cần pin tốt, hiệu năng ổn định và thiết kế cao cấp.",
+      "featured": true,
+      "inStock": true,
+      "accessories": [
+        "Sạc chính hãng",
+        "Cáp USB-C",
+        "Hộp"
+      ]
+    },
+    {
+      "id": "dell-xps-15",
+      "name": "Dell XPS 15 9520",
+      "brand": "Dell",
+      "price": 750,
+      "originalPrice": 1199,
+      "condition": "Good",
+      "batteryHealth": 85,
+      "image": "https://images.unsplash.com/photo-1583852703665-b76f45b3ee3e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=800",
+      "images": [
+        "https://images.unsplash.com/photo-1583852703665-b76f45b3ee3e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=800",
+        "https://images.unsplash.com/photo-1531297484001-80022131f5a1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=800",
+        "https://images.unsplash.com/photo-1754928864131-21917af96dfd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=800"
+      ],
+      "specs": {
+        "cpu": "Intel Core i7-12700H",
+        "ram": "16GB DDR5",
+        "ssd": "512GB NVMe SSD",
+        "gpu": "NVIDIA RTX 3050 Ti",
+        "screen": "15.6\" OLED 3.5K",
+        "os": "Windows 11 Pro",
+        "weight": "1.86 kg"
+      },
+      "category": "creator",
+      "warranty": "3 tháng",
+      "accessories": [
+        "Sạc 130W",
+        "USB-C Hub"
+      ],
+      "description": "Laptop màn hình OLED sắc nét, phù hợp cho lập trình, thiết kế và công việc sáng tạo.",
+      "inStock": true,
+      "featured": true
+    },
+    {
+      "id": "asus-rog-zephyrus",
+      "name": "ASUS ROG Zephyrus G14",
+      "brand": "ASUS",
+      "price": 1099,
+      "originalPrice": 1599,
+      "condition": "Good",
+      "batteryHealth": 88,
+      "image": "https://images.unsplash.com/photo-1771014846919-3a1cf73aeea1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=800",
+      "images": [
+        "https://images.unsplash.com/photo-1771014846919-3a1cf73aeea1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=800",
+        "https://images.unsplash.com/photo-1542393545-10f5cde2c810?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=800",
+        "https://images.unsplash.com/photo-1583852703665-b76f45b3ee3e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=800"
+      ],
+      "specs": {
+        "cpu": "AMD Ryzen 9 6900HS",
+        "ram": "32GB DDR5",
+        "ssd": "1TB NVMe SSD",
+        "gpu": "NVIDIA RTX 3060 6GB",
+        "screen": "14\" QHD 120Hz",
+        "os": "Windows 11 Home",
+        "weight": "1.65 kg"
+      },
+      "category": "gaming",
+      "warranty": "3 tháng",
+      "accessories": [
+        "Sạc 240W",
+        "Balo ROG"
+      ],
+      "description": "Mẫu gaming nhỏ gọn nhưng mạnh, đáp ứng tốt cả game AAA lẫn các tác vụ nặng.",
+      "inStock": true,
+      "featured": true
+    },
+    {
+      "id": "thinkpad-x1-carbon",
+      "name": "ThinkPad X1 Carbon Gen 10",
+      "brand": "Lenovo",
+      "price": 650,
+      "originalPrice": 1099,
+      "condition": "Excellent",
+      "batteryHealth": 91,
+      "image": "https://images.unsplash.com/photo-1531297484001-80022131f5a1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=800",
+      "images": [
+        "https://images.unsplash.com/photo-1531297484001-80022131f5a1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=800",
+        "https://images.unsplash.com/photo-1754928864131-21917af96dfd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=800",
+        "https://images.unsplash.com/photo-1758979919845-9d688cceb7da?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=800"
+      ],
+      "specs": {
+        "cpu": "Intel Core i7-1265U",
+        "ram": "16GB LPDDR5",
+        "ssd": "512GB NVMe SSD",
+        "gpu": "Intel Iris Xe",
+        "screen": "14\" IPS 2.8K",
+        "os": "Windows 11 Pro",
+        "weight": "1.12 kg"
+      },
+      "category": "business",
+      "warranty": "3 tháng",
+      "accessories": [
+        "Sạc USB-C 65W",
+        "Hộp chính hãng"
+      ],
+      "description": "Ultrabook doanh nhân nhẹ, pin tốt và bàn phím rất mạnh trong nhóm máy văn phòng.",
+      "inStock": true,
+      "featured": true
+    },
+    {
+      "id": "lenovo-ideapad-5",
+      "name": "Lenovo IdeaPad 5 Pro",
+      "brand": "Lenovo",
+      "price": 399,
+      "originalPrice": 699,
+      "condition": "Fair",
+      "batteryHealth": 74,
+      "image": "https://images.unsplash.com/photo-1542393545-10f5cde2c810?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=800",
+      "images": [
+        "https://images.unsplash.com/photo-1542393545-10f5cde2c810?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=800",
+        "https://images.unsplash.com/photo-1531297484001-80022131f5a1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=800",
+        "https://images.unsplash.com/photo-1583852703665-b76f45b3ee3e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=800"
+      ],
+      "specs": {
+        "cpu": "AMD Ryzen 5 5600H",
+        "ram": "8GB DDR4",
+        "ssd": "256GB NVMe SSD",
+        "gpu": "AMD Radeon Vega 7",
+        "screen": "16\" IPS 2.5K",
+        "os": "Windows 11 Home",
+        "weight": "1.85 kg"
+      },
+      "category": "student",
+      "warranty": "1 tháng",
+      "accessories": [
+        "Sạc 65W"
+      ],
+      "description": "Lựa chọn giá tốt cho sinh viên với màn hình rộng và hiệu năng ổn định.",
+      "inStock": true,
+      "featured": false
+    },
+    {
+      "id": "laptop-1779580648860",
+      "name": "Thinkpad T14s Gen 3 Alu",
+      "brand": "Lenovo",
+      "price": 11500000,
+      "originalPrice": 15000000,
+      "condition": "Excellent",
+      "category": "business",
+      "image": "/uploads/products/1779580680172-1.jpg.jpg",
+      "images": [
+        "/uploads/products/1779580680172-1.jpg.jpg",
+        "/uploads/products/1779580687077-2.jpg.jpg",
+        "/uploads/products/1779580687158-3.jpg.jpg",
+        "/uploads/products/1779580687236-4.jpg.jpg"
+      ],
+      "specs": {
+        "cpu": "Core i7-1260P",
+        "ram": "16GB",
+        "ssd": "NVME 512GB",
+        "gpu": "VGA Intel Iris Xe",
+        "screen": "14 inch FHD",
+        "os": "Win 11",
+        "weight": "1.3 KG"
+      },
+      "batteryHealth": 97,
+      "warranty": "3 tháng",
+      "description": "Máy Likenew , vỏ nhôm nguyên khối , dòng máy cao cấp",
+      "featured": false,
+      "inStock": true,
+      "accessories": [
+        "Sạc 65W zin",
+        "Túi đựng",
+        "Chuột bluetooth"
+      ]
+    }
+  ],
+  "blogs": [
+    {
+      "id": "1",
+      "title": "Top 5 laptop cũ tốt cho sinh viên năm 2026",
+      "slug": "top-5-laptop-cu-tot-cho-sinh-vien-2026",
+      "excerpt": "Một số lựa chọn laptop cũ cân bằng giữa giá, pin và độ bền cho nhu cầu học tập.",
+      "content": "# Top 5 laptop cũ tốt cho sinh viên năm 2026\n\nNếu cần một chiếc máy học tập ổn định, bạn nên ưu tiên pin, bàn phím và khả năng nâng cấp.\n\n## Gợi ý nhanh\n- Lenovo IdeaPad 5 Pro\n- ThinkPad X1 Carbon\n- HP Spectre x360\n\n## Kết luận\nChọn máy phù hợp theo ngân sách và nhu cầu di chuyển hằng ngày.",
+      "category": "laptop",
+      "author": "DQ TECH Team",
+      "date": "2026-05-20",
+      "readTime": "5 phút đọc",
+      "image": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800&auto=format&fit=crop",
+      "tags": [
+        "Laptop cũ",
+        "Sinh viên",
+        "Tư vấn mua máy"
+      ]
+    },
+    {
+      "id": "2",
+      "title": "Thiết kế website hiện đại: xu hướng 2026",
+      "slug": "thiet-ke-website-hien-dai-xu-huong-2026",
+      "excerpt": "Các xu hướng chính gồm hiệu ứng chiều sâu, dark mode và tối ưu tốc độ tải trang.",
+      "content": "# Thiết kế website hiện đại: xu hướng 2026\n\nThiết kế web năm 2026 tập trung vào trải nghiệm rõ ràng, tốc độ tốt và nhận diện thương hiệu mạnh.\n\n## Điểm cần chú ý\n- Bố cục rõ ràng\n- Chuyển động tiết chế\n- Tối ưu trên mobile\n\n## Kết luận\nMột website đẹp phải đi cùng hiệu năng và khả năng chuyển đổi.",
+      "category": "website",
+      "author": "DQ TECH Team",
+      "date": "2026-05-18",
+      "readTime": "4 phút đọc",
+      "image": "https://images.unsplash.com/photo-1547658719-da2b51169166?w=800&auto=format&fit=crop",
+      "tags": [
+        "Thiết kế web",
+        "UI/UX",
+        "Xu hướng"
+      ]
+    },
+    {
+      "id": "3",
+      "title": "Lắp đặt camera giám sát: những điều cần biết",
+      "slug": "lap-dat-camera-giam-sat-nhung-dieu-can-biet",
+      "excerpt": "Hướng dẫn chọn camera, vị trí lắp và các tính năng quan trọng khi triển khai hệ thống.",
+      "content": "# Lắp đặt camera giám sát: những điều cần biết\n\nMột hệ thống camera hiệu quả phụ thuộc vào vị trí lắp, góc nhìn và nhu cầu lưu trữ.\n\n## Nên kiểm tra\n- Khu vực cần quan sát\n- Hạ tầng mạng và nguồn điện\n- Khả năng xem từ xa\n\n## Kết luận\nKhảo sát thực tế luôn là bước quan trọng trước khi lắp đặt.",
+      "category": "camera",
+      "author": "DQ TECH Team",
+      "date": "2026-05-15",
+      "readTime": "6 phút đọc",
+      "image": "https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=800&auto=format&fit=crop",
+      "tags": [
+        "Camera",
+        "Giám sát",
+        "An ninh"
+      ]
+    },
+    {
+      "id": "4",
+      "title": "Cách kiểm tra sức khỏe pin laptop trước khi mua",
+      "slug": "cach-kiem-tra-suc-khoe-pin-laptop",
+      "excerpt": "Những chỉ số quan trọng và cách kiểm tra thực tế để đánh giá pin laptop cũ.",
+      "content": "# Cách kiểm tra sức khỏe pin laptop trước khi mua\n\nPin là một trong những yếu tố quan trọng nhất khi chọn laptop cũ.\n\n## Cần xem gì\n- Battery health\n- Cycle count\n- Thời lượng sử dụng thực tế\n\n## Kết luận\nNên yêu cầu người bán cung cấp ảnh chụp chỉ số pin và cho test thực tế.",
+      "category": "tech-tips",
+      "author": "DQ TECH Team",
+      "date": "2026-05-12",
+      "readTime": "5 phút đọc",
+      "image": "https://images.unsplash.com/photo-1601134991665-a020399422e3?w=800&auto=format&fit=crop",
+      "tags": [
+        "Pin laptop",
+        "Mẹo tech",
+        "Kiểm tra máy"
+      ]
+    }
+  ]
+}

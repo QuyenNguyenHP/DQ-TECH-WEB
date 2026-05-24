@@ -1,0 +1,6 @@
+{
+  "apiPrefix": "/api/content",
+  "dataFile": "backend/data/content-store.json",
+  "uploadsDir": "backend/uploads",
+  "uploadsUrlPrefix": "/uploads"
+}
