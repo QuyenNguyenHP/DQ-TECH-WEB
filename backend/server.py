@@ -86,6 +86,25 @@ def sanitize_name(name: str) -> str:
     return normalized or "file"
 
 
+def normalize_upload_basename(name: str, fallback: str) -> str:
+    sanitized = sanitize_name(name or fallback)
+    known_suffixes = (".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg")
+
+    # Remove one or more existing image suffixes before appending the
+    # extension inferred from the uploaded MIME type.
+    while True:
+        lowered = sanitized.lower()
+        matched_suffix = next((suffix for suffix in known_suffixes if lowered.endswith(suffix)), None)
+        if not matched_suffix:
+            break
+        sanitized = sanitized[: -len(matched_suffix)].rstrip(".-")
+        if not sanitized:
+            sanitized = sanitize_name(fallback)
+            break
+
+    return sanitized or sanitize_name(fallback)
+
+
 def data_url_to_bytes(data_url: str):
     match = re.match(r"^data:(.+);base64,(.+)$", data_url or "")
     if not match:
@@ -186,7 +205,10 @@ class ContentApiHandler(BaseHTTPRequestHandler):
                 payload = self.read_json_body()
                 target = "blogs" if payload.get("target") == "blogs" else "products"
                 target_dir = CONFIG["blogUploadsDir"] if target == "blogs" else CONFIG["productUploadsDir"]
-                filename_base = sanitize_name(payload.get("filename") or f"{target}-{self.timestamp_ms()}")
+                filename_base = normalize_upload_basename(
+                    payload.get("filename", ""),
+                    f"{target}-{self.timestamp_ms()}",
+                )
                 raw_bytes, extension = data_url_to_bytes(payload.get("dataUrl", ""))
                 final_name = f"{self.timestamp_ms()}-{filename_base}{extension}"
                 final_path = target_dir / final_name
