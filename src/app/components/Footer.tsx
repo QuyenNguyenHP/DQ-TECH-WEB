@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 import { Laptop, MapPin, Phone, Mail, Facebook, MessageCircle, Globe, Camera } from "lucide-react";
-import logoImage from "../../imports/5.png";
+import logoImage from "../../imports/logo.png";
 
 export function Footer() {
   return (
