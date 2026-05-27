@@ -265,7 +265,7 @@ backend/dqtech-content-api.service.example
 Copy sang `systemd`:
 
 ```bash
-cp /var/www/dqtech-app/backend/dqtech-content-api.service.example /etc/systemd/system/dqtech-content-api.service
+cp /var/www/dqtech.cloud/backend/dqtech-content-api.service.example /etc/systemd/system/dqtech-content-api.service
 ```
 
 Kích hoạt service:
