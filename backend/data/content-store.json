@@ -24,14 +24,14 @@
         "weight": "1.24 kg"
       },
       "batteryHealth": 92,
-      "warranty": "3 tháng",
-      "description": "Mẫu ultrabook mỏng nhẹ dành cho người dùng cần pin tốt, hiệu năng ổn định và thiết kế cao cấp.",
+      "warranty": "3 th\u00e1ng",
+      "description": "M\u1eabu ultrabook m\u1ecfng nh\u1eb9 d\u00e0nh cho ng\u01b0\u1eddi d\u00f9ng c\u1ea7n pin t\u1ed1t, hi\u1ec7u n\u0103ng \u1ed5n \u0111\u1ecbnh v\u00e0 thi\u1ebft k\u1ebf cao c\u1ea5p.",
       "featured": true,
-      "inStock": true,
+      "inStock": false,
       "accessories": [
-        "Sạc chính hãng",
-        "Cáp USB-C",
-        "Hộp"
+        "S\u1ea1c ch\u00ednh h\u00e3ng",
+        "C\u00e1p USB-C",
+        "H\u1ed9p"
       ]
     },
     {
@@ -58,12 +58,12 @@
         "weight": "1.86 kg"
       },
       "category": "creator",
-      "warranty": "3 tháng",
+      "warranty": "3 th\u00e1ng",
       "accessories": [
-        "Sạc 130W",
+        "S\u1ea1c 130W",
         "USB-C Hub"
       ],
-      "description": "Laptop màn hình OLED sắc nét, phù hợp cho lập trình, thiết kế và công việc sáng tạo.",
+      "description": "Laptop m\u00e0n h\u00ecnh OLED s\u1eafc n\u00e9t, ph\u00f9 h\u1ee3p cho l\u1eadp tr\u00ecnh, thi\u1ebft k\u1ebf v\u00e0 c\u00f4ng vi\u1ec7c s\u00e1ng t\u1ea1o.",
       "inStock": true,
       "featured": true
     },
@@ -91,12 +91,12 @@
         "weight": "1.65 kg"
       },
       "category": "gaming",
-      "warranty": "3 tháng",
+      "warranty": "3 th\u00e1ng",
       "accessories": [
-        "Sạc 240W",
+        "S\u1ea1c 240W",
         "Balo ROG"
       ],
-      "description": "Mẫu gaming nhỏ gọn nhưng mạnh, đáp ứng tốt cả game AAA lẫn các tác vụ nặng.",
+      "description": "M\u1eabu gaming nh\u1ecf g\u1ecdn nh\u01b0ng m\u1ea1nh, \u0111\u00e1p \u1ee9ng t\u1ed1t c\u1ea3 game AAA l\u1eabn c\u00e1c t\u00e1c v\u1ee5 n\u1eb7ng.",
       "inStock": true,
       "featured": true
     },
@@ -124,12 +124,12 @@
         "weight": "1.12 kg"
       },
       "category": "business",
-      "warranty": "3 tháng",
+      "warranty": "3 th\u00e1ng",
       "accessories": [
-        "Sạc USB-C 65W",
-        "Hộp chính hãng"
+        "S\u1ea1c USB-C 65W",
+        "H\u1ed9p ch\u00ednh h\u00e3ng"
       ],
-      "description": "Ultrabook doanh nhân nhẹ, pin tốt và bàn phím rất mạnh trong nhóm máy văn phòng.",
+      "description": "Ultrabook doanh nh\u00e2n nh\u1eb9, pin t\u1ed1t v\u00e0 b\u00e0n ph\u00edm r\u1ea5t m\u1ea1nh trong nh\u00f3m m\u00e1y v\u0103n ph\u00f2ng.",
       "inStock": true,
       "featured": true
     },
@@ -157,11 +157,11 @@
         "weight": "1.85 kg"
       },
       "category": "student",
-      "warranty": "1 tháng",
+      "warranty": "1 th\u00e1ng",
       "accessories": [
-        "Sạc 65W"
+        "S\u1ea1c 65W"
       ],
-      "description": "Lựa chọn giá tốt cho sinh viên với màn hình rộng và hiệu năng ổn định.",
+      "description": "L\u1ef1a ch\u1ecdn gi\u00e1 t\u1ed1t cho sinh vi\u00ean v\u1edbi m\u00e0n h\u00ecnh r\u1ed9ng v\u00e0 hi\u1ec7u n\u0103ng \u1ed5n \u0111\u1ecbnh.",
       "inStock": true,
       "featured": false
     },
@@ -190,84 +190,84 @@
         "weight": "1.3 KG"
       },
       "batteryHealth": 97,
-      "warranty": "3 tháng",
-      "description": "Máy Likenew , vỏ nhôm nguyên khối , dòng máy cao cấp",
+      "warranty": "3 th\u00e1ng",
+      "description": "M\u00e1y Likenew , v\u1ecf nh\u00f4m nguy\u00ean kh\u1ed1i , d\u00f2ng m\u00e1y cao c\u1ea5p",
       "featured": false,
       "inStock": true,
       "accessories": [
-        "Sạc 65W zin",
-        "Túi đựng",
-        "Chuột bluetooth"
+        "S\u1ea1c 65W zin",
+        "T\u00fai \u0111\u1ef1ng",
+        "Chu\u1ed9t bluetooth"
       ]
     }
   ],
   "blogs": [
     {
       "id": "1",
-      "title": "Top 5 laptop cũ tốt cho sinh viên năm 2026",
+      "title": "Top 5 laptop c\u0169 t\u1ed1t cho sinh vi\u00ean n\u0103m 2026",
       "slug": "top-5-laptop-cu-tot-cho-sinh-vien-2026",
-      "excerpt": "Một số lựa chọn laptop cũ cân bằng giữa giá, pin và độ bền cho nhu cầu học tập.",
-      "content": "# Top 5 laptop cũ tốt cho sinh viên năm 2026\n\nNếu cần một chiếc máy học tập ổn định, bạn nên ưu tiên pin, bàn phím và khả năng nâng cấp.\n\n## Gợi ý nhanh\n- Lenovo IdeaPad 5 Pro\n- ThinkPad X1 Carbon\n- HP Spectre x360\n\n## Kết luận\nChọn máy phù hợp theo ngân sách và nhu cầu di chuyển hằng ngày.",
+      "excerpt": "M\u1ed9t s\u1ed1 l\u1ef1a ch\u1ecdn laptop c\u0169 c\u00e2n b\u1eb1ng gi\u1eefa gi\u00e1, pin v\u00e0 \u0111\u1ed9 b\u1ec1n cho nhu c\u1ea7u h\u1ecdc t\u1eadp.",
+      "content": "# Top 5 laptop c\u0169 t\u1ed1t cho sinh vi\u00ean n\u0103m 2026\n\nN\u1ebfu c\u1ea7n m\u1ed9t chi\u1ebfc m\u00e1y h\u1ecdc t\u1eadp \u1ed5n \u0111\u1ecbnh, b\u1ea1n n\u00ean \u01b0u ti\u00ean pin, b\u00e0n ph\u00edm v\u00e0 kh\u1ea3 n\u0103ng n\u00e2ng c\u1ea5p.\n\n## G\u1ee3i \u00fd nhanh\n- Lenovo IdeaPad 5 Pro\n- ThinkPad X1 Carbon\n- HP Spectre x360\n\n## K\u1ebft lu\u1eadn\nCh\u1ecdn m\u00e1y ph\u00f9 h\u1ee3p theo ng\u00e2n s\u00e1ch v\u00e0 nhu c\u1ea7u di chuy\u1ec3n h\u1eb1ng ng\u00e0y.",
       "category": "laptop",
       "author": "DQ TECH Team",
       "date": "2026-05-20",
-      "readTime": "5 phút đọc",
+      "readTime": "5 ph\u00fat \u0111\u1ecdc",
       "image": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800&auto=format&fit=crop",
       "tags": [
-        "Laptop cũ",
-        "Sinh viên",
-        "Tư vấn mua máy"
+        "Laptop c\u0169",
+        "Sinh vi\u00ean",
+        "T\u01b0 v\u1ea5n mua m\u00e1y"
       ]
     },
     {
       "id": "2",
-      "title": "Thiết kế website hiện đại: xu hướng 2026",
+      "title": "Thi\u1ebft k\u1ebf website hi\u1ec7n \u0111\u1ea1i: xu h\u01b0\u1edbng 2026",
       "slug": "thiet-ke-website-hien-dai-xu-huong-2026",
-      "excerpt": "Các xu hướng chính gồm hiệu ứng chiều sâu, dark mode và tối ưu tốc độ tải trang.",
-      "content": "# Thiết kế website hiện đại: xu hướng 2026\n\nThiết kế web năm 2026 tập trung vào trải nghiệm rõ ràng, tốc độ tốt và nhận diện thương hiệu mạnh.\n\n## Điểm cần chú ý\n- Bố cục rõ ràng\n- Chuyển động tiết chế\n- Tối ưu trên mobile\n\n## Kết luận\nMột website đẹp phải đi cùng hiệu năng và khả năng chuyển đổi.",
+      "excerpt": "C\u00e1c xu h\u01b0\u1edbng ch\u00ednh g\u1ed3m hi\u1ec7u \u1ee9ng chi\u1ec1u s\u00e2u, dark mode v\u00e0 t\u1ed1i \u01b0u t\u1ed1c \u0111\u1ed9 t\u1ea3i trang.",
+      "content": "# Thi\u1ebft k\u1ebf website hi\u1ec7n \u0111\u1ea1i: xu h\u01b0\u1edbng 2026\n\nThi\u1ebft k\u1ebf web n\u0103m 2026 t\u1eadp trung v\u00e0o tr\u1ea3i nghi\u1ec7m r\u00f5 r\u00e0ng, t\u1ed1c \u0111\u1ed9 t\u1ed1t v\u00e0 nh\u1eadn di\u1ec7n th\u01b0\u01a1ng hi\u1ec7u m\u1ea1nh.\n\n## \u0110i\u1ec3m c\u1ea7n ch\u00fa \u00fd\n- B\u1ed1 c\u1ee5c r\u00f5 r\u00e0ng\n- Chuy\u1ec3n \u0111\u1ed9ng ti\u1ebft ch\u1ebf\n- T\u1ed1i \u01b0u tr\u00ean mobile\n\n## K\u1ebft lu\u1eadn\nM\u1ed9t website \u0111\u1eb9p ph\u1ea3i \u0111i c\u00f9ng hi\u1ec7u n\u0103ng v\u00e0 kh\u1ea3 n\u0103ng chuy\u1ec3n \u0111\u1ed5i.",
       "category": "website",
       "author": "DQ TECH Team",
       "date": "2026-05-18",
-      "readTime": "4 phút đọc",
+      "readTime": "4 ph\u00fat \u0111\u1ecdc",
       "image": "https://images.unsplash.com/photo-1547658719-da2b51169166?w=800&auto=format&fit=crop",
       "tags": [
-        "Thiết kế web",
+        "Thi\u1ebft k\u1ebf web",
         "UI/UX",
-        "Xu hướng"
+        "Xu h\u01b0\u1edbng"
       ]
     },
     {
       "id": "3",
-      "title": "Lắp đặt camera giám sát: những điều cần biết",
+      "title": "L\u1eafp \u0111\u1eb7t camera gi\u00e1m s\u00e1t: nh\u1eefng \u0111i\u1ec1u c\u1ea7n bi\u1ebft",
       "slug": "lap-dat-camera-giam-sat-nhung-dieu-can-biet",
-      "excerpt": "Hướng dẫn chọn camera, vị trí lắp và các tính năng quan trọng khi triển khai hệ thống.",
-      "content": "# Lắp đặt camera giám sát: những điều cần biết\n\nMột hệ thống camera hiệu quả phụ thuộc vào vị trí lắp, góc nhìn và nhu cầu lưu trữ.\n\n## Nên kiểm tra\n- Khu vực cần quan sát\n- Hạ tầng mạng và nguồn điện\n- Khả năng xem từ xa\n\n## Kết luận\nKhảo sát thực tế luôn là bước quan trọng trước khi lắp đặt.",
+      "excerpt": "H\u01b0\u1edbng d\u1eabn ch\u1ecdn camera, v\u1ecb tr\u00ed l\u1eafp v\u00e0 c\u00e1c t\u00ednh n\u0103ng quan tr\u1ecdng khi tri\u1ec3n khai h\u1ec7 th\u1ed1ng.",
+      "content": "# L\u1eafp \u0111\u1eb7t camera gi\u00e1m s\u00e1t: nh\u1eefng \u0111i\u1ec1u c\u1ea7n bi\u1ebft\n\nM\u1ed9t h\u1ec7 th\u1ed1ng camera hi\u1ec7u qu\u1ea3 ph\u1ee5 thu\u1ed9c v\u00e0o v\u1ecb tr\u00ed l\u1eafp, g\u00f3c nh\u00ecn v\u00e0 nhu c\u1ea7u l\u01b0u tr\u1eef.\n\n## N\u00ean ki\u1ec3m tra\n- Khu v\u1ef1c c\u1ea7n quan s\u00e1t\n- H\u1ea1 t\u1ea7ng m\u1ea1ng v\u00e0 ngu\u1ed3n \u0111i\u1ec7n\n- Kh\u1ea3 n\u0103ng xem t\u1eeb xa\n\n## K\u1ebft lu\u1eadn\nKh\u1ea3o s\u00e1t th\u1ef1c t\u1ebf lu\u00f4n l\u00e0 b\u01b0\u1edbc quan tr\u1ecdng tr\u01b0\u1edbc khi l\u1eafp \u0111\u1eb7t.",
       "category": "camera",
       "author": "DQ TECH Team",
       "date": "2026-05-15",
-      "readTime": "6 phút đọc",
+      "readTime": "6 ph\u00fat \u0111\u1ecdc",
       "image": "https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=800&auto=format&fit=crop",
       "tags": [
         "Camera",
-        "Giám sát",
+        "Gi\u00e1m s\u00e1t",
         "An ninh"
       ]
     },
     {
       "id": "4",
-      "title": "Cách kiểm tra sức khỏe pin laptop trước khi mua",
+      "title": "C\u00e1ch ki\u1ec3m tra s\u1ee9c kh\u1ecfe pin laptop tr\u01b0\u1edbc khi mua",
       "slug": "cach-kiem-tra-suc-khoe-pin-laptop",
-      "excerpt": "Những chỉ số quan trọng và cách kiểm tra thực tế để đánh giá pin laptop cũ.",
-      "content": "# Cách kiểm tra sức khỏe pin laptop trước khi mua\n\nPin là một trong những yếu tố quan trọng nhất khi chọn laptop cũ.\n\n## Cần xem gì\n- Battery health\n- Cycle count\n- Thời lượng sử dụng thực tế\n\n## Kết luận\nNên yêu cầu người bán cung cấp ảnh chụp chỉ số pin và cho test thực tế.",
+      "excerpt": "Nh\u1eefng ch\u1ec9 s\u1ed1 quan tr\u1ecdng v\u00e0 c\u00e1ch ki\u1ec3m tra th\u1ef1c t\u1ebf \u0111\u1ec3 \u0111\u00e1nh gi\u00e1 pin laptop c\u0169.",
+      "content": "# C\u00e1ch ki\u1ec3m tra s\u1ee9c kh\u1ecfe pin laptop tr\u01b0\u1edbc khi mua\n\nPin l\u00e0 m\u1ed9t trong nh\u1eefng y\u1ebfu t\u1ed1 quan tr\u1ecdng nh\u1ea5t khi ch\u1ecdn laptop c\u0169.\n\n## C\u1ea7n xem g\u00ec\n- Battery health\n- Cycle count\n- Th\u1eddi l\u01b0\u1ee3ng s\u1eed d\u1ee5ng th\u1ef1c t\u1ebf\n\n## K\u1ebft lu\u1eadn\nN\u00ean y\u00eau c\u1ea7u ng\u01b0\u1eddi b\u00e1n cung c\u1ea5p \u1ea3nh ch\u1ee5p ch\u1ec9 s\u1ed1 pin v\u00e0 cho test th\u1ef1c t\u1ebf.",
       "category": "tech-tips",
       "author": "DQ TECH Team",
       "date": "2026-05-12",
-      "readTime": "5 phút đọc",
+      "readTime": "5 ph\u00fat \u0111\u1ecdc",
       "image": "https://images.unsplash.com/photo-1601134991665-a020399422e3?w=800&auto=format&fit=crop",
       "tags": [
         "Pin laptop",
-        "Mẹo tech",
-        "Kiểm tra máy"
+        "M\u1eb9o tech",
+        "Ki\u1ec3m tra m\u00e1y"
       ]
     }
   ]
