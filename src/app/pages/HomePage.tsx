@@ -617,7 +617,7 @@ export function HomePage() {
               Đánh Giá Khách Hàng
             </p>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white">
-              Nhận Xét Thật Từ Người Mua Thật
+              Nhận Xét Thật Từ Khách Hàng Của Chúng Tôi
             </h2>
           </div>
 
