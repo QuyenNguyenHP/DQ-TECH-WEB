@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bài 20: UDP: Giao thức truyền tin nhanh (Streaming &amp; Gaming)</title>
+  <style>
+    :root {
+      --primary: #0057ff;
+      --primary-dark: #0039a8;
+      --accent: #ffb703;
+      --ink: #1f2532;
+      --muted: #5b6476;
+      --surface: #ffffff;
+      --surface-alt: #f2f4ff;
+      --border: rgba(15, 63, 167, 0.1);
+      --radius: 24px;
+      --shadow: 0 20px 60px rgba(15, 87, 255, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top, rgba(169, 200, 255, 0.4), transparent 55%),
+        #eef2ff;
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    header.hero {
+      background: linear-gradient(120deg, var(--primary), #7357ff);
+      border-radius: var(--radius);
+      padding: 3.5rem clamp(2rem, 4vw, 4.5rem);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.35), transparent 45%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero h1 {
+      margin: 0 0 1rem;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 640px;
+      font-size: 1.05rem;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 2rem;
+    }
+
+    .hero-actions a {
+      text-decoration: none;
+      padding: 0.85rem 1.8rem;
+      border-radius: 999px;
+      font-weight: 600;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .hero-actions a.primary {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.18);
+    }
+
+    .hero-actions a.secondary {
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: #fff;
+      backdrop-filter: blur(6px);
+    }
+
+    .hero-actions a:hover {
+      transform: translateY(-3px);
+    }
+
+    .stat-grid {
+      margin-top: 2.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 1rem 1.25rem;
+      text-align: left;
+      backdrop-filter: blur(4px);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .stat strong {
+      font-size: 1.25rem;
+      display: block;
+    }
+
+    section {
+      margin-top: 2.5rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 2.25rem clamp(1.5rem, 4vw, 3rem);
+      box-shadow: 0 10px 35px rgba(38, 44, 82, 0.08);
+      border: 1px solid var(--border);
+    }
+
+    .section-heading {
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.25em;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    h2 {
+      margin: 0 0 1.5rem;
+      font-size: clamp(1.7rem, 3vw, 2.2rem);
+      color: var(--ink);
+    }
+
+    .goal-grid,
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .goal,
+    .card {
+      background: var(--surface-alt);
+      border-radius: 18px;
+      padding: 1.25rem 1.35rem;
+      border: 1px solid rgba(15, 63, 167, 0.12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .goal span,
+    .card span.badge {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .goal p,
+    .card p {
+      margin: 0.6rem 0 0;
+    }
+
+    .highlight-card {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      border-radius: 20px;
+      background: linear-gradient(120deg, rgba(0, 87, 255, 0.1), rgba(255, 183, 3, 0.18));
+      border: 1px dashed rgba(0, 87, 255, 0.3);
+    }
+
+    blockquote {
+      margin: 1rem 0 0;
+      padding-left: 1.5rem;
+      border-left: 3px solid var(--primary);
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .step {
+      padding: 1rem 1.2rem;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: #fff;
+    }
+
+    .step strong {
+      display: block;
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .timeline-card {
+      border-radius: 20px;
+      padding: 1.4rem;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      background: #fff;
+      box-shadow: 0 18px 35px rgba(13, 41, 80, 0.06);
+    }
+
+    .timeline-card h3 {
+      margin: 0 0 0.4rem;
+      font-size: 1rem;
+      color: var(--primary-dark);
+    }
+
+    .component-grid {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .component-card {
+      padding: 1.5rem;
+      border-radius: 20px;
+      border: 1px solid rgba(0, 87, 255, 0.15);
+      background: linear-gradient(180deg, rgba(0, 87, 255, 0.05), #fff 45%);
+    }
+
+    ul {
+      margin: 0.35rem 0 0 1.25rem;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 0.35rem;
+    }
+
+    .case-study {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .practice ol {
+      margin: 0.75rem 0 0 1.25rem;
+    }
+
+    .callout {
+      margin-top: 1.25rem;
+      padding: 1.35rem 1.5rem;
+      border-radius: 18px;
+      background: rgba(255, 183, 3, 0.12);
+      border: 1px solid rgba(255, 183, 3, 0.3);
+    }
+
+    .footer-cta {
+      text-align: center;
+      margin-top: 3rem;
+    }
+
+    .footer-cta a {
+      text-decoration: none;
+      color: #fff;
+      background: var(--primary);
+      padding: 0.9rem 2rem;
+      border-radius: 999px;
+      display: inline-flex;
+      gap: 0.35rem;
+      font-weight: 600;
+      box-shadow: 0 18px 40px rgba(0, 87, 255, 0.25);
+    }
+
+    @media (max-width: 640px) {
+      header.hero {
+        padding: 2.5rem 1.75rem;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      section {
+        padding: 1.75rem 1.35rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <div class="hero-content">
+        <p class="section-heading" style="color: rgba(255,255,255,0.7); letter-spacing: 0.4em;">Bài học 20</p>
+        <h1>UDP: Giao thức truyền tin nhanh</h1>
+        <p>
+          UDP ưu tiên tốc độ và độ trễ thấp cho các ứng dụng thời gian thực như streaming, game online và VoIP. Bài học
+          này giúp bạn hiểu vì sao UDP nhanh và đánh đổi điều gì so với TCP.
+        </p>
+        <div class="hero-actions">
+          <a href="#objectives" class="primary">Bắt đầu học</a>
+          <a href="#practice" class="secondary">Làm bài tập</a>
+        </div>
+        <div class="stat-grid">
+          <div class="stat">
+            <strong>20 phút</strong>
+            Thời lượng gợi ý
+          </div>
+          <div class="stat">
+            <strong>5 phần</strong>
+            Chủ đề trọng tâm
+          </div>
+          <div class="stat">
+            <strong>Low latency</strong>
+            Ưu tiên tốc độ
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section id="objectives">
+      <p class="section-heading">Mục tiêu</p>
+      <h2>Kết quả học tập mong đợi</h2>
+      <div class="goal-grid">
+        <div class="goal">
+          <span>🎯 Mục tiêu 01</span>
+          <p>Hiểu UDP là gì và vai trò của UDP trong truyền dữ liệu thời gian thực.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 02</span>
+          <p>Phân biệt rõ UDP và TCP theo tiêu chí tốc độ - độ tin cậy.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 03</span>
+          <p>Giải thích vì sao streaming, game online và VoIP ưu tiên UDP.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 04</span>
+          <p>Nắm ưu điểm, nhược điểm và đánh đổi của UDP.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 05</span>
+          <p>Nhận diện các ứng dụng thực tế dùng UDP.</p>
+        </div>
+      </div>
+      <div class="highlight-card">
+        <strong>Đặt vấn đề:</strong>
+        <blockquote>
+          "Mất vài gói tin có thể chấp nhận, nhưng delay vài giây thì không. Vậy chọn TCP hay UDP?"
+        </blockquote>
+        <p>UDP ra đời để ưu tiên trải nghiệm thời gian thực.</p>
+      </div>
+    </section>
+
+    <section id="overview">
+      <p class="section-heading">Khái niệm</p>
+      <h2>UDP là gì?</h2>
+      <div class="card-grid">
+        <div class="card">
+          <span class="badge">📖 Định nghĩa</span>
+          <p><strong>UDP (User Datagram Protocol)</strong> là giao thức truyền dữ liệu nhanh, không hướng kết nối.</p>
+        </div>
+        <div class="card">
+          <span class="badge">🧭 Đặc điểm</span>
+          <ul>
+            <li>Không thiết lập kết nối.</li>
+            <li>Không xác nhận (ACK).</li>
+            <li>Không tự gửi lại gói tin.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <span class="badge">✅ Phù hợp</span>
+          <ul>
+            <li>Dữ liệu thời gian thực.</li>
+            <li>Ứng dụng ưu tiên tốc độ.</li>
+            <li>Tình huống chấp nhận mất gói.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">So sánh</p>
+      <h2>UDP khác TCP ở điểm nào?</h2>
+      <div class="timeline">
+        <article class="timeline-card">
+          <h3>TCP</h3>
+          <ul>
+            <li>Có kết nối, có xác nhận.</li>
+            <li>Đảm bảo đầy đủ và đúng thứ tự.</li>
+            <li>Nặng hơn, chậm hơn.</li>
+            <li>Phù hợp dữ liệu quan trọng.</li>
+          </ul>
+        </article>
+        <article class="timeline-card">
+          <h3>UDP</h3>
+          <ul>
+            <li>Không kết nối, không ACK.</li>
+            <li>Không đảm bảo dữ liệu đến đủ.</li>
+            <li>Nhẹ, nhanh, độ trễ thấp.</li>
+            <li>Phù hợp dữ liệu thời gian thực.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Nguyên lý</p>
+      <h2>Cách UDP truyền dữ liệu</h2>
+      <p>UDP gửi datagram trực tiếp ra mạng và không chờ phản hồi, vì vậy tốc độ cao nhưng không đảm bảo.</p>
+      <div class="steps">
+        <div class="step">
+          <strong>1. Tạo datagram</strong>
+          Ứng dụng đóng gói dữ liệu thành UDP datagram.
+        </div>
+        <div class="step">
+          <strong>2. Gửi ra mạng</strong>
+          Datagram được gửi ngay, không cần handshake.
+        </div>
+        <div class="step">
+          <strong>3. Không chờ ACK</strong>
+          Không kiểm tra gói có đến hay không.
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Kỹ thuật</p>
+      <h2>Ưu điểm & nhược điểm của UDP</h2>
+      <div class="component-grid">
+        <div class="component-card">
+          <h3>Ưu điểm</h3>
+          <ul>
+            <li>Độ trễ thấp, phản hồi nhanh.</li>
+            <li>Ít overhead, header nhỏ.</li>
+            <li>Triển khai đơn giản.</li>
+          </ul>
+        </div>
+        <div class="component-card">
+          <h3>Nhược điểm</h3>
+          <ul>
+            <li>Mất gói không biết.</li>
+            <li>Không đảm bảo thứ tự.</li>
+            <li>Ứng dụng phải tự xử lý lỗi nếu cần.</li>
+          </ul>
+        </div>
+        <div class="component-card">
+          <h3>Ứng dụng phổ biến</h3>
+          <ul>
+            <li>Streaming video, livestream.</li>
+            <li>Game online.</li>
+            <li>VoIP, video call.</li>
+            <li>DNS, DHCP.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Ví dụ</p>
+      <h2>Case study: livestream & game online</h2>
+      <div class="case-study">
+        <div>
+          <p>🎥 Livestream chia thành nhiều gói UDP.</p>
+          <p>🔁 Mất một vài gói: hình giật nhẹ nhưng không bị đứng hình.</p>
+          <p>🎮 Game online gửi liên tục vị trí nhân vật, gói cũ mất không quan trọng.</p>
+          <p>✅ UDP tối ưu cho trải nghiệm thời gian thực.</p>
+        </div>
+        <div class="callout">
+          <strong>Kết luận:</strong>
+          <p>UDP không kém TCP, mà phù hợp cho tình huống ưu tiên tốc độ.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="practice" class="practice">
+      <p class="section-heading">Thực hành</p>
+      <h2>Tổng kết & bài tập</h2>
+      <p>Chọn TCP hay UDP cho mỗi tình huống và giải thích ngắn gọn:</p>
+      <ol>
+        <li>Xem YouTube livestream.</li>
+        <li>Tải file từ Google Drive.</li>
+        <li>Gọi video call với bạn bè.</li>
+        <li>Chat văn bản (Messenger).</li>
+      </ol>
+      <div class="callout">
+        <strong>Gợi ý:</strong>
+        <p>Ưu tiên tốc độ hay độ tin cậy sẽ quyết định giao thức.</p>
+      </div>
+    </section>
+
+    <div class="footer-cta">
+      <a href="../index.html">← Về trang chủ</a>
+    </div>
+  </main>
+</body>
+</html>

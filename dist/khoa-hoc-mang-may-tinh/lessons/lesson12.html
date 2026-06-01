@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bài 12: Giao thức ARP - Cầu nối giữa IP và MAC</title>
+  <style>
+    :root {
+      --primary: #0057ff;
+      --primary-dark: #0039a8;
+      --accent: #ffb703;
+      --ink: #1f2532;
+      --muted: #5b6476;
+      --surface: #ffffff;
+      --surface-alt: #f2f4ff;
+      --border: rgba(15, 63, 167, 0.1);
+      --radius: 24px;
+      --shadow: 0 20px 60px rgba(15, 87, 255, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top, rgba(169, 200, 255, 0.4), transparent 55%),
+        #eef2ff;
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    header.hero {
+      background: linear-gradient(120deg, var(--primary), #7357ff);
+      border-radius: var(--radius);
+      padding: 3.5rem clamp(2rem, 4vw, 4.5rem);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.35), transparent 45%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero h1 {
+      margin: 0 0 1rem;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 640px;
+      font-size: 1.05rem;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 2rem;
+    }
+
+    .hero-actions a {
+      text-decoration: none;
+      padding: 0.85rem 1.8rem;
+      border-radius: 999px;
+      font-weight: 600;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .hero-actions a.primary {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.18);
+    }
+
+    .hero-actions a.secondary {
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: #fff;
+      backdrop-filter: blur(6px);
+    }
+
+    .hero-actions a:hover {
+      transform: translateY(-3px);
+    }
+
+    .stat-grid {
+      margin-top: 2.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 1rem 1.25rem;
+      text-align: left;
+      backdrop-filter: blur(4px);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .stat strong {
+      font-size: 1.25rem;
+      display: block;
+    }
+
+    section {
+      margin-top: 2.5rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 2.25rem clamp(1.5rem, 4vw, 3rem);
+      box-shadow: 0 10px 35px rgba(38, 44, 82, 0.08);
+      border: 1px solid var(--border);
+    }
+
+    .section-heading {
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.25em;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    h2 {
+      margin: 0 0 1.5rem;
+      font-size: clamp(1.7rem, 3vw, 2.2rem);
+      color: var(--ink);
+    }
+
+    h3 {
+      margin: 0 0 0.4rem;
+      font-size: 1rem;
+      color: var(--primary-dark);
+    }
+
+    .goal-grid,
+    .card-grid,
+    .topic-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .goal,
+    .card,
+    .topic-card {
+      background: var(--surface-alt);
+      border-radius: 18px;
+      padding: 1.25rem 1.35rem;
+      border: 1px solid rgba(15, 63, 167, 0.12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .goal span,
+    .card span.badge,
+    .topic-card span.badge {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .goal p,
+    .card p,
+    .topic-card p {
+      margin: 0.6rem 0 0;
+    }
+
+    .highlight-card {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      border-radius: 20px;
+      background: linear-gradient(120deg, rgba(0, 87, 255, 0.1), rgba(255, 183, 3, 0.18));
+      border: 1px dashed rgba(0, 87, 255, 0.3);
+    }
+
+    blockquote {
+      margin: 1rem 0 0;
+      padding-left: 1.5rem;
+      border-left: 3px solid var(--primary);
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    ul {
+      margin: 0.35rem 0 0 1.25rem;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 0.35rem;
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(15, 63, 167, 0.12);
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      text-align: left;
+      padding: 0.9rem 1rem;
+      border-bottom: 1px solid rgba(15, 63, 167, 0.12);
+    }
+
+    .comparison-table th {
+      background: rgba(0, 87, 255, 0.08);
+      color: var(--primary-dark);
+      font-weight: 600;
+    }
+
+    .comparison-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .case-study {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .practice ol {
+      margin: 0.75rem 0 0 1.25rem;
+    }
+
+    .callout {
+      margin-top: 1.25rem;
+      padding: 1.35rem 1.5rem;
+      border-radius: 18px;
+      background: rgba(255, 183, 3, 0.12);
+      border: 1px solid rgba(255, 183, 3, 0.3);
+    }
+
+    .footer-cta {
+      text-align: center;
+      margin-top: 3rem;
+    }
+
+    .footer-cta a {
+      text-decoration: none;
+      color: #fff;
+      background: var(--primary);
+      padding: 0.9rem 2rem;
+      border-radius: 999px;
+      display: inline-flex;
+      gap: 0.35rem;
+      font-weight: 600;
+      box-shadow: 0 18px 40px rgba(0, 87, 255, 0.25);
+    }
+
+    @media (max-width: 640px) {
+      header.hero {
+        padding: 2.5rem 1.75rem;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      section {
+        padding: 1.75rem 1.35rem;
+      }
+
+      .comparison-table {
+        font-size: 0.95rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <div class="hero-content">
+        <p class="section-heading" style="color: rgba(255,255,255,0.7); letter-spacing: 0.4em;">Bài học 12</p>
+        <h1>Giao thức ARP - Cầu nối giữa IP và MAC</h1>
+        <p>
+          Bài học giúp bạn hiểu vì sao cần ARP, cách ARP hoạt động, và vai trò của ARP trong mạng LAN thực tế.
+        </p>
+        <div class="hero-actions">
+          <a href="#content" class="primary">Xem nội dung</a>
+          <a href="#practice" class="secondary">Làm bài tập</a>
+        </div>
+        <div class="stat-grid">
+          <div class="stat">
+            <strong>ARP Request</strong>
+            Broadcast
+          </div>
+          <div class="stat">
+            <strong>ARP Reply</strong>
+            Unicast
+          </div>
+          <div class="stat">
+            <strong>ARP Table</strong>
+            Lưu tạm thời
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section>
+      <p class="section-heading">Mục tiêu</p>
+      <h2>Kết quả học tập mong đợi</h2>
+      <div class="goal-grid">
+        <div class="goal">
+          <span>🎯 Mục tiêu 01</span>
+          <p>Hiểu rõ <strong>vì sao cần giao thức ARP</strong>.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 02</span>
+          <p>Giải thích được <strong>ARP hoạt động như thế nào</strong>.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 03</span>
+          <p>Phân biệt <strong>IP Address</strong> và <strong>MAC Address</strong> trong truyền dữ liệu.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 04</span>
+          <p>Hiểu các khái niệm: <strong>ARP Request, ARP Reply, ARP Table</strong>.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 05</span>
+          <p>Nhận biết vai trò của ARP trong <strong>mạng LAN thực tế</strong>.</p>
+        </div>
+      </div>
+      <div class="highlight-card">
+        <strong>Đặt vấn đề:</strong>
+        <p>Giả sử:</p>
+        <ul>
+          <li>Máy A có IP: <code>192.168.1.10</code></li>
+          <li>Máy B có IP: <code>192.168.1.20</code></li>
+          <li>Hai máy cùng mạng LAN</li>
+        </ul>
+        <p>👉 Máy A muốn gửi dữ liệu cho Máy B.</p>
+        <ul>
+          <li>IP dùng cho <strong>định tuyến logic</strong>.</li>
+          <li>Ethernet cần <strong>MAC Address</strong> để gửi frame.</li>
+        </ul>
+        <blockquote>
+          Máy A lấy MAC của Máy B bằng cách nào, khi chỉ biết IP?
+        </blockquote>
+        <p>Câu trả lời chính là <strong>ARP</strong>.</p>
+      </div>
+    </section>
+
+    <section id="content">
+      <p class="section-heading">Định nghĩa</p>
+      <h2>ARP và bảng ARP</h2>
+      <div class="topic-grid">
+        <div class="topic-card">
+          <span class="badge">a. Giao thức ARP</span>
+          <ul>
+            <li><strong>ARP</strong> chuyển đổi IP Address → MAC Address.</li>
+            <li>Hoạt động trong <strong>mạng LAN</strong>.</li>
+            <li>Là cầu nối giữa <strong>Layer 3 (IP)</strong> và <strong>Layer 2 (MAC/Ethernet)</strong>.</li>
+          </ul>
+          <p>📌 Không có ARP → IP <strong>không thể truyền dữ liệu</strong> trên Ethernet.</p>
+        </div>
+        <div class="topic-card">
+          <span class="badge">b. ARP Table</span>
+          <ul>
+            <li>Lưu trữ IP Address và MAC Address tương ứng.</li>
+            <li>Được lưu <strong>tạm thời</strong> trong bộ nhớ thiết bị.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Nguyên lý</p>
+      <h2>Quá trình ARP Request / ARP Reply</h2>
+      <div class="card-grid">
+        <div class="card">
+          <span class="badge">Các bước chính</span>
+          <p><strong>Bước 1:</strong> Kiểm tra ARP Table.</p>
+          <p><strong>Bước 2:</strong> ARP Request (Broadcast): hỏi “Ai có IP 192.168.1.20?”.</p>
+          <p><strong>Bước 3:</strong> ARP Reply (Unicast): Máy B trả MAC cho Máy A.</p>
+          <p><strong>Bước 4:</strong> Cập nhật ARP Table và dùng cho lần gửi tiếp theo.</p>
+        </div>
+        <div class="card">
+          <span class="badge">Khi nào không cần ARP?</span>
+          <ul>
+            <li>ARP Table còn hiệu lực.</li>
+            <li>Dữ liệu gửi <strong>ngay lập tức</strong> không cần broadcast.</li>
+            <li>ARP Entry tự xóa sau một thời gian (timeout).</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Thông số</p>
+      <h2>Các thông số kỹ thuật cần nhớ</h2>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Tiêu chí</th>
+            <th>Giá trị</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Phạm vi hoạt động</td>
+            <td>Mạng LAN</td>
+          </tr>
+          <tr>
+            <td>Kiểu truyền</td>
+            <td>Broadcast + Unicast</td>
+          </tr>
+          <tr>
+            <td>OSI Layer</td>
+            <td>Giữa Layer 2 &amp; 3</td>
+          </tr>
+          <tr>
+            <td>Tốc độ</td>
+            <td>Rất nhanh</td>
+          </tr>
+          <tr>
+            <td>Lưu trữ</td>
+            <td>ARP Table (tạm thời)</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <p class="section-heading">Ví dụ</p>
+      <h2>Case study: Mạng LAN văn phòng</h2>
+      <div class="case-study">
+        <div>
+          <ul>
+            <li>1 Switch</li>
+            <li>1 Router</li>
+            <li>10 máy tính</li>
+          </ul>
+          <p><strong>Tình huống:</strong> PC1 lần đầu ping PC2.</p>
+          <p><strong>Quá trình:</strong></p>
+          <ol>
+            <li>PC1 chưa biết MAC của PC2.</li>
+            <li>Gửi ARP Request (broadcast).</li>
+            <li>PC2 trả ARP Reply.</li>
+            <li>PC1 cập nhật ARP Table.</li>
+            <li>Ping thành công.</li>
+          </ol>
+          <p>👉 Nếu ARP bị lỗi: ping thất bại, LAN không giao tiếp được.</p>
+        </div>
+        <div class="callout">
+          <strong>Gợi ý:</strong>
+          <p>ARP hoạt động nhanh và trong suốt để các thiết bị trong LAN luôn tìm đúng MAC đích.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="practice" class="practice">
+      <p class="section-heading">Thực hành</p>
+      <h2>Tổng kết &amp; bài tập thực hành</h2>
+      <h3>5.1. Tổng kết kiến thức</h3>
+      <ul>
+        <li>IP dùng để <strong>xác định logic</strong>.</li>
+        <li>MAC dùng để <strong>truyền dữ liệu vật lý</strong>.</li>
+        <li><strong>ARP là cầu nối</strong> giữa IP và MAC.</li>
+        <li>ARP chỉ hoạt động trong <strong>LAN</strong>.</li>
+        <li>ARP Request = Broadcast, ARP Reply = Unicast.</li>
+      </ul>
+      <p>👉 ARP là <strong>giao thức nền tảng</strong>, cực kỳ quan trọng trong mạng máy tính.</p>
+      <div class="callout">
+        <strong>5.2. Bài tập về nhà:</strong>
+        <p>Trên máy tính của bạn:</p>
+        <ol>
+          <li>Mở Command Prompt / Terminal.</li>
+          <li>Chạy lệnh <code>arp -a</code>.</li>
+          <li>Quan sát: có bao nhiêu IP? IP nào là router?</li>
+          <li>Ping một IP mới, chạy lại <code>arp -a</code>, so sánh thay đổi.</li>
+        </ol>
+        <p>📌 Trả lời ngắn gọn 5–7 dòng.</p>
+      </div>
+    </section>
+
+    <div class="footer-cta">
+      <a href="../index.html">← Về trang chủ</a>
+    </div>
+  </main>
+</body>
+</html>

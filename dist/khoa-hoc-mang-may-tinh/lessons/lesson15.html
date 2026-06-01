@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bài 15: Tìm hiểu về địa chỉ IPv6 - Tương lai của internet.</title>
+  <style>
+    :root {
+      --primary: #0057ff;
+      --primary-dark: #0039a8;
+      --accent: #ffb703;
+      --ink: #1f2532;
+      --muted: #5b6476;
+      --surface: #ffffff;
+      --surface-alt: #f2f4ff;
+      --border: rgba(15, 63, 167, 0.1);
+      --radius: 24px;
+      --shadow: 0 20px 60px rgba(15, 87, 255, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top, rgba(169, 200, 255, 0.4), transparent 55%),
+        #eef2ff;
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    header.hero {
+      background: linear-gradient(120deg, var(--primary), #7357ff);
+      border-radius: var(--radius);
+      padding: 3.5rem clamp(2rem, 4vw, 4.5rem);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.35), transparent 45%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero h1 {
+      margin: 0 0 1rem;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 580px;
+      font-size: 1.05rem;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 2rem;
+    }
+
+    .hero-actions a {
+      text-decoration: none;
+      padding: 0.85rem 1.8rem;
+      border-radius: 999px;
+      font-weight: 600;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .hero-actions a.primary {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.18);
+    }
+
+    .hero-actions a.secondary {
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: #fff;
+      backdrop-filter: blur(6px);
+    }
+
+    .hero-actions a:hover {
+      transform: translateY(-3px);
+    }
+
+    .stat-grid {
+      margin-top: 2.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 1rem 1.25rem;
+      text-align: left;
+      backdrop-filter: blur(4px);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .stat strong {
+      font-size: 1.25rem;
+      display: block;
+    }
+
+    section {
+      margin-top: 2.5rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 2.25rem clamp(1.5rem, 4vw, 3rem);
+      box-shadow: 0 10px 35px rgba(38, 44, 82, 0.08);
+      border: 1px solid var(--border);
+    }
+
+    .section-heading {
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.25em;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    h2 {
+      margin: 0 0 1.5rem;
+      font-size: clamp(1.7rem, 3vw, 2.2rem);
+      color: var(--ink);
+    }
+
+    h3 {
+      margin: 0 0 0.8rem;
+      color: var(--primary-dark);
+    }
+
+    .goal-grid,
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .goal,
+    .card {
+      background: var(--surface-alt);
+      border-radius: 18px;
+      padding: 1.25rem 1.35rem;
+      border: 1px solid rgba(15, 63, 167, 0.12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .goal span,
+    .card span.badge {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .goal p,
+    .card p {
+      margin: 0.6rem 0 0;
+    }
+
+    .highlight-card {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      border-radius: 20px;
+      background: linear-gradient(120deg, rgba(0, 87, 255, 0.1), rgba(255, 183, 3, 0.18));
+      border: 1px dashed rgba(0, 87, 255, 0.3);
+    }
+
+    blockquote {
+      margin: 1rem 0 0;
+      padding-left: 1.5rem;
+      border-left: 3px solid var(--primary);
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .step {
+      padding: 1rem 1.2rem;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: #fff;
+    }
+
+    .step strong {
+      display: block;
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .component-grid {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .component-card {
+      padding: 1.5rem;
+      border-radius: 20px;
+      border: 1px solid rgba(0, 87, 255, 0.15);
+      background: linear-gradient(180deg, rgba(0, 87, 255, 0.05), #fff 45%);
+    }
+
+    ul,
+    ol {
+      margin: 0.35rem 0 0 1.25rem;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 0.35rem;
+    }
+
+    .code-block {
+      margin-top: 0.75rem;
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 0.85rem 1rem;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      overflow-x: auto;
+    }
+
+    .code-block code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+    }
+
+    code {
+      font-family: "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: 0.95em;
+      color: #0b1b3f;
+      background: rgba(15, 87, 255, 0.08);
+      padding: 0.1rem 0.35rem;
+      border-radius: 6px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.75rem;
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    th,
+    td {
+      padding: 0.75rem 0.9rem;
+      text-align: left;
+      font-size: 0.95rem;
+    }
+
+    th {
+      background: var(--surface-alt);
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    tr + tr td {
+      border-top: 1px solid rgba(15, 63, 167, 0.1);
+    }
+
+    .table-block {
+      margin-top: 1.5rem;
+    }
+
+    .case-study {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .practice ol {
+      margin: 0.75rem 0 0 1.25rem;
+    }
+
+    .callout {
+      margin-top: 1.25rem;
+      padding: 1.35rem 1.5rem;
+      border-radius: 18px;
+      background: rgba(255, 183, 3, 0.12);
+      border: 1px solid rgba(255, 183, 3, 0.3);
+    }
+
+    .footer-cta {
+      text-align: center;
+      margin-top: 3rem;
+    }
+
+    .footer-cta a {
+      text-decoration: none;
+      color: #fff;
+      background: var(--primary);
+      padding: 0.9rem 2rem;
+      border-radius: 999px;
+      display: inline-flex;
+      gap: 0.35rem;
+      font-weight: 600;
+      box-shadow: 0 18px 40px rgba(0, 87, 255, 0.25);
+    }
+
+    @media (max-width: 640px) {
+      header.hero {
+        padding: 2.5rem 1.75rem;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      section {
+        padding: 1.75rem 1.35rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <div class="hero-content">
+        <p class="section-heading" style="color: rgba(255,255,255,0.7); letter-spacing: 0.4em;">Bài học 15</p>
+        <h1>Tìm hiểu về địa chỉ IPv6 - Tương lai của internet</h1>
+        <p>
+          Bài học giải thích vì sao IPv6 ra đời, cấu trúc và cách viết địa chỉ IPv6, sự khác biệt giữa IPv4 và IPv6,
+          cùng các loại địa chỉ phổ biến trong Internet hiện đại.
+        </p>
+        <div class="hero-actions">
+          <a href="#content" class="primary">Bắt đầu học</a>
+          <a href="#practice" class="secondary">Làm bài tập</a>
+        </div>
+        <div class="stat-grid">
+          <div class="stat">
+            <strong>128 bit</strong>
+            Độ dài địa chỉ IPv6
+          </div>
+          <div class="stat">
+            <strong>5 mục tiêu</strong>
+            Trọng tâm bài học
+          </div>
+          <div class="stat">
+            <strong>2 bảng</strong>
+            So sánh quan trọng
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section>
+      <p class="section-heading">Mục tiêu</p>
+      <h2>Kết quả học tập mong đợi</h2>
+      <div class="goal-grid">
+        <div class="goal">
+          <span>🎯 Mục tiêu 01</span>
+          <p>Hiểu vì sao IPv6 ra đời và nhu cầu thực tế của Internet hiện đại.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 02</span>
+          <p>Nắm cấu trúc và cách viết địa chỉ IPv6.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 03</span>
+          <p>Phân biệt IPv4 và IPv6 qua các tiêu chí quan trọng.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 04</span>
+          <p>Hiểu các loại địa chỉ IPv6 phổ biến trong thực tế.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 05</span>
+          <p>Nhận thức vai trò của IPv6 trong Internet hiện đại.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Đặt vấn đề</p>
+      <h2>Internet mở rộng thế nào khi IPv4 đã cạn?</h2>
+      <p>Số lượng thiết bị Internet tăng mạnh:</p>
+      <ul>
+        <li>Smartphone</li>
+        <li>IoT</li>
+        <li>Camera, Smart TV, xe thông minh</li>
+      </ul>
+      <p>IPv4 chỉ có khoảng 4,3 tỷ địa chỉ.</p>
+      <div class="highlight-card">
+        <strong>Thực tế:</strong>
+        <blockquote>IPv4 đã cạn kiệt ở nhiều khu vực trên thế giới.</blockquote>
+        <strong>Câu hỏi:</strong>
+        <blockquote>Internet sẽ mở rộng bằng cách nào khi không còn đủ địa chỉ IP?</blockquote>
+        <p>Câu trả lời là <strong>IPv6</strong>.</p>
+      </div>
+    </section>
+
+    <section id="content">
+      <p class="section-heading">Khái niệm</p>
+      <h2>IPv6 là gì và vì sao quan trọng?</h2>
+      <div class="card-grid">
+        <div class="card">
+          <span class="badge">📖 Định nghĩa</span>
+          <p><strong>IPv6 (Internet Protocol version 6)</strong> là phiên bản IP thế hệ mới.</p>
+          <ul>
+            <li>Được thiết kế để thay thế IPv4.</li>
+            <li>Hoạt động ở Layer 3 (Network Layer).</li>
+          </ul>
+        </div>
+        <div class="card">
+          <span class="badge">🎯 Mục tiêu chính</span>
+          <ul>
+            <li>Giải quyết vấn đề cạn địa chỉ IPv4.</li>
+            <li>Đơn giản hóa định tuyến.</li>
+            <li>Hỗ trợ Internet quy mô toàn cầu.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <span class="badge">🌐 Không gian địa chỉ</span>
+          <ul>
+            <li>IPv4: 32 bit → ~4,3 × 10⁹ địa chỉ.</li>
+            <li>IPv6: 128 bit → ~3,4 × 10³⁸ địa chỉ (gần như vô hạn).</li>
+          </ul>
+          <p>Mỗi thiết bị có thể có IP Public riêng, không cần NAT.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Nguyên lý</p>
+      <h2>Cấu trúc, rút gọn và khám phá lân cận</h2>
+      <div class="component-grid">
+        <div class="component-card">
+          <h3>a. Cấu trúc địa chỉ IPv6</h3>
+          <ul>
+            <li>Độ dài: 128 bit.</li>
+            <li>Viết dưới dạng hexadecimal.</li>
+            <li>Chia thành 8 block, mỗi block 16 bit.</li>
+          </ul>
+          <p><strong>Ví dụ:</strong></p>
+          <pre class="code-block"><code>2001:0db8:85a3:0000:0000:8a2e:0370:7334</code></pre>
+        </div>
+        <div class="component-card">
+          <h3>b. Quy tắc rút gọn IPv6</h3>
+          <ol>
+            <li>Bỏ số 0 ở đầu block.</li>
+            <li>Dãy block toàn 0 liên tiếp → :: (chỉ dùng 1 lần).</li>
+          </ol>
+          <pre class="code-block"><code>0db8 → db8</code></pre>
+          <pre class="code-block"><code>2001:db8::1</code></pre>
+        </div>
+        <div class="component-card">
+          <h3>c. IPv6 không cần ARP</h3>
+          <ul>
+            <li>IPv6 dùng <strong>NDP (Neighbor Discovery Protocol)</strong>.</li>
+            <li>Dựa trên <strong>ICMPv6</strong>.</li>
+            <li>Tự động phát hiện thiết bị, router, MAC Address.</li>
+          </ul>
+          <p>👉 IPv6 hiện đại và thông minh hơn IPv4.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Thông số</p>
+      <h2>Các bảng so sánh quan trọng</h2>
+      <div class="table-block">
+        <h3>a. So sánh IPv4 và IPv6</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Tiêu chí</th>
+              <th>IPv4</th>
+              <th>IPv6</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Độ dài</td>
+              <td>32 bit</td>
+              <td>128 bit</td>
+            </tr>
+            <tr>
+              <td>Dạng</td>
+              <td>Thập phân</td>
+              <td>Hex</td>
+            </tr>
+            <tr>
+              <td>NAT</td>
+              <td>Cần</td>
+              <td>Không cần</td>
+            </tr>
+            <tr>
+              <td>ARP</td>
+              <td>Có</td>
+              <td>Không</td>
+            </tr>
+            <tr>
+              <td>Bảo mật</td>
+              <td>Tuỳ chọn</td>
+              <td>Tích hợp IPsec</td>
+            </tr>
+            <tr>
+              <td>Cấu hình</td>
+              <td>Thủ công / DHCP</td>
+              <td>Tự động (SLAAC)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-block">
+        <h3>b. Các loại địa chỉ IPv6 phổ biến</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Loại</th>
+              <th>Ý nghĩa</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Global Unicast</td>
+              <td>IP Public</td>
+            </tr>
+            <tr>
+              <td>Link-local</td>
+              <td>Giao tiếp trong LAN</td>
+            </tr>
+            <tr>
+              <td>Multicast</td>
+              <td>Gửi cho nhiều thiết bị</td>
+            </tr>
+            <tr>
+              <td>Anycast</td>
+              <td>Gửi tới node gần nhất</td>
+            </tr>
+          </tbody>
+        </table>
+        <p><strong>Không tồn tại Broadcast trong IPv6.</strong></p>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Ví dụ</p>
+      <h2>Case study: Mạng doanh nghiệp hiện đại</h2>
+      <div class="case-study">
+        <div>
+          <p>Router hỗ trợ IPv6.</p>
+          <p>Máy tính nhận IP tự động.</p>
+          <p>Mỗi thiết bị có <strong>Global IPv6 riêng</strong>.</p>
+          <p><strong>Lợi ích:</strong></p>
+          <ul>
+            <li>Không cần NAT.</li>
+            <li>Kết nối trực tiếp.</li>
+            <li>Định tuyến hiệu quả.</li>
+            <li>Sẵn sàng IoT &amp; Cloud.</li>
+          </ul>
+        </div>
+        <div class="callout">
+          <strong>IPv6 phù hợp cho:</strong>
+          <ul>
+            <li>Data Center</li>
+            <li>ISP</li>
+            <li>Smart City</li>
+            <li>5G / IoT</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="practice" class="practice">
+      <p class="section-heading">Thực hành</p>
+      <h2>Tổng kết &amp; bài tập</h2>
+      <p><strong>Tổng kết kiến thức:</strong></p>
+      <ul>
+        <li>IPv6 là tương lai tất yếu của Internet.</li>
+        <li>Giải quyết triệt để vấn đề cạn IP.</li>
+        <li>Địa chỉ dài 128 bit.</li>
+        <li>Không cần ARP, không Broadcast.</li>
+        <li>Hỗ trợ bảo mật và tự động cấu hình.</li>
+      </ul>
+      <p><strong>IPv6 không phải “có thể”, mà là “phải dùng”.</strong></p>
+      <div class="callout">
+        <strong>Bài tập thực hành:</strong>
+        <p>Trên máy tính của bạn:</p>
+        <ol>
+          <li>Kiểm tra xem máy có IPv6 không.</li>
+          <li>Ghi lại địa chỉ IPv6 và loại địa chỉ (Link-local hay Global).</li>
+          <li>Trả lời: Máy có nhiều IPv6 không? Vì sao IPv6 không cần NAT?</li>
+        </ol>
+        <p><strong>Gợi ý lệnh:</strong></p>
+        <ul>
+          <li>Windows: <code>ipconfig</code></li>
+          <li>Linux / macOS: <code>ip a</code></li>
+        </ul>
+      </div>
+    </section>
+
+    <div class="footer-cta">
+      <a href="../index.html">← Về trang chủ</a>
+    </div>
+  </main>
+</body>
+</html>

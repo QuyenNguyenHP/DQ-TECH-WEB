@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bài 3: Kiến trúc mạng Client-Server và Peer-to-Peer</title>
+  <style>
+    :root {
+      --primary: #0057ff;
+      --primary-dark: #0039a8;
+      --accent: #ffb703;
+      --ink: #1f2532;
+      --muted: #5b6476;
+      --surface: #ffffff;
+      --surface-alt: #f2f4ff;
+      --border: rgba(15, 63, 167, 0.1);
+      --radius: 24px;
+      --shadow: 0 20px 60px rgba(15, 87, 255, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top, rgba(169, 200, 255, 0.4), transparent 55%),
+        #eef2ff;
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    header.hero {
+      background: linear-gradient(120deg, var(--primary), #7357ff);
+      border-radius: var(--radius);
+      padding: 3.5rem clamp(2rem, 4vw, 4.5rem);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.35), transparent 45%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero h1 {
+      margin: 0 0 1rem;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 640px;
+      font-size: 1.05rem;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 2rem;
+    }
+
+    .hero-actions a {
+      text-decoration: none;
+      padding: 0.85rem 1.8rem;
+      border-radius: 999px;
+      font-weight: 600;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .hero-actions a.primary {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.18);
+    }
+
+    .hero-actions a.secondary {
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: #fff;
+      backdrop-filter: blur(6px);
+    }
+
+    .hero-actions a:hover {
+      transform: translateY(-3px);
+    }
+
+    .stat-grid {
+      margin-top: 2.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 1rem 1.25rem;
+      text-align: left;
+      backdrop-filter: blur(4px);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .stat strong {
+      font-size: 1.25rem;
+      display: block;
+    }
+
+    section {
+      margin-top: 2.5rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 2.25rem clamp(1.5rem, 4vw, 3rem);
+      box-shadow: 0 10px 35px rgba(38, 44, 82, 0.08);
+      border: 1px solid var(--border);
+    }
+
+    .section-heading {
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.25em;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    h2 {
+      margin: 0 0 1.5rem;
+      font-size: clamp(1.7rem, 3vw, 2.2rem);
+      color: var(--ink);
+    }
+
+    h3 {
+      margin: 0 0 0.4rem;
+      font-size: 1rem;
+      color: var(--primary-dark);
+    }
+
+    .goal-grid,
+    .card-grid,
+    .model-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .goal,
+    .card,
+    .model-card {
+      background: var(--surface-alt);
+      border-radius: 18px;
+      padding: 1.25rem 1.35rem;
+      border: 1px solid rgba(15, 63, 167, 0.12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .goal span,
+    .card span.badge,
+    .model-card span.badge {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .goal p,
+    .card p,
+    .model-card p {
+      margin: 0.6rem 0 0;
+    }
+
+    .highlight-card {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      border-radius: 20px;
+      background: linear-gradient(120deg, rgba(0, 87, 255, 0.1), rgba(255, 183, 3, 0.18));
+      border: 1px dashed rgba(0, 87, 255, 0.3);
+    }
+
+    blockquote {
+      margin: 1rem 0 0;
+      padding-left: 1.5rem;
+      border-left: 3px solid var(--primary);
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    ul {
+      margin: 0.35rem 0 0 1.25rem;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 0.35rem;
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(15, 63, 167, 0.12);
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      text-align: left;
+      padding: 0.9rem 1rem;
+      border-bottom: 1px solid rgba(15, 63, 167, 0.12);
+    }
+
+    .comparison-table th {
+      background: rgba(0, 87, 255, 0.08);
+      color: var(--primary-dark);
+      font-weight: 600;
+    }
+
+    .comparison-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .case-study {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .practice ol {
+      margin: 0.75rem 0 0 1.25rem;
+    }
+
+    .callout {
+      margin-top: 1.25rem;
+      padding: 1.35rem 1.5rem;
+      border-radius: 18px;
+      background: rgba(255, 183, 3, 0.12);
+      border: 1px solid rgba(255, 183, 3, 0.3);
+    }
+
+    .footer-cta {
+      text-align: center;
+      margin-top: 3rem;
+    }
+
+    .footer-cta a {
+      text-decoration: none;
+      color: #fff;
+      background: var(--primary);
+      padding: 0.9rem 2rem;
+      border-radius: 999px;
+      display: inline-flex;
+      gap: 0.35rem;
+      font-weight: 600;
+      box-shadow: 0 18px 40px rgba(0, 87, 255, 0.25);
+    }
+
+    @media (max-width: 640px) {
+      header.hero {
+        padding: 2.5rem 1.75rem;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      section {
+        padding: 1.75rem 1.35rem;
+      }
+
+      .comparison-table {
+        font-size: 0.95rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <div class="hero-content">
+        <p class="section-heading" style="color: rgba(255,255,255,0.7); letter-spacing: 0.4em;">Bài học 03</p>
+        <h1>Kiến trúc mạng: Client-Server và Peer-to-Peer (P2P)</h1>
+        <p>
+          Bài học giúp bạn hiểu kiến trúc mạng, phân biệt Client-Server và P2P, và lựa chọn mô hình phù hợp cho từng bối cảnh.
+        </p>
+        <div class="hero-actions">
+          <a href="#content" class="primary">Xem nội dung</a>
+          <a href="#practice" class="secondary">Làm bài tập</a>
+        </div>
+        <div class="stat-grid">
+          <div class="stat">
+            <strong>2 kiến trúc</strong>
+            Client-Server · P2P
+          </div>
+          <div class="stat">
+            <strong>Quy mô</strong>
+            Nhỏ đến doanh nghiệp
+          </div>
+          <div class="stat">
+            <strong>So sánh rõ</strong>
+            Bảo mật · mở rộng
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section>
+      <p class="section-heading">Mục tiêu</p>
+      <h2>Kết quả học tập mong đợi</h2>
+      <div class="goal-grid">
+        <div class="goal">
+          <span>🎯 Mục tiêu 01</span>
+          <p>Hiểu rõ <strong>kiến trúc mạng là gì</strong>.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 02</span>
+          <p>Phân biệt được <strong>Client-Server</strong> và <strong>Peer-to-Peer (P2P)</strong>.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 03</span>
+          <p>Biết <strong>khi nào nên dùng Client-Server, khi nào nên dùng P2P</strong>.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 04</span>
+          <p>Ứng dụng kiến trúc mạng phù hợp cho <strong>nhà ở, văn phòng, doanh nghiệp</strong>.</p>
+        </div>
+      </div>
+      <div class="highlight-card">
+        <strong>Đặt vấn đề:</strong>
+        <ul>
+          <li>Khi bạn mở <strong>website</strong>, máy bạn gửi yêu cầu và nhận dữ liệu từ một máy khác.</li>
+          <li>Khi bạn <strong>chia sẻ file trực tiếp</strong> giữa hai máy trong cùng mạng.</li>
+          <li>Khi nhiều người cùng truy cập <strong>một hệ thống quản lý chung</strong>.</li>
+        </ul>
+        <blockquote>
+          Máy tính trong mạng có luôn luôn đóng vai trò giống nhau không? Hay có máy chuyên phục vụ, có máy chỉ sử dụng dịch vụ?
+        </blockquote>
+        <p>Đó chính là sự khác biệt giữa <strong>Client-Server</strong> và <strong>Peer-to-Peer</strong>.</p>
+      </div>
+    </section>
+
+    <section id="content">
+      <p class="section-heading">Nội dung</p>
+      <h2>Kiến trúc mạng phổ biến</h2>
+      <div class="card-grid">
+        <div class="card">
+          <span class="badge">📖 Khái niệm</span>
+          <p><strong>Kiến trúc mạng</strong> là cách <strong>tổ chức vai trò và mối quan hệ</strong> giữa các máy tính trong hệ thống mạng.</p>
+          <p>Hai kiến trúc phổ biến nhất là <strong>Client-Server</strong> và <strong>Peer-to-Peer (P2P)</strong>.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Chi tiết</p>
+      <h2>So sánh hai kiến trúc</h2>
+      <div class="model-grid">
+        <div class="model-card">
+          <span class="badge">🔹 Client-Server</span>
+          <p><strong>Định nghĩa:</strong></p>
+          <ul>
+            <li><strong>Server</strong>: Máy chủ cung cấp dịch vụ, dữ liệu.</li>
+            <li><strong>Client</strong>: Máy trạm gửi yêu cầu và sử dụng dịch vụ.</li>
+          </ul>
+          <p><strong>Nguyên lý:</strong></p>
+          <ol>
+            <li>Client gửi yêu cầu (request).</li>
+            <li>Server xử lý.</li>
+            <li>Server trả kết quả (response).</li>
+          </ol>
+          <p><strong>Ví dụ dịch vụ:</strong></p>
+          <ul>
+            <li>Web server.</li>
+            <li>Mail server.</li>
+            <li>Database server.</li>
+            <li>File server.</li>
+          </ul>
+        </div>
+        <div class="model-card">
+          <span class="badge">🔹 Peer-to-Peer (P2P)</span>
+          <p><strong>Định nghĩa:</strong></p>
+          <ul>
+            <li>Tất cả các máy <strong>bình đẳng</strong>.</li>
+            <li>Mỗi máy vừa là <strong>Client</strong>, vừa là <strong>Server</strong>.</li>
+          </ul>
+          <p><strong>Nguyên lý:</strong></p>
+          <ul>
+            <li>Máy này yêu cầu → máy khác cung cấp trực tiếp.</li>
+            <li>Không cần máy chủ trung tâm.</li>
+          </ul>
+          <p><strong>Ví dụ:</strong></p>
+          <ul>
+            <li>Chia sẻ file trong mạng LAN nhỏ.</li>
+            <li>BitTorrent.</li>
+            <li>Kết nối máy in trực tiếp.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Thông số</p>
+      <h2>Các đặc điểm cần nhớ</h2>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Tiêu chí</th>
+            <th>Client-Server</th>
+            <th>Peer-to-Peer</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Máy chủ trung tâm</td>
+            <td>Có</td>
+            <td>Không</td>
+          </tr>
+          <tr>
+            <td>Quản lý</td>
+            <td>Tập trung</td>
+            <td>Phân tán</td>
+          </tr>
+          <tr>
+            <td>Bảo mật</td>
+            <td>Cao</td>
+            <td>Thấp</td>
+          </tr>
+          <tr>
+            <td>Khả năng mở rộng</td>
+            <td>Rất tốt</td>
+            <td>Kém</td>
+          </tr>
+          <tr>
+            <td>Chi phí</td>
+            <td>Cao</td>
+            <td>Thấp</td>
+          </tr>
+          <tr>
+            <td>Phù hợp</td>
+            <td>Doanh nghiệp</td>
+            <td>Nhóm nhỏ</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <p class="section-heading">Ví dụ</p>
+      <h2>Case study</h2>
+      <div class="case-study">
+        <div>
+          <h3>🌐 Case 1: Quán Internet nhỏ (10 máy)</h3>
+          <ul>
+            <li>Nhu cầu: Chia sẻ game, file.</li>
+            <li>Không cần quản lý phức tạp.</li>
+          </ul>
+          <p>👉 <strong>Giải pháp:</strong> Peer-to-Peer.</p>
+          <p>✔ Dễ triển khai, ✔ Chi phí thấp.</p>
+        </div>
+        <div>
+          <h3>🌐 Case 2: Công ty 100 nhân viên</h3>
+          <ul>
+            <li>Server lưu file, quản lý nhân sự, email nội bộ.</li>
+            <li>Cần phân quyền, sao lưu dữ liệu.</li>
+          </ul>
+          <p>👉 <strong>Giải pháp:</strong> Client-Server.</p>
+          <p>✔ Bảo mật, ✔ Quản lý tập trung, ✔ Dễ mở rộng.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="practice" class="practice">
+      <p class="section-heading">Thực hành</p>
+      <h2>Tổng kết &amp; bài tập thực hành</h2>
+      <h3>5.1. Tổng kết kiến thức</h3>
+      <ul>
+        <li><strong>Client-Server:</strong> Có máy chủ trung tâm, phù hợp hệ thống lớn, chuyên nghiệp.</li>
+        <li><strong>Peer-to-Peer:</strong> Không có máy chủ, phù hợp mạng nhỏ, đơn giản.</li>
+      </ul>
+      <p>👉 Lựa chọn kiến trúc đúng giúp hệ thống ổn định, tiết kiệm chi phí, dễ quản lý và mở rộng.</p>
+      <div class="callout">
+        <strong>5.2. Bài tập về nhà:</strong>
+        <p>Hãy phân tích hệ thống mạng tại nhà hoặc nơi làm việc của bạn:</p>
+        <ol>
+          <li>Đang sử dụng kiến trúc nào? (Client-Server hay P2P)</li>
+          <li>Thiết bị nào đóng vai trò Server?</li>
+          <li>Nếu số người dùng tăng gấp đôi, bạn có cần đổi kiến trúc không? Vì sao?</li>
+        </ol>
+        <p>📌 Trình bày ngắn gọn 6–8 dòng.</p>
+      </div>
+    </section>
+
+    <div class="footer-cta">
+      <a href="../index.html">← Về trang chủ</a>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bài 17: Các giao thức định tuyến phổ biến (RIP, OSPF, BGP).</title>
+  <style>
+    :root {
+      --primary: #0057ff;
+      --primary-dark: #0039a8;
+      --accent: #ffb703;
+      --ink: #1f2532;
+      --muted: #5b6476;
+      --surface: #ffffff;
+      --surface-alt: #f2f4ff;
+      --border: rgba(15, 63, 167, 0.1);
+      --radius: 24px;
+      --shadow: 0 20px 60px rgba(15, 87, 255, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top, rgba(169, 200, 255, 0.4), transparent 55%),
+        #eef2ff;
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    header.hero {
+      background: linear-gradient(120deg, var(--primary), #7357ff);
+      border-radius: var(--radius);
+      padding: 3.5rem clamp(2rem, 4vw, 4.5rem);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.35), transparent 45%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero h1 {
+      margin: 0 0 1rem;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 580px;
+      font-size: 1.05rem;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 2rem;
+    }
+
+    .hero-actions a {
+      text-decoration: none;
+      padding: 0.85rem 1.8rem;
+      border-radius: 999px;
+      font-weight: 600;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .hero-actions a.primary {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.18);
+    }
+
+    .hero-actions a.secondary {
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: #fff;
+      backdrop-filter: blur(6px);
+    }
+
+    .hero-actions a:hover {
+      transform: translateY(-3px);
+    }
+
+    .stat-grid {
+      margin-top: 2.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 1rem 1.25rem;
+      text-align: left;
+      backdrop-filter: blur(4px);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .stat strong {
+      font-size: 1.25rem;
+      display: block;
+    }
+
+    section {
+      margin-top: 2.5rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 2.25rem clamp(1.5rem, 4vw, 3rem);
+      box-shadow: 0 10px 35px rgba(38, 44, 82, 0.08);
+      border: 1px solid var(--border);
+    }
+
+    .section-heading {
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.25em;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    h2 {
+      margin: 0 0 1.5rem;
+      font-size: clamp(1.7rem, 3vw, 2.2rem);
+      color: var(--ink);
+    }
+
+    h3 {
+      margin: 0 0 0.8rem;
+      color: var(--primary-dark);
+    }
+
+    .goal-grid,
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .goal,
+    .card {
+      background: var(--surface-alt);
+      border-radius: 18px;
+      padding: 1.25rem 1.35rem;
+      border: 1px solid rgba(15, 63, 167, 0.12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .goal span,
+    .card span.badge {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .goal p,
+    .card p {
+      margin: 0.6rem 0 0;
+    }
+
+    .highlight-card {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      border-radius: 20px;
+      background: linear-gradient(120deg, rgba(0, 87, 255, 0.1), rgba(255, 183, 3, 0.18));
+      border: 1px dashed rgba(0, 87, 255, 0.3);
+    }
+
+    blockquote {
+      margin: 1rem 0 0;
+      padding-left: 1.5rem;
+      border-left: 3px solid var(--primary);
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .component-grid {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .component-card {
+      padding: 1.5rem;
+      border-radius: 20px;
+      border: 1px solid rgba(0, 87, 255, 0.15);
+      background: linear-gradient(180deg, rgba(0, 87, 255, 0.05), #fff 45%);
+    }
+
+    ul,
+    ol {
+      margin: 0.35rem 0 0 1.25rem;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 0.35rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.75rem;
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    th,
+    td {
+      padding: 0.75rem 0.9rem;
+      text-align: left;
+      font-size: 0.95rem;
+    }
+
+    th {
+      background: var(--surface-alt);
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    tr + tr td {
+      border-top: 1px solid rgba(15, 63, 167, 0.1);
+    }
+
+    .table-block {
+      margin-top: 1.5rem;
+    }
+
+    .case-study {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .practice ol {
+      margin: 0.75rem 0 0 1.25rem;
+    }
+
+    .callout {
+      margin-top: 1.25rem;
+      padding: 1.35rem 1.5rem;
+      border-radius: 18px;
+      background: rgba(255, 183, 3, 0.12);
+      border: 1px solid rgba(255, 183, 3, 0.3);
+    }
+
+    .footer-cta {
+      text-align: center;
+      margin-top: 3rem;
+    }
+
+    .footer-cta a {
+      text-decoration: none;
+      color: #fff;
+      background: var(--primary);
+      padding: 0.9rem 2rem;
+      border-radius: 999px;
+      display: inline-flex;
+      gap: 0.35rem;
+      font-weight: 600;
+      box-shadow: 0 18px 40px rgba(0, 87, 255, 0.25);
+    }
+
+    @media (max-width: 640px) {
+      header.hero {
+        padding: 2.5rem 1.75rem;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      section {
+        padding: 1.75rem 1.35rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <div class="hero-content">
+        <p class="section-heading" style="color: rgba(255,255,255,0.7); letter-spacing: 0.4em;">Bài học 17</p>
+        <h1>Các giao thức định tuyến phổ biến (RIP, OSPF, BGP)</h1>
+        <p>
+          Bài học giúp bạn hiểu routing protocol là gì, cách phân biệt RIP, OSPF và BGP, phạm vi sử dụng
+          và vì sao chúng là nền tảng của mạng doanh nghiệp lẫn Internet toàn cầu.
+        </p>
+        <div class="hero-actions">
+          <a href="#content" class="primary">Bắt đầu học</a>
+          <a href="#practice" class="secondary">Làm bài tập</a>
+        </div>
+        <div class="stat-grid">
+          <div class="stat">
+            <strong>3 giao thức</strong>
+            RIP · OSPF · BGP
+          </div>
+          <div class="stat">
+            <strong>2 nhóm</strong>
+            IGP &amp; EGP
+          </div>
+          <div class="stat">
+            <strong>1 bảng</strong>
+            So sánh tổng hợp
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section>
+      <p class="section-heading">Mục tiêu</p>
+      <h2>Kết quả học tập mong đợi</h2>
+      <div class="goal-grid">
+        <div class="goal">
+          <span>🎯 Mục tiêu 01</span>
+          <p>Hiểu giao thức định tuyến (Routing Protocol) là gì.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 02</span>
+          <p>Phân biệt được RIP, OSPF và BGP.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 03</span>
+          <p>Biết phạm vi sử dụng của từng giao thức.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 04</span>
+          <p>Hiểu vì sao doanh nghiệp dùng OSPF, Internet dùng BGP.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 05</span>
+          <p>Chuẩn bị nền tảng cho cấu hình routing thực tế.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Đặt vấn đề</p>
+      <h2>Làm sao router tự cập nhật đường đi tốt nhất?</h2>
+      <p>Một mạng có nhiều router và nhiều đường đi khác nhau:</p>
+      <ul>
+        <li>Bị đứt</li>
+        <li>Bị nghẽn</li>
+        <li>Bị chậm</li>
+      </ul>
+      <div class="highlight-card">
+        <strong>Câu hỏi:</strong>
+        <blockquote>Làm sao router tự động cập nhật đường đi tốt nhất mà không cần con người cấu hình lại từng route?</blockquote>
+        <p>Câu trả lời là <strong>Routing Protocols (Giao thức định tuyến)</strong>.</p>
+      </div>
+    </section>
+
+    <section id="content">
+      <p class="section-heading">Khái niệm</p>
+      <h2>Routing Protocol là gì?</h2>
+      <div class="card-grid">
+        <div class="card">
+          <span class="badge">📖 Định nghĩa</span>
+          <p><strong>Routing Protocol</strong> là tập hợp quy tắc giúp router:</p>
+          <ul>
+            <li>Trao đổi thông tin mạng</li>
+            <li>Học các tuyến đường mới</li>
+            <li>Cập nhật routing table tự động</li>
+          </ul>
+        </div>
+        <div class="card">
+          <span class="badge">🔁 Routing vs Protocol</span>
+          <ul>
+            <li>Routing: quá trình chuyển gói tin.</li>
+            <li>Routing Protocol: cách router học đường.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <span class="badge">🧭 Phân loại</span>
+          <table>
+            <thead>
+              <tr>
+                <th>Nhóm</th>
+                <th>Phạm vi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>IGP (Interior Gateway Protocol)</td>
+                <td>Trong một hệ thống</td>
+              </tr>
+              <tr>
+                <td>EGP (Exterior Gateway Protocol)</td>
+                <td>Giữa các hệ thống</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>📌 RIP, OSPF → IGP · BGP → EGP</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Nguyên lý</p>
+      <h2>Đặc điểm chính của RIP, OSPF và BGP</h2>
+      <div class="component-grid">
+        <div class="component-card">
+          <h3>a. RIP – Routing Information Protocol</h3>
+          <p><strong>Đặc điểm chính:</strong></p>
+          <ul>
+            <li>Dựa trên Hop Count</li>
+            <li>Tối đa 15 hop</li>
+            <li>Gửi bảng định tuyến định kỳ</li>
+          </ul>
+          <p>📌 Nếu hop &gt; 15 → không dùng được.</p>
+          <div class="table-block">
+            <table>
+              <thead>
+                <tr>
+                  <th>Ưu điểm</th>
+                  <th>Nhược điểm</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Dễ hiểu</td>
+                  <td>Chậm</td>
+                </tr>
+                <tr>
+                  <td>Dễ cấu hình</td>
+                  <td>Không mở rộng</td>
+                </tr>
+                <tr>
+                  <td>Phù hợp học tập</td>
+                  <td>Lỗi thời</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p>📌 Phù hợp: mạng rất nhỏ, lab.</p>
+        </div>
+        <div class="component-card">
+          <h3>b. OSPF – Open Shortest Path First</h3>
+          <p><strong>Đặc điểm chính:</strong></p>
+          <ul>
+            <li>Dựa trên Cost (băng thông)</li>
+            <li>Thuật toán Dijkstra</li>
+            <li>Chia mạng thành Area</li>
+            <li>Cập nhật khi có thay đổi</li>
+          </ul>
+          <p>📌 Router có bản đồ toàn mạng.</p>
+          <div class="table-block">
+            <table>
+              <thead>
+                <tr>
+                  <th>Ưu điểm</th>
+                  <th>Nhược điểm</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Nhanh</td>
+                  <td>Phức tạp</td>
+                </tr>
+                <tr>
+                  <td>Mở rộng tốt</td>
+                  <td>Cần kiến thức</td>
+                </tr>
+                <tr>
+                  <td>Chuẩn doanh nghiệp</td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p>📌 Phù hợp: mạng doanh nghiệp, campus network.</p>
+        </div>
+        <div class="component-card">
+          <h3>c. BGP – Border Gateway Protocol</h3>
+          <p><strong>Đặc điểm chính:</strong></p>
+          <ul>
+            <li>Định tuyến giữa các Autonomous System (AS)</li>
+            <li>Dựa trên Policy, không phải tốc độ</li>
+            <li>Dùng cho Internet</li>
+          </ul>
+          <blockquote>“Dữ liệu đi qua ai, không phải đi nhanh nhất”</blockquote>
+          <div class="table-block">
+            <table>
+              <thead>
+                <tr>
+                  <th>Ưu điểm</th>
+                  <th>Nhược điểm</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Rất linh hoạt</td>
+                  <td>Rất phức tạp</td>
+                </tr>
+                <tr>
+                  <td>Internet backbone</td>
+                  <td>Cấu hình khó</td>
+                </tr>
+                <tr>
+                  <td>Kiểm soát cao</td>
+                  <td></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p>📌 Phù hợp: ISP, Data Center, Internet backbone.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Thông số</p>
+      <h2>So sánh tổng hợp RIP – OSPF – BGP</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Tiêu chí</th>
+            <th>RIP</th>
+            <th>OSPF</th>
+            <th>BGP</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Loại</td>
+            <td>IGP</td>
+            <td>IGP</td>
+            <td>EGP</td>
+          </tr>
+          <tr>
+            <td>Metric</td>
+            <td>Hop Count</td>
+            <td>Cost</td>
+            <td>Policy</td>
+          </tr>
+          <tr>
+            <td>Tốc độ hội tụ</td>
+            <td>Chậm</td>
+            <td>Nhanh</td>
+            <td>Chậm</td>
+          </tr>
+          <tr>
+            <td>Quy mô</td>
+            <td>Nhỏ</td>
+            <td>Trung bình–Lớn</td>
+            <td>Rất lớn</td>
+          </tr>
+          <tr>
+            <td>Mức độ</td>
+            <td>Cơ bản</td>
+            <td>Trung cấp</td>
+            <td>Nâng cao</td>
+          </tr>
+          <tr>
+            <td>Thực tế</td>
+            <td>Hiếm</td>
+            <td>Phổ biến</td>
+            <td>Bắt buộc</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <p class="section-heading">Ví dụ</p>
+      <h2>Case study: chọn giao thức phù hợp</h2>
+      <div class="case-study">
+        <div>
+          <h3>Case 1: Mạng phòng lab / lớp học</h3>
+          <ul>
+            <li>3–4 router</li>
+            <li>Mục tiêu: học nguyên lý</li>
+            <li>RIP</li>
+            <li>Dễ hiểu, dễ cấu hình</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Case 2: Mạng doanh nghiệp</h3>
+          <ul>
+            <li>Nhiều chi nhánh</li>
+            <li>Yêu cầu ổn định, nhanh</li>
+            <li>OSPF</li>
+            <li>Hội tụ nhanh, chia Area dễ quản lý</li>
+          </ul>
+        </div>
+        <div class="callout">
+          <h3>Case 3: ISP kết nối Internet</h3>
+          <ul>
+            <li>Kết nối nhiều nhà mạng</li>
+            <li>Điều khiển luồng Internet</li>
+            <li>BGP</li>
+            <li>Tiêu chuẩn toàn cầu, không thể thay thế</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="practice" class="practice">
+      <p class="section-heading">Thực hành</p>
+      <h2>Tổng kết &amp; bài tập</h2>
+      <p><strong>Tổng kết kiến thức:</strong></p>
+      <ul>
+        <li>Routing Protocol giúp router tự học đường đi.</li>
+        <li>RIP: đơn giản, lỗi thời.</li>
+        <li>OSPF: chuẩn doanh nghiệp.</li>
+        <li>BGP: xương sống Internet.</li>
+      </ul>
+      <p><strong>Không có BGP → không có Internet toàn cầu.</strong></p>
+      <div class="callout">
+        <strong>Bài tập về nhà:</strong>
+        <p>Với từng hệ thống sau, hãy chọn giao thức phù hợp và giải thích:</p>
+        <ol>
+          <li>Mạng gia đình mở rộng nhiều tầng</li>
+          <li>Mạng doanh nghiệp có 5 chi nhánh</li>
+          <li>Mạng của nhà cung cấp Internet (ISP)</li>
+        </ol>
+        <p>📌 Mỗi câu trả lời 2–3 dòng.</p>
+      </div>
+    </section>
+
+    <div class="footer-cta">
+      <a href="../index.html">← Về trang chủ</a>
+    </div>
+  </main>
+</body>
+</html>

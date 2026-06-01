@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bài 6: So sánh chi tiết OSI và TCP/IP</title>
+  <style>
+    :root {
+      --primary: #0057ff;
+      --primary-dark: #0039a8;
+      --accent: #ffb703;
+      --ink: #1f2532;
+      --muted: #5b6476;
+      --surface: #ffffff;
+      --surface-alt: #f2f4ff;
+      --border: rgba(15, 63, 167, 0.1);
+      --radius: 24px;
+      --shadow: 0 20px 60px rgba(15, 87, 255, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top, rgba(169, 200, 255, 0.4), transparent 55%),
+        #eef2ff;
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    header.hero {
+      background: linear-gradient(120deg, var(--primary), #7357ff);
+      border-radius: var(--radius);
+      padding: 3.5rem clamp(2rem, 4vw, 4.5rem);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.35), transparent 45%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero h1 {
+      margin: 0 0 1rem;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 640px;
+      font-size: 1.05rem;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 2rem;
+    }
+
+    .hero-actions a {
+      text-decoration: none;
+      padding: 0.85rem 1.8rem;
+      border-radius: 999px;
+      font-weight: 600;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .hero-actions a.primary {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.18);
+    }
+
+    .hero-actions a.secondary {
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: #fff;
+      backdrop-filter: blur(6px);
+    }
+
+    .hero-actions a:hover {
+      transform: translateY(-3px);
+    }
+
+    .stat-grid {
+      margin-top: 2.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 1rem 1.25rem;
+      text-align: left;
+      backdrop-filter: blur(4px);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .stat strong {
+      font-size: 1.25rem;
+      display: block;
+    }
+
+    section {
+      margin-top: 2.5rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 2.25rem clamp(1.5rem, 4vw, 3rem);
+      box-shadow: 0 10px 35px rgba(38, 44, 82, 0.08);
+      border: 1px solid var(--border);
+    }
+
+    .section-heading {
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.25em;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    h2 {
+      margin: 0 0 1.5rem;
+      font-size: clamp(1.7rem, 3vw, 2.2rem);
+      color: var(--ink);
+    }
+
+    h3 {
+      margin: 0 0 0.4rem;
+      font-size: 1rem;
+      color: var(--primary-dark);
+    }
+
+    .goal-grid,
+    .card-grid,
+    .mapping-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .goal,
+    .card,
+    .mapping-card {
+      background: var(--surface-alt);
+      border-radius: 18px;
+      padding: 1.25rem 1.35rem;
+      border: 1px solid rgba(15, 63, 167, 0.12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .goal span,
+    .card span.badge,
+    .mapping-card span.badge {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .goal p,
+    .card p,
+    .mapping-card p {
+      margin: 0.6rem 0 0;
+    }
+
+    .highlight-card {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      border-radius: 20px;
+      background: linear-gradient(120deg, rgba(0, 87, 255, 0.1), rgba(255, 183, 3, 0.18));
+      border: 1px dashed rgba(0, 87, 255, 0.3);
+    }
+
+    blockquote {
+      margin: 1rem 0 0;
+      padding-left: 1.5rem;
+      border-left: 3px solid var(--primary);
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .case-study {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      align-items: center;
+    }
+
+    ul {
+      margin: 0.35rem 0 0 1.25rem;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 0.35rem;
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(15, 63, 167, 0.12);
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      text-align: left;
+      padding: 0.9rem 1rem;
+      border-bottom: 1px solid rgba(15, 63, 167, 0.12);
+    }
+
+    .comparison-table th {
+      background: rgba(0, 87, 255, 0.08);
+      color: var(--primary-dark);
+      font-weight: 600;
+    }
+
+    .comparison-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .practice ol {
+      margin: 0.75rem 0 0 1.25rem;
+    }
+
+    .callout {
+      margin-top: 1.25rem;
+      padding: 1.35rem 1.5rem;
+      border-radius: 18px;
+      background: rgba(255, 183, 3, 0.12);
+      border: 1px solid rgba(255, 183, 3, 0.3);
+    }
+
+    .footer-cta {
+      text-align: center;
+      margin-top: 3rem;
+    }
+
+    .footer-cta a {
+      text-decoration: none;
+      color: #fff;
+      background: var(--primary);
+      padding: 0.9rem 2rem;
+      border-radius: 999px;
+      display: inline-flex;
+      gap: 0.35rem;
+      font-weight: 600;
+      box-shadow: 0 18px 40px rgba(0, 87, 255, 0.25);
+    }
+
+    @media (max-width: 640px) {
+      header.hero {
+        padding: 2.5rem 1.75rem;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      section {
+        padding: 1.75rem 1.35rem;
+      }
+
+      .comparison-table {
+        font-size: 0.95rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <div class="hero-content">
+        <p class="section-heading" style="color: rgba(255,255,255,0.7); letter-spacing: 0.4em;">Bài học 06</p>
+        <h1>So sánh chi tiết OSI và TCP/IP</h1>
+        <p>
+          Bài học giúp bạn phân biệt rõ mô hình OSI và TCP/IP, hiểu lý do học OSI nhưng ứng dụng thực tế dựa trên TCP/IP, và biết cách ánh xạ giao thức vào đúng tầng.
+        </p>
+        <div class="hero-actions">
+          <a href="#mapping" class="primary">Xem so sánh</a>
+          <a href="#practice" class="secondary">Làm bài tập</a>
+        </div>
+        <div class="stat-grid">
+          <div class="stat">
+            <strong>OSI 7 tầng</strong>
+            Khung tham chiếu
+          </div>
+          <div class="stat">
+            <strong>TCP/IP 4 tầng</strong>
+            Chuẩn thực tế
+          </div>
+          <div class="stat">
+            <strong>Mapping</strong>
+            Ghép tầng rõ ràng
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section>
+      <p class="section-heading">Mục tiêu</p>
+      <h2>Kết quả học tập mong đợi</h2>
+      <div class="goal-grid">
+        <div class="goal">
+          <span>🎯 Mục tiêu 01</span>
+          <p><strong>Phân biệt rạch ròi:</strong> Hiểu vì sao học OSI (7 tầng) nhưng thực tế dùng TCP/IP (4 tầng).</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 02</span>
+          <p><strong>Ánh xạ giao thức:</strong> Đặt HTTP, TCP, IP đúng vị trí trong cả hai mô hình.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 03</span>
+          <p><strong>Tư duy hệ thống:</strong> Hiểu được tính kế thừa và sự tinh gọn trong thiết kế mạng hiện đại.</p>
+        </div>
+      </div>
+      <div class="highlight-card">
+        <strong>Đặt vấn đề:</strong>
+        <blockquote>
+          "Tại sao trong các giáo trình mạng máy tính, người ta dành rất nhiều thời gian nói về 7 tầng OSI, nhưng khi bạn cấu hình Router hay cài đặt phần mềm, bạn chỉ thấy các thông số liên quan đến TCP/IP?"
+        </blockquote>
+        <p>Thực tế, OSI giống như một <strong>bản vẽ kiến trúc</strong> chi tiết giúp các kỹ sư hiểu sâu về nguyên lý, còn TCP/IP giống như <strong>ngôi nhà đã xây xong</strong> để mọi người vào ở. Hiểu được sự khác biệt này sẽ giúp bạn không bị rối khi nghiên cứu sâu về quản trị mạng.</p>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Nền tảng</p>
+      <h2>Khái niệm &amp; nguồn gốc</h2>
+      <div class="card-grid">
+        <div class="card">
+          <span class="badge">📖 Mô hình OSI</span>
+          <p>Do tổ chức ISO phát triển, mang tính học thuật cao, dùng để định nghĩa tiêu chuẩn cho việc giao tiếp mạng.</p>
+        </div>
+        <div class="card">
+          <span class="badge">🌐 Mô hình TCP/IP</span>
+          <p>Do Bộ Quốc phòng Mỹ (DoD) phát triển, ra đời trước cả OSI và trở thành "ngôn ngữ" thực tế của Internet nhờ tính thực dụng.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="mapping">
+      <p class="section-heading">So sánh</p>
+      <h2>So sánh cấu trúc (Mapping)</h2>
+      <div class="mapping-grid">
+        <div class="mapping-card">
+          <span class="badge">Nhóm tầng ứng dụng</span>
+          <p>TCP/IP gộp 3 tầng cao nhất của OSI (Application, Presentation, Session) thành 1 tầng Application. Lý do: các chức năng này thường do bản thân ứng dụng phần mềm tự xử lý.</p>
+        </div>
+        <div class="mapping-card">
+          <span class="badge">Tầng giao vận</span>
+          <p>Giữ nguyên ở cả hai mô hình.</p>
+        </div>
+        <div class="mapping-card">
+          <span class="badge">Tầng mạng</span>
+          <p>OSI gọi là Network, TCP/IP gọi là Internet. Chức năng định tuyến và địa chỉ IP là như nhau.</p>
+        </div>
+        <div class="mapping-card">
+          <span class="badge">Nhóm tầng dưới</span>
+          <p>TCP/IP gộp tầng Data Link và Physical của OSI thành tầng Network Access. Lý do: phần cứng mạng (như Card mạng) thường đảm nhiệm cả việc tạo khung dữ liệu và truyền tín hiệu vật lý.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Thông số</p>
+      <h2>Các thông số kỹ thuật cần nhớ</h2>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Đặc điểm</th>
+            <th>Mô hình OSI</th>
+            <th>Mô hình TCP/IP</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Số tầng</td>
+            <td>7 tầng</td>
+            <td>4 tầng (hoặc 5 tầng theo giáo trình mới)</td>
+          </tr>
+          <tr>
+            <td>Tính chất</td>
+            <td>Tham chiếu / Lý thuyết</td>
+            <td>Thực dụng / Tiêu chuẩn thực tế</td>
+          </tr>
+          <tr>
+            <td>Giao thức</td>
+            <td>Phụ thuộc vào tiêu chuẩn tầng</td>
+            <td>Kết hợp chặt chẽ (Bộ giao thức TCP/IP)</td>
+          </tr>
+          <tr>
+            <td>Ưu điểm</td>
+            <td>Dễ dạy, dễ học, phân chia rõ ràng</td>
+            <td>Tinh gọn, ổn định, phổ biến toàn cầu</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <p class="section-heading">Ví dụ</p>
+      <h2>Ví dụ minh hoạ</h2>
+      <div class="case-study">
+        <div>
+          <p>Khi một lập trình viên viết ứng dụng gửi tin nhắn:</p>
+          <ul>
+            <li>Trong <strong>mô hình OSI</strong>, lập trình viên phải lo về cách mã hóa dữ liệu (Tầng 6) và quản lý phiên (Tầng 5).</li>
+            <li>Trong <strong>mô hình TCP/IP</strong>, lập trình viên chỉ cần gọi các hàm ở tầng Application, các việc còn lại đã có bộ thư viện chuẩn của hệ điều hành lo liệu.</li>
+          </ul>
+        </div>
+        <div class="callout">
+          <strong>Gợi ý:</strong>
+          <p>TCP/IP tinh gọn hơn, nhưng OSI giúp giải thích rõ các vai trò và hiện tượng trong quá trình truyền dữ liệu.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="practice" class="practice">
+      <p class="section-heading">Thực hành</p>
+      <h2>Tổng kết &amp; bài tập thực hành</h2>
+      <ol>
+        <li>Vẽ một sơ đồ so sánh 2 mô hình lên giấy. Sau đó, hãy dùng bút màu khác để điền các giao thức: <strong>HTTP, TCP, IP, Ethernet</strong>.</li>
+        <li>Sử dụng công cụ <strong>Wireshark</strong> (nếu có điều kiện) để bắt một gói tin Web và quan sát xem nó được hiển thị theo cấu trúc của OSI hay TCP/IP.</li>
+      </ol>
+    </section>
+
+    <div class="footer-cta">
+      <a href="../index.html">← Về trang chủ</a>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bài 31: Xu hướng tương lai: IoT và Mạng 5G/6G</title>
+  <style>
+    :root {
+      --primary: #0057ff;
+      --primary-dark: #0039a8;
+      --accent: #ffb703;
+      --ink: #1f2532;
+      --muted: #5b6476;
+      --surface: #ffffff;
+      --surface-alt: #f2f4ff;
+      --border: rgba(15, 63, 167, 0.1);
+      --radius: 24px;
+      --shadow: 0 20px 60px rgba(15, 87, 255, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top, rgba(169, 200, 255, 0.4), transparent 55%),
+        #eef2ff;
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    header.hero {
+      background: linear-gradient(120deg, var(--primary), #7357ff);
+      border-radius: var(--radius);
+      padding: 3.5rem clamp(2rem, 4vw, 4.5rem);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.35), transparent 45%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero h1 {
+      margin: 0 0 1rem;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 640px;
+      font-size: 1.05rem;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 2rem;
+    }
+
+    .hero-actions a {
+      text-decoration: none;
+      padding: 0.85rem 1.8rem;
+      border-radius: 999px;
+      font-weight: 600;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .hero-actions a.primary {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.18);
+    }
+
+    .hero-actions a.secondary {
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: #fff;
+      backdrop-filter: blur(6px);
+    }
+
+    .hero-actions a:hover {
+      transform: translateY(-3px);
+    }
+
+    .stat-grid {
+      margin-top: 2.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 1rem 1.25rem;
+      text-align: left;
+      backdrop-filter: blur(4px);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .stat strong {
+      font-size: 1.25rem;
+      display: block;
+    }
+
+    section {
+      margin-top: 2.5rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 2.25rem clamp(1.5rem, 4vw, 3rem);
+      box-shadow: 0 10px 35px rgba(38, 44, 82, 0.08);
+      border: 1px solid var(--border);
+    }
+
+    .section-heading {
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.25em;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    h2 {
+      margin: 0 0 1.5rem;
+      font-size: clamp(1.7rem, 3vw, 2.2rem);
+      color: var(--ink);
+    }
+
+    .goal-grid,
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .goal,
+    .card {
+      background: var(--surface-alt);
+      border-radius: 18px;
+      padding: 1.25rem 1.35rem;
+      border: 1px solid rgba(15, 63, 167, 0.12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .goal span,
+    .card span.badge {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .goal p,
+    .card p {
+      margin: 0.6rem 0 0;
+    }
+
+    .highlight-card {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      border-radius: 20px;
+      background: linear-gradient(120deg, rgba(0, 87, 255, 0.1), rgba(255, 183, 3, 0.18));
+      border: 1px dashed rgba(0, 87, 255, 0.3);
+    }
+
+    blockquote {
+      margin: 1rem 0 0;
+      padding-left: 1.5rem;
+      border-left: 3px solid var(--primary);
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    ul {
+      padding-left: 1.2rem;
+      margin: 0;
+    }
+
+    li {
+      margin-bottom: 0.5rem;
+    }
+
+    footer {
+      margin-top: 2.5rem;
+      background: linear-gradient(120deg, #0f172a, #1e293b);
+      color: #f8fafc;
+      border-radius: var(--radius);
+      padding: 2.5rem clamp(1.5rem, 4vw, 3rem);
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .footer-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .footer-actions a {
+      text-decoration: none;
+      padding: 0.85rem 1.6rem;
+      border-radius: 999px;
+      font-weight: 600;
+      background: #fff;
+      color: #0f172a;
+    }
+
+    @media (max-width: 720px) {
+      header.hero {
+        padding: 2.5rem 1.75rem;
+      }
+
+      section {
+        padding: 2rem 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <div class="hero-content">
+        <h1>Bài 31: Xu hướng tương lai: IoT và Mạng 5G/6G</h1>
+        <p>Khám phá cách Internet of Things và mạng 5G/6G kết hợp để tạo nên hạ tầng số kết nối hàng tỷ thiết bị, mở ra thế hệ dịch vụ thời gian thực và thông minh.</p>
+        <div class="hero-actions">
+          <a class="primary" href="#objectives">Mục tiêu bài học</a>
+          <a class="secondary" href="#practice">Bài tập thực hành</a>
+        </div>
+      </div>
+      <div class="stat-grid">
+        <div class="stat"><strong>IoT</strong>Hệ sinh thái kết nối thiết bị</div>
+        <div class="stat"><strong>5G/6G</strong>Độ trễ siêu thấp, băng thông lớn</div>
+        <div class="stat"><strong>Dữ liệu</strong>Nhiên liệu cho AI & tự động hóa</div>
+      </div>
+    </header>
+
+    <section id="objectives">
+      <div class="section-heading">Mục tiêu</div>
+      <h2>Hiểu vai trò của IoT và 5G/6G trong mạng tương lai</h2>
+      <div class="goal-grid">
+        <div class="goal">
+          <span>Khái niệm</span>
+          <p>Nắm được IoT, 5G/6G và các tầng kết nối tạo thành hệ sinh thái.</p>
+        </div>
+        <div class="goal">
+          <span>Kỹ thuật</span>
+          <p>Biết các đặc trưng kỹ thuật: độ trễ, băng thông, slicing, edge.</p>
+        </div>
+        <div class="goal">
+          <span>Ứng dụng</span>
+          <p>Liên hệ các kịch bản thông minh trong đời sống và sản xuất.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-heading">Tổng quan IoT</div>
+      <h2>Internet of Things là gì?</h2>
+      <div class="card-grid">
+        <div class="card">
+          <span class="badge">Thiết bị</span>
+          <p>Cảm biến, camera, máy móc, thiết bị đeo thu thập dữ liệu liên tục.</p>
+        </div>
+        <div class="card">
+          <span class="badge">Kết nối</span>
+          <p>Wi-Fi, NB-IoT, LPWAN, 5G đưa dữ liệu từ hiện trường lên nền tảng.</p>
+        </div>
+        <div class="card">
+          <span class="badge">Nền tảng</span>
+          <p>Gateway, cloud, edge xử lý, lưu trữ và cung cấp API cho ứng dụng.</p>
+        </div>
+      </div>
+      <div class="highlight-card">
+        <strong>Ghi nhớ:</strong> IoT không chỉ là thiết bị, mà là toàn bộ chuỗi thu thập dữ liệu, truyền tải, phân tích và hành động.
+      </div>
+    </section>
+
+    <section>
+      <div class="section-heading">5G/6G</div>
+      <h2>Vì sao 5G/6G là chất xúc tác cho IoT?</h2>
+      <div class="card-grid">
+        <div class="card">
+          <span class="badge">Độ trễ thấp</span>
+          <p>Cho phép điều khiển thời gian thực: xe tự hành, robot y tế, VR/AR.</p>
+        </div>
+        <div class="card">
+          <span class="badge">Băng thông cao</span>
+          <p>Truyền video 4K/8K, dữ liệu cảm biến dày đặc và AI streaming.</p>
+        </div>
+        <div class="card">
+          <span class="badge">Network Slicing</span>
+          <p>Tạo mạng ảo riêng cho từng dịch vụ: nhà máy, giao thông, y tế.</p>
+        </div>
+        <div class="card">
+          <span class="badge">Edge Computing</span>
+          <p>Xử lý gần nguồn dữ liệu, giảm tải cloud và tăng tốc phản hồi.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-heading">Quy trình</div>
+      <h2>Luồng dữ liệu IoT điển hình</h2>
+      <ul>
+        <li>Thiết bị cảm biến thu thập dữ liệu tại hiện trường.</li>
+        <li>Gateway hoặc edge node tiền xử lý và lọc dữ liệu quan trọng.</li>
+        <li>Mạng 5G/6G truyền dữ liệu lên nền tảng cloud hoặc trung tâm điều khiển.</li>
+        <li>AI/Analytics phân tích và đưa ra hành động (cảnh báo, tự động hóa).</li>
+        <li>Ứng dụng hiển thị dashboard, báo cáo và điều khiển thiết bị.</li>
+      </ul>
+    </section>
+
+    <section>
+      <div class="section-heading">Đặc trưng</div>
+      <h2>IoT + 5G/6G tạo nên hệ thống thông minh</h2>
+      <div class="card-grid">
+        <div class="card">
+          <span class="badge">Kết nối dày đặc</span>
+          <p>Hàng triệu thiết bị/km² hoạt động đồng thời và ổn định.</p>
+        </div>
+        <div class="card">
+          <span class="badge">Tự động hóa</span>
+          <p>Thiết bị tự học và phản ứng dựa trên dữ liệu thời gian thực.</p>
+        </div>
+        <div class="card">
+          <span class="badge">An toàn dữ liệu</span>
+          <p>Mã hóa, xác thực thiết bị, phân quyền truy cập trong toàn chuỗi.</p>
+        </div>
+      </div>
+      <div class="highlight-card">
+        <strong>Tình huống:</strong> Thành phố thông minh dùng cảm biến giao thông + 5G để tối ưu đèn tín hiệu theo thời gian thực, giảm ùn tắc và tai nạn.
+      </div>
+    </section>
+
+    <section id="practice">
+      <div class="section-heading">Thực hành</div>
+      <h2>Bài tập củng cố</h2>
+      <ul>
+        <li>Vẽ sơ đồ 5 tầng của hệ thống IoT trong nhà máy thông minh.</li>
+        <li>So sánh 4G và 5G theo 3 tiêu chí: tốc độ, độ trễ, số lượng thiết bị.</li>
+        <li>Chọn một ứng dụng (y tế, giao thông, nông nghiệp) và mô tả vai trò của 5G.</li>
+        <li>Liệt kê rủi ro bảo mật IoT và đề xuất 3 biện pháp giảm thiểu.</li>
+      </ul>
+      <blockquote>Gợi ý: Khi thiết kế IoT, ưu tiên tính an toàn và khả năng mở rộng ngay từ đầu.</blockquote>
+    </section>
+
+    <footer>
+      <div>
+        <h2>Hoàn thành bài 31!</h2>
+        <p>Tiếp tục cập nhật kiến thức mạng thế hệ mới và chuẩn bị cho các bài học tổng kết.</p>
+      </div>
+      <div class="footer-actions">
+        <a href="../index.html">Quay lại trang chính</a>
+      </div>
+    </footer>
+  </main>
+</body>
+</html>
