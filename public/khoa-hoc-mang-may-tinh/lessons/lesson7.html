@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bài 7: Các loại phương tiện truyền dẫn</title>
+  <style>
+    :root {
+      --primary: #0057ff;
+      --primary-dark: #0039a8;
+      --accent: #ffb703;
+      --ink: #1f2532;
+      --muted: #5b6476;
+      --surface: #ffffff;
+      --surface-alt: #f2f4ff;
+      --border: rgba(15, 63, 167, 0.1);
+      --radius: 24px;
+      --shadow: 0 20px 60px rgba(15, 87, 255, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top, rgba(169, 200, 255, 0.4), transparent 55%),
+        #eef2ff;
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    header.hero {
+      background: linear-gradient(120deg, var(--primary), #7357ff);
+      border-radius: var(--radius);
+      padding: 3.5rem clamp(2rem, 4vw, 4.5rem);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.35), transparent 45%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero h1 {
+      margin: 0 0 1rem;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 640px;
+      font-size: 1.05rem;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 2rem;
+    }
+
+    .hero-actions a {
+      text-decoration: none;
+      padding: 0.85rem 1.8rem;
+      border-radius: 999px;
+      font-weight: 600;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .hero-actions a.primary {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.18);
+    }
+
+    .hero-actions a.secondary {
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: #fff;
+      backdrop-filter: blur(6px);
+    }
+
+    .hero-actions a:hover {
+      transform: translateY(-3px);
+    }
+
+    .stat-grid {
+      margin-top: 2.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 1rem 1.25rem;
+      text-align: left;
+      backdrop-filter: blur(4px);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .stat strong {
+      font-size: 1.25rem;
+      display: block;
+    }
+
+    section {
+      margin-top: 2.5rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 2.25rem clamp(1.5rem, 4vw, 3rem);
+      box-shadow: 0 10px 35px rgba(38, 44, 82, 0.08);
+      border: 1px solid var(--border);
+    }
+
+    .section-heading {
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.25em;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    h2 {
+      margin: 0 0 1.5rem;
+      font-size: clamp(1.7rem, 3vw, 2.2rem);
+      color: var(--ink);
+    }
+
+    h3 {
+      margin: 0 0 0.4rem;
+      font-size: 1rem;
+      color: var(--primary-dark);
+    }
+
+    .goal-grid,
+    .card-grid,
+    .media-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .goal,
+    .card,
+    .media-card {
+      background: var(--surface-alt);
+      border-radius: 18px;
+      padding: 1.25rem 1.35rem;
+      border: 1px solid rgba(15, 63, 167, 0.12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .goal span,
+    .card span.badge,
+    .media-card span.badge {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .goal p,
+    .card p,
+    .media-card p {
+      margin: 0.6rem 0 0;
+    }
+
+    .highlight-card {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      border-radius: 20px;
+      background: linear-gradient(120deg, rgba(0, 87, 255, 0.1), rgba(255, 183, 3, 0.18));
+      border: 1px dashed rgba(0, 87, 255, 0.3);
+    }
+
+    blockquote {
+      margin: 1rem 0 0;
+      padding-left: 1.5rem;
+      border-left: 3px solid var(--primary);
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    ul {
+      margin: 0.35rem 0 0 1.25rem;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 0.35rem;
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(15, 63, 167, 0.12);
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      text-align: left;
+      padding: 0.9rem 1rem;
+      border-bottom: 1px solid rgba(15, 63, 167, 0.12);
+    }
+
+    .comparison-table th {
+      background: rgba(0, 87, 255, 0.08);
+      color: var(--primary-dark);
+      font-weight: 600;
+    }
+
+    .comparison-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .practice ol {
+      margin: 0.75rem 0 0 1.25rem;
+    }
+
+    .callout {
+      margin-top: 1.25rem;
+      padding: 1.35rem 1.5rem;
+      border-radius: 18px;
+      background: rgba(255, 183, 3, 0.12);
+      border: 1px solid rgba(255, 183, 3, 0.3);
+    }
+
+    .footer-cta {
+      text-align: center;
+      margin-top: 3rem;
+    }
+
+    .footer-cta a {
+      text-decoration: none;
+      color: #fff;
+      background: var(--primary);
+      padding: 0.9rem 2rem;
+      border-radius: 999px;
+      display: inline-flex;
+      gap: 0.35rem;
+      font-weight: 600;
+      box-shadow: 0 18px 40px rgba(0, 87, 255, 0.25);
+    }
+
+    @media (max-width: 640px) {
+      header.hero {
+        padding: 2.5rem 1.75rem;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      section {
+        padding: 1.75rem 1.35rem;
+      }
+
+      .comparison-table {
+        font-size: 0.95rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <div class="hero-content">
+        <p class="section-heading" style="color: rgba(255,255,255,0.7); letter-spacing: 0.4em;">Bài học 07</p>
+        <h1>Các loại phương tiện truyền dẫn</h1>
+        <p>
+          Bài học giúp bạn hiểu sự khác nhau giữa cáp đồng, cáp quang và sóng vô tuyến, biết cách chọn phương tiện phù hợp và xử lý các vấn đề vật lý phổ biến.
+        </p>
+        <div class="hero-actions">
+          <a href="#content" class="primary">Xem nội dung</a>
+          <a href="#practice" class="secondary">Làm bài tập</a>
+        </div>
+        <div class="stat-grid">
+          <div class="stat">
+            <strong>3 loại chính</strong>
+            Cáp đồng, quang, sóng
+          </div>
+          <div class="stat">
+            <strong>100 m</strong>
+            LAN cáp đồng
+          </div>
+          <div class="stat">
+            <strong>Hàng chục km</strong>
+            Cáp quang
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section>
+      <p class="section-heading">Mục tiêu</p>
+      <h2>Kết quả học tập mong đợi</h2>
+      <div class="goal-grid">
+        <div class="goal">
+          <span>🎯 Mục tiêu 01</span>
+          <p><strong>Lựa chọn đúng loại cáp:</strong> Biết khi nào nên dùng cáp đồng, khi nào bắt buộc phải dùng cáp quang để tiết kiệm chi phí và tối ưu tốc độ.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 02</span>
+          <p><strong>Xử lý sự cố vật lý:</strong> Hiểu rõ đặc điểm của từng loại đường truyền để phán đoán lỗi (do nhiễu điện từ, đứt cáp hay vật cản sóng).</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 03</span>
+          <p><strong>Thiết kế hạ tầng cơ bản:</strong> Biết cách đọc các thông số kỹ thuật trên dây cáp để giám sát thi công mạng văn phòng/gia đình.</p>
+        </div>
+      </div>
+      <div class="highlight-card">
+        <strong>Đặt vấn đề:</strong>
+        <blockquote>
+          "Tại sao khi bạn chơi Game Online hoặc thực hiện cuộc gọi Video, đôi khi hình ảnh bị giật lag (delay) dù gói cước Internet của bạn rất cao? Tại sao dây mạng LAN trong nhà chỉ dài được tối đa 100m, trong khi cáp quang biển có thể truyền dữ liệu xuyên đại dương hàng ngàn km mà không mất tín hiệu?"
+        </blockquote>
+        <p>Câu trả lời nằm ở <strong>Phương tiện truyền dẫn</strong> – "con đường" mà các bit dữ liệu thực sự di chuyển.</p>
+      </div>
+    </section>
+
+    <section id="content">
+      <p class="section-heading">Nội dung</p>
+      <h2>Các loại phương tiện truyền dẫn</h2>
+      <div class="media-grid">
+        <div class="media-card">
+          <span class="badge">3.1. Cáp đồng xoắn đôi (Twisted Pair)</span>
+          <ul>
+            <li><strong>Khái niệm:</strong> Là loại dây gồm các cặp dây đồng xoắn lại với nhau để giảm nhiễu điện từ. Đây là loại cáp phổ biến nhất trong mạng LAN.</li>
+            <li><strong>Nguyên lý:</strong> Truyền dữ liệu bằng <strong>xung điện</strong>.</li>
+            <li><strong>Phân loại:</strong> <strong>UTP</strong> không có lớp bọc kim loại (dùng trong nhà, giá rẻ). <strong>STP/FTP</strong> có lớp bọc kim loại chống nhiễu (dùng trong môi trường công nghiệp).</li>
+          </ul>
+        </div>
+        <div class="media-card">
+          <span class="badge">3.2. Cáp quang (Fiber Optic)</span>
+          <ul>
+            <li><strong>Khái niệm:</strong> Là sợi thủy tinh cực tinh khiết, mỏng như sợi tóc.</li>
+            <li><strong>Nguyên lý:</strong> Truyền dữ liệu bằng <strong>xung ánh sáng</strong> dựa trên hiện tượng phản xạ toàn phần.</li>
+            <li><strong>Ưu điểm tuyệt đối:</strong> Không bị nhiễu điện từ, tốc độ cực cao, khoảng cách truyền đi xa hàng chục km.</li>
+          </ul>
+        </div>
+        <div class="media-card">
+          <span class="badge">3.3. Sóng vô tuyến (Wireless/Wi-Fi)</span>
+          <ul>
+            <li><strong>Khái niệm:</strong> Truyền dữ liệu qua không gian mà không cần dây dẫn vật lý.</li>
+            <li><strong>Nguyên lý:</strong> Sử dụng <strong>sóng điện từ</strong> ở các tần số khác nhau (2.4GHz, 5GHz).</li>
+            <li><strong>Đặc điểm:</strong> Linh hoạt nhưng dễ bị nhiễu bởi vật cản (tường, kim loại) và các thiết bị điện tử khác.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Thông số</p>
+      <h2>Các thông số kĩ thuật cần nhớ</h2>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Loại phương tiện</th>
+            <th>Tốc độ phổ biến</th>
+            <th>Khoảng cách tối đa</th>
+            <th>Đặc điểm nổi bật</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Cáp Cat5e/Cat6</td>
+            <td>100 Mbps - 10 Gbps</td>
+            <td>100 mét</td>
+            <td>Dễ bấm đầu, giá rẻ, dễ nhiễu.</td>
+          </tr>
+          <tr>
+            <td>Cáp quang Single-mode</td>
+            <td>&gt; 100 Gbps</td>
+            <td>Hàng chục km</td>
+            <td>Truyền xa, dùng cho trục chính.</td>
+          </tr>
+          <tr>
+            <td>Wi-Fi (802.11ac/ax)</td>
+            <td>433 Mbps - 10 Gbps</td>
+            <td>30 - 50 mét</td>
+            <td>Tiện lợi, phụ thuộc vật cản.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section id="practice" class="practice">
+      <p class="section-heading">Thực hành</p>
+      <h2>Tổng kết &amp; bài tập thực hành</h2>
+      <ol>
+        <li>Kiểm tra trên thân dây cáp mạng đang cắm vào máy tính/Router của bạn xem nó ghi là <strong>Cat5e</strong> hay <strong>Cat6</strong>.</li>
+        <li>Mở cửa sổ CMD (Windows + R -&gt; gõ <code>cmd</code>), gõ lệnh <code>ping google.com -t</code>. Sau đó thử rút dây mạng và chuyển sang dùng Wi-Fi để xem chỉ số <code>time (ms)</code> thay đổi như thế nào.</li>
+      </ol>
+    </section>
+
+    <div class="footer-cta">
+      <a href="../index.html">← Về trang chủ</a>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💻 Quy trình Kiểm tra Laptop </title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="lang-switcher">
+        <a href="index.html">EN</a>
+    </div>
+
+    <div class="container">
+        <header>
+            <img src="my_logo.jpeg" alt="DQ.TECH Logo" class="logo">
+            <h1>💻 Quy trình Kiểm tra Laptop </h1>
+            <p class="subtitle">Hướng dẫn chi tiết để xác minh tình trạng laptop cũ trước khi mua</p>
+        </header>
+
+        <div class="content">
+            <!-- Required Software Section -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h2>🧰 Phần mềm Cần thiết (Cài đặt trước khi kiểm tra)</h2>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="software-grid">
+                        <div class="software-item">
+                            <strong>🔎 CPU-Z (bắt buộc)</strong>
+                            Kiểm tra CPU, RAM, mainboard
+                        </div>
+                        <div class="software-item">
+                            <strong>💽 CrystalDiskInfo (bắt buộc)</strong>
+                            Kiểm tra sức khỏe ổ cứng SSD/HDD
+                        </div>
+                        <div class="software-item">
+                            <strong>🌡 HWMonitor (bắt buộc)</strong>
+                            Theo dõi nhiệt độ trực tiếp
+                        </div>
+                        <div class="software-item">
+                            <strong>🧪 Cinebench (bắt buộc)</strong>
+                            Kiểm tra hiệu năng/độ ổn định CPU nhanh
+                        </div>
+                        <div class="software-item">
+                            <strong>🔥 AIDA64 Trial (bắt buộc)</strong>
+                            Kiểm tra stress test CPU + RAM
+                        </div>
+                        <div class="software-item">
+                            <strong>🎮 GPU-Z (bắt buộc nếu có GPU rời)</strong>
+                            Kiểm tra và theo dõi thông số GPU
+                        </div>
+                        <div class="software-item">
+                            <strong>🪟 Công cụ Windows có sẵn</strong>
+                            <code>powercfg /batteryreport</code> và <code>mdsched.exe</code>
+                        </div>
+                        <div class="software-item">
+                            <strong>🔋 BatteryInfoView (tùy chọn)</strong>
+                            Thông tin chi tiết về pin
+                        </div>
+                        <div class="software-item">
+                            <strong>🧠 MemTest86 (tùy chọn)</strong>
+                            Kiểm tra RAM chuyên sâu
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BIOS Lock Check -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h2>1. 🔐 Kiểm tra khóa BIOS (Thực hiện đầu tiên)</h2>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <ol>
+                        <li>Bật máy và vào BIOS/UEFI (nhấn <code>F2</code>, <code>Del</code>, <code>Esc</code>, hoặc
+                            phím tắt theo hãng)</li>
+                        <li>Đảm bảo bạn có thể truy cập cài đặt BIOS mà không cần mật khẩu</li>
+                        <li>Kiểm tra xem có:
+                            <ul>
+                                <li>Khóa mật khẩu Admin/Supervisor</li>
+                                <li>Khóa thay đổi Secure boot bằng mật khẩu</li>
+                                <li>Khóa thứ tự khởi động (Boot order) bằng mật khẩu</li>
+                            </ul>
+                        </li>
+                    </ol>
+                    <div class="danger-box">
+                        <strong>⚠️ Cảnh báo:</strong> Nếu BIOS bị khóa và người bán không thể gỡ bỏ, đừng mua máy này.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Physical Checks -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h2>2. 👀 Kiểm tra Ngoại quan nhanh (Trước khi dùng phần mềm)</h2>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <ul class="checklist">
+                        <li><strong>🖥 Màn hình:</strong> Kiểm tra điểm chết, ám màu, và độ đều màu</li>
+                        <li><strong>⌨ Bàn phím:</strong> Thử từng phím một</li>
+                        <li><strong>🖱 Bàn di chuột (Trackpad):</strong> Kiểm tra chuột trái/phải và cử chỉ đa điểm</li>
+                        <li><strong>🔌 Cổng kết nối:</strong> Thử các cổng USB, cổng HDMI, và jack tai nghe</li>
+                        <li><strong>📶 Kết nối không dây:</strong> Kiểm tra Wi-Fi và Bluetooth</li>
+                        <li><strong>🎥 Camera & Âm thanh:</strong> Thử webcam và microphone</li>
+                        <li><strong>🌬 Tản nhiệt/Tiếng ồn:</strong> Lắng nghe tiếng quạt bất thường và kiểm tra xem máy
+                            có quá nóng khi dùng bình thường không</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Essential Software Tests -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h2>3. 🧪 Các bài kiểm tra Phần mềm Thiết yếu</h2>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <h3>3.1 🔍 Kiểm tra thông tin phần cứng tổng quát</h3>
+                    <ul>
+                        <li><strong>CPU-Z</strong> (miễn phí): Xác nhận thông tin CPU, RAM, mainboard<br>
+                            Tải về: <a href="https://www.cpuid.com" target="_blank">https://www.cpuid.com</a></li>
+                        <li><strong>GPU-Z</strong> (nếu có GPU rời): Xác nhận model GPU là hàng thật</li>
+                    </ul>
+
+                    <h3>3.2 💽 Kiểm tra sức khỏe SSD/HDD (Quan trọng)</h3>
+                    <p><strong>CrystalDiskInfo</strong> (miễn phí) - Kiểm tra:</p>
+                    <ul>
+                        <li>Tình trạng sức khỏe: <code>Good</code> (Tốt) / <code>Caution</code> (Cảnh báo) /
+                            <code>Bad</code> (Xấu)
+                        </li>
+                        <li>Số giờ đã chạy (Power-on hours)</li>
+                        <li>Các phân vùng bị lỗi (Reallocated or bad sectors)</li>
+                    </ul>
+                    <div class="danger-box">
+                        <strong>Quy tắc quyết định:</strong> Nếu tình trạng không phải <code>Good</code>, hãy cân nhắc
+                        bỏ qua.
+                    </div>
+
+                    <h3>3.3 🔋 Kiểm tra sức khỏe Pin</h3>
+                    <h4>Sử dụng công cụ Windows (khuyên dùng)</h4>
+                    <ol>
+                        <li>Mở Command Prompt</li>
+                        <li>Chạy lệnh sau:</li>
+                    </ol>
+                    <div class="code-block">powercfg /batteryreport</div>
+                    <ol start="3">
+                        <li>Mở báo cáo pin được tạo ra và so sánh:
+                            <ul>
+                                <li>Design Capacity (Dung lượng thiết kế)</li>
+                                <li>Full Charge Capacity (Dung lượng sạc đầy thực tế)</li>
+                            </ul>
+                        </li>
+                    </ol>
+                    <div class="warning-box">
+                        <strong>Lưu ý:</strong> Nếu Full Charge Capacity dưới 70% Design Capacity, pin đã bị chai nhiều.
+                    </div>
+                    <p><strong>Công cụ tùy chọn:</strong> BatteryInfoView để xem chi tiết hơn</p>
+
+                    <h3>3.4 🌡 Kiểm tra Nhiệt độ & Độ ổn định</h3>
+
+                    <h4>Bước A: Kiểm tra nhiệt độ lúc nghỉ (HWMonitor)</h4>
+                    <ol>
+                        <li>Đóng các ứng dụng không cần thiết và để máy nghỉ 5-10 phút</li>
+                        <li>Mở <strong>HWMonitor</strong> và theo dõi:
+                            <ul>
+                                <li>Nhiệt độ CPU package/core</li>
+                                <li>Tốc độ quạt (nếu có cảm biến)</li>
+                                <li>Mức sử dụng CPU lúc nghỉ</li>
+                            </ul>
+                        </li>
+                        <li>Ghi lại giá trị:</li>
+                    </ol>
+                    <div class="temp-guide">
+                        <div class="temp-item temp-good">
+                            <strong>✓ Tốt</strong><br>
+                            35-50°C
+                        </div>
+                        <div class="temp-item temp-warning">
+                            <strong>⚠ Cảnh báo</strong><br>
+                            50-60°C
+                        </div>
+                        <div class="temp-item temp-danger">
+                            <strong>✗ Nguy hiểm</strong><br>
+                            Trên 60°C khi nghỉ
+                        </div>
+                    </div>
+
+                    <h4>Bước B: Kiểm tra tải nhẹ (Cinebench)</h4>
+                    <ol>
+                        <li>Vẫn mở <strong>HWMonitor</strong> trong khi chạy benchmark</li>
+                        <li>Chạy một bài test CPU ngắn trong <strong>Cinebench</strong></li>
+                        <li>Trong khi chạy, kiểm tra:
+                            <ul>
+                                <li>Máy có bị đơ, khởi động lại, màn hình xanh không</li>
+                                <li>Xung nhịp có bị giảm đột ngột khi nhiệt cao không (thermal throttling)</li>
+                                <li>Tiếng quạt (quá to, rè, vòng quay không ổn định)</li>
+                            </ul>
+                        </li>
+                    </ol>
+                    <div class="danger-box">
+                        <strong>Lỗi hỏng ngay:</strong> Máy không thể hoàn thành bài test do sập nguồn/treo máy.
+                    </div>
+
+                    <h4>Bước C: Stress Test kéo dài (AIDA64 Trial)</h4>
+                    <ol>
+                        <li>Mở <strong>AIDA64</strong> → Stress Test</li>
+                        <li>Chọn các mục stress CPU và RAM</li>
+                        <li>Chạy trong 10 đến 15 phút và theo dõi <strong>HWMonitor</strong></li>
+                        <li>Dừng test ngay lập tức nếu:
+                            <ul>
+                                <li>Nhiệt độ duy trì trên ~95°C quá 1-2 phút</li>
+                                <li>Hệ thống không ổn định (đơ/khởi động lại/lỗi)</li>
+                                <li>Tiếng quạt trở nên bất thường (kêu cạch cạch)</li>
+                            </ul>
+                        </li>
+                    </ol>
+
+                    <h4>📈 Hướng dẫn Đọc Nhiệt độ</h4>
+                    <div class="info-box">
+                        <ul>
+                            <li>Nhiệt độ đỉnh lên đến hơn 90°C khi stress nặng có thể là bình thường trên laptop mỏng
+                            </li>
+                            <li>Duy trì gần 95°C hoặc cao hơn là rủi ro, đặc biệt nếu kèm giảm xung hoặc không ổn định
+                            </li>
+                            <li>Nếu nhiệt độ lúc nghỉ cao và nhiệt độ stress tăng quá nhanh, hệ thống tản nhiệt cần được
+                                bảo trì (bụi, keo tản nhiệt khô, hoặc quạt hỏng)</li>
+                        </ul>
+                    </div>
+
+                    <h4>✅ Kết quả bài test Nhiệt độ</h4>
+                    <div class="decision-box">
+                        <div class="decision-item pass">
+                            <strong>✓ ĐẠT</strong><br>
+                            Benchmark ổn định, không sập, nhiệt độ nghỉ dưới ~50°C, không duy trì >95°C, tiếng quạt bình
+                            thường
+                        </div>
+                        <div class="decision-item fail">
+                            <strong>✗ HỎNG</strong><br>
+                            Sập nguồn/khởi động lại, quá nhiệt liên tục, giảm xung rõ rệt, hoặc tiếng quạt bất thường
+                        </div>
+                    </div>
+
+                    <h3>3.5 🧠 Kiểm tra RAM</h3>
+                    <p><strong>Windows Memory Diagnostic</strong></p>
+                    <ol>
+                        <li>Nhấn <code>Win + R</code></li>
+                        <li>Chạy lệnh <code>mdsched.exe</code></li>
+                    </ol>
+                    <p><strong>MemTest86</strong> (nâng cao, dùng USB boot) để kiểm tra sâu hơn</p>
+                </div>
+            </div>
+
+            <!-- Red Flags -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h2>4. 🚩 Các dấu hiệu báo động (Không được bỏ qua)</h2>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="danger-box">
+                        <ul>
+                            <li>Sức khỏe SSD = <code>Caution</code> (Cảnh báo) hoặc <code>Bad</code> (Xấu)</li>
+                            <li>Pin dưới 60-70% sức khỏe</li>
+                            <li>Sập nguồn ngẫu nhiên khi stress test</li>
+                            <li>Nhiệt độ nghỉ cao trên ~60°C</li>
+                            <li>Tiếng quạt lạ</li>
+                            <li>BIOS bị khóa mật khẩu</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Final Decision -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h2>5. 🏁 Quyết định Đạt/Hỏng nhanh</h2>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="decision-box">
+                        <div class="decision-item pass">
+                            <strong>✓ ĐẠT</strong>
+                            <p>Không khóa BIOS, sức khỏe ổ cứng tốt, pin ổn, nhiệt độ ổn định, không sập nguồn, mọi phần
+                                cứng hoạt động tốt</p>
+                        </div>
+                        <div class="decision-item fail">
+                            <strong>✗ HỎNG</strong>
+                            <p>Bất kỳ dấu hiệu báo động nào: khóa BIOS, ổ cứng sắp hỏng, nhiệt độ mất kiểm soát, pin
+                                chai nặng, sập nguồn liên tục</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>💡 Ghi nhớ: Kiểm tra kỹ bây giờ giúp tiết kiệm tiền bạc và tránh phiền phức sau này!</p>
+            <p>Luôn kiểm tra trực tiếp trước khi thanh toán</p>
+            <p>từ DQ.TECH 💻</p>
+        </footer>
+    </div>
+
+    <script>
+        function toggleSection(header) {
+            const content = header.nextElementSibling;
+            const isActive = content.classList.contains('active');
+
+            // Toggle active class
+            if (isActive) {
+                content.classList.remove('active');
+                header.classList.remove('active');
+            } else {
+                content.classList.add('active');
+                header.classList.add('active');
+            }
+        }
+
+        // Open first section by default
+        document.addEventListener('DOMContentLoaded', function () {
+            const firstSection = document.querySelector('.section-header');
+            if (firstSection) {
+                toggleSection(firstSection);
+            }
+        });
+    </script>
+    <div class="qr-code">
+        <img src="dqtech_store_qr.png" alt="DQ.TECH QR Code">
+        <span>DQ TECH</span>
+    </div>
+</body>
+
+</html>

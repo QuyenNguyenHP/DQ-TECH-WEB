@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bài 11: Giao thức Ethernet và địa chỉ MAC</title>
+  <style>
+    :root {
+      --primary: #0057ff;
+      --primary-dark: #0039a8;
+      --accent: #ffb703;
+      --ink: #1f2532;
+      --muted: #5b6476;
+      --surface: #ffffff;
+      --surface-alt: #f2f4ff;
+      --border: rgba(15, 63, 167, 0.1);
+      --radius: 24px;
+      --shadow: 0 20px 60px rgba(15, 87, 255, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top, rgba(169, 200, 255, 0.4), transparent 55%),
+        #eef2ff;
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    header.hero {
+      background: linear-gradient(120deg, var(--primary), #7357ff);
+      border-radius: var(--radius);
+      padding: 3.5rem clamp(2rem, 4vw, 4.5rem);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.35), transparent 45%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero h1 {
+      margin: 0 0 1rem;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 640px;
+      font-size: 1.05rem;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 2rem;
+    }
+
+    .hero-actions a {
+      text-decoration: none;
+      padding: 0.85rem 1.8rem;
+      border-radius: 999px;
+      font-weight: 600;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .hero-actions a.primary {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.18);
+    }
+
+    .hero-actions a.secondary {
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: #fff;
+      backdrop-filter: blur(6px);
+    }
+
+    .hero-actions a:hover {
+      transform: translateY(-3px);
+    }
+
+    .stat-grid {
+      margin-top: 2.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 1rem 1.25rem;
+      text-align: left;
+      backdrop-filter: blur(4px);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .stat strong {
+      font-size: 1.25rem;
+      display: block;
+    }
+
+    section {
+      margin-top: 2.5rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 2.25rem clamp(1.5rem, 4vw, 3rem);
+      box-shadow: 0 10px 35px rgba(38, 44, 82, 0.08);
+      border: 1px solid var(--border);
+    }
+
+    .section-heading {
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.25em;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    h2 {
+      margin: 0 0 1.5rem;
+      font-size: clamp(1.7rem, 3vw, 2.2rem);
+      color: var(--ink);
+    }
+
+    h3 {
+      margin: 0 0 0.4rem;
+      font-size: 1rem;
+      color: var(--primary-dark);
+    }
+
+    .goal-grid,
+    .card-grid,
+    .topic-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .goal,
+    .card,
+    .topic-card {
+      background: var(--surface-alt);
+      border-radius: 18px;
+      padding: 1.25rem 1.35rem;
+      border: 1px solid rgba(15, 63, 167, 0.12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .goal span,
+    .card span.badge,
+    .topic-card span.badge {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .goal p,
+    .card p,
+    .topic-card p {
+      margin: 0.6rem 0 0;
+    }
+
+    .highlight-card {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      border-radius: 20px;
+      background: linear-gradient(120deg, rgba(0, 87, 255, 0.1), rgba(255, 183, 3, 0.18));
+      border: 1px dashed rgba(0, 87, 255, 0.3);
+    }
+
+    blockquote {
+      margin: 1rem 0 0;
+      padding-left: 1.5rem;
+      border-left: 3px solid var(--primary);
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    ul {
+      margin: 0.35rem 0 0 1.25rem;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 0.35rem;
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(15, 63, 167, 0.12);
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      text-align: left;
+      padding: 0.9rem 1rem;
+      border-bottom: 1px solid rgba(15, 63, 167, 0.12);
+    }
+
+    .comparison-table th {
+      background: rgba(0, 87, 255, 0.08);
+      color: var(--primary-dark);
+      font-weight: 600;
+    }
+
+    .comparison-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .case-study {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .practice ol {
+      margin: 0.75rem 0 0 1.25rem;
+    }
+
+    .callout {
+      margin-top: 1.25rem;
+      padding: 1.35rem 1.5rem;
+      border-radius: 18px;
+      background: rgba(255, 183, 3, 0.12);
+      border: 1px solid rgba(255, 183, 3, 0.3);
+    }
+
+    .footer-cta {
+      text-align: center;
+      margin-top: 3rem;
+    }
+
+    .footer-cta a {
+      text-decoration: none;
+      color: #fff;
+      background: var(--primary);
+      padding: 0.9rem 2rem;
+      border-radius: 999px;
+      display: inline-flex;
+      gap: 0.35rem;
+      font-weight: 600;
+      box-shadow: 0 18px 40px rgba(0, 87, 255, 0.25);
+    }
+
+    @media (max-width: 640px) {
+      header.hero {
+        padding: 2.5rem 1.75rem;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      section {
+        padding: 1.75rem 1.35rem;
+      }
+
+      .comparison-table {
+        font-size: 0.95rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <div class="hero-content">
+        <p class="section-heading" style="color: rgba(255,255,255,0.7); letter-spacing: 0.4em;">Bài học 11</p>
+        <h1>Giao thức Ethernet và địa chỉ MAC</h1>
+        <p>
+          Bài học giúp bạn hiểu Ethernet là gì, vai trò trong mạng LAN, cách MAC Address định danh thiết bị và phân biệt MAC với IP.
+        </p>
+        <div class="hero-actions">
+          <a href="#content" class="primary">Xem nội dung</a>
+          <a href="#practice" class="secondary">Làm bài tập</a>
+        </div>
+        <div class="stat-grid">
+          <div class="stat">
+            <strong>Ethernet</strong>
+            Chuẩn LAN phổ biến
+          </div>
+          <div class="stat">
+            <strong>MAC 48-bit</strong>
+            Địa chỉ vật lý
+          </div>
+          <div class="stat">
+            <strong>Layer 1-2</strong>
+            Physical · Data Link
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section>
+      <p class="section-heading">Mục tiêu</p>
+      <h2>Kết quả học tập mong đợi</h2>
+      <div class="goal-grid">
+        <div class="goal">
+          <span>🎯 Mục tiêu 01</span>
+          <p>Hiểu được <strong>Ethernet là gì</strong> và vai trò trong mạng LAN.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 02</span>
+          <p>Giải thích được <strong>địa chỉ MAC là gì</strong>, dùng để làm gì.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 03</span>
+          <p>Phân biệt <strong>MAC Address</strong> với <strong>IP Address</strong>.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 04</span>
+          <p>Hiểu cách các thiết bị <strong>nhận diện và giao tiếp trong mạng LAN</strong>.</p>
+        </div>
+      </div>
+      <div class="highlight-card">
+        <strong>Đặt vấn đề:</strong>
+        <ul>
+          <li>Khi bạn cắm dây mạng vào máy tính, mạng <strong>tự động hoạt động</strong>.</li>
+          <li>Khi bạn kết nối Wi-Fi, router <strong>biết chính xác thiết bị nào đang truy cập</strong>.</li>
+          <li>Trong cùng một mạng LAN, các máy <strong>không bị nhầm lẫn dữ liệu</strong>.</li>
+        </ul>
+        <blockquote>
+          Làm sao các thiết bị trong mạng nhận diện đúng nhau? Và <strong>Ethernet đóng vai trò gì</strong> trong việc truyền dữ liệu đó?
+        </blockquote>
+        <p>Câu trả lời nằm ở <strong>Ethernet</strong> và <strong>địa chỉ MAC</strong>.</p>
+      </div>
+    </section>
+
+    <section id="content">
+      <p class="section-heading">Định nghĩa</p>
+      <h2>Ethernet và MAC Address</h2>
+      <div class="topic-grid">
+        <div class="topic-card">
+          <span class="badge">a. Giao thức Ethernet</span>
+          <ul>
+            <li><strong>Ethernet</strong> là <strong>chuẩn công nghệ mạng LAN</strong> phổ biến nhất.</li>
+            <li>Quy định cách đóng gói dữ liệu, truyền dữ liệu và truy cập đường truyền.</li>
+            <li>Hoạt động chủ yếu ở <strong>Layer 1</strong> và <strong>Layer 2</strong> (OSI).</li>
+          </ul>
+        </div>
+        <div class="topic-card">
+          <span class="badge">b. Địa chỉ MAC</span>
+          <ul>
+            <li><strong>MAC Address</strong> là <strong>địa chỉ vật lý</strong> gắn cố định vào card mạng (NIC).</li>
+            <li>Mỗi thiết bị mạng có <strong>một MAC duy nhất</strong>.</li>
+            <li>Dùng để nhận diện thiết bị và chuyển frame đúng đích trong <strong>mạng LAN</strong>.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Nguyên lý</p>
+      <h2>Cách Ethernet và MAC hoạt động</h2>
+      <div class="card-grid">
+        <div class="card">
+          <span class="badge">a. Ethernet</span>
+          <ol>
+            <li>Dữ liệu được <strong>đóng gói thành Frame Ethernet</strong>.</li>
+            <li>Frame chứa MAC nguồn và MAC đích.</li>
+            <li>Frame truyền qua dây mạng / Wi-Fi.</li>
+            <li>Switch đọc MAC đích để chuyển đúng cổng.</li>
+          </ol>
+          <p>📌 Ethernet đảm bảo truyền đúng dữ liệu, đúng thiết bị, đúng thứ tự.</p>
+        </div>
+        <div class="card">
+          <span class="badge">b. MAC Address</span>
+          <ul>
+            <li>Mỗi card mạng có một MAC duy nhất.</li>
+            <li>Switch tạo <strong>bảng MAC Address Table</strong>.</li>
+            <li>Khi frame đến: nếu biết MAC đích → chuyển đúng cổng; nếu chưa biết → broadcast.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Thông số</p>
+      <h2>Các thông số kỹ thuật cần nhớ</h2>
+      <div class="card-grid">
+        <div class="card">
+          <span class="badge">a. Cấu trúc địa chỉ MAC</span>
+          <ul>
+            <li>Độ dài: <strong>48 bit (6 byte)</strong>.</li>
+            <li>Dạng hiển thị: <code>AA:BB:CC:DD:EE:FF</code>.</li>
+          </ul>
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Thành phần</th>
+                <th>Ý nghĩa</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>3 byte đầu</td>
+                <td>Nhà sản xuất (OUI)</td>
+              </tr>
+              <tr>
+                <td>3 byte sau</td>
+                <td>Số định danh thiết bị</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <span class="badge">b. Chuẩn Ethernet phổ biến</span>
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Chuẩn</th>
+                <th>Tốc độ</th>
+                <th>Môi trường</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Ethernet</td>
+                <td>10 Mbps</td>
+                <td>Cáp đồng</td>
+              </tr>
+              <tr>
+                <td>Fast Ethernet</td>
+                <td>100 Mbps</td>
+                <td>Cáp đồng</td>
+              </tr>
+              <tr>
+                <td>Gigabit Ethernet</td>
+                <td>1 Gbps</td>
+                <td>Cáp đồng / quang</td>
+              </tr>
+              <tr>
+                <td>10G Ethernet</td>
+                <td>10 Gbps</td>
+                <td>Cáp quang</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Ví dụ</p>
+      <h2>Case study: Mạng LAN văn phòng nhỏ</h2>
+      <div class="case-study">
+        <div>
+          <ul>
+            <li>1 Router</li>
+            <li>1 Switch</li>
+            <li>5 máy tính</li>
+          </ul>
+          <p><strong>Quá trình:</strong></p>
+          <ol>
+            <li>Máy A gửi dữ liệu cho Máy B.</li>
+            <li>Switch kiểm tra MAC đích.</li>
+            <li>Switch chuyển frame đúng cổng của Máy B.</li>
+            <li>Các máy khác <strong>không nhận dữ liệu</strong>.</li>
+          </ol>
+          <p>👉 Nhờ <strong>Ethernet + MAC Address</strong>, mạng hoạt động chính xác, không lãng phí băng thông, không nhầm dữ liệu.</p>
+        </div>
+        <div class="callout">
+          <strong>Gợi ý:</strong>
+          <p>Ethernet đảm nhiệm việc đóng gói và truyền, còn MAC đảm bảo đúng đích trong LAN.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="practice" class="practice">
+      <p class="section-heading">Thực hành</p>
+      <h2>Tổng kết &amp; bài tập thực hành</h2>
+      <h3>5.1. Tổng kết kiến thức</h3>
+      <ul>
+        <li><strong>Ethernet</strong>: Chuẩn mạng LAN phổ biến nhất, hoạt động ở Layer 2.</li>
+        <li><strong>MAC Address</strong>: Địa chỉ vật lý, duy nhất, dùng trong LAN.</li>
+        <li>Switch hoạt động dựa trên <strong>MAC Address</strong>.</li>
+      </ul>
+      <p>👉 Ethernet + MAC là <strong>nền tảng của mọi mạng LAN hiện đại</strong>.</p>
+      <div class="callout">
+        <strong>5.2. Bài tập về nhà:</strong>
+        <p>Trên máy tính của bạn, hãy:</p>
+        <ol>
+          <li>Kiểm tra địa chỉ MAC của card mạng.</li>
+          <li>Ghi lại MAC Address.</li>
+          <li>Trả lời: MAC có thay đổi khi đổi Wi-Fi không? MAC có giống IP không? Vì sao?</li>
+        </ol>
+        <p>📌 Gợi ý lệnh:</p>
+        <ul>
+          <li>Windows: <code>ipconfig /all</code></li>
+          <li>Linux / macOS: <code>ifconfig</code></li>
+        </ul>
+      </div>
+    </section>
+
+    <div class="footer-cta">
+      <a href="../index.html">← Về trang chủ</a>
+    </div>
+  </main>
+</body>
+</html>

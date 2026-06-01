@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bài học - Mạng máy tính</title>
+  <style>
+    :root {
+      --primary: #0057ff;
+      --primary-dark: #0039a8;
+      --accent: #ffb703;
+      --ink: #1f2532;
+      --muted: #5b6476;
+      --surface: #ffffff;
+      --surface-alt: #f2f4ff;
+      --border: rgba(15, 63, 167, 0.1);
+      --radius: 24px;
+      --shadow: 0 20px 60px rgba(15, 87, 255, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top, rgba(169, 200, 255, 0.4), transparent 55%),
+        #eef2ff;
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    header.hero {
+      background: linear-gradient(120deg, var(--primary), #7357ff);
+      border-radius: var(--radius);
+      padding: 3.5rem clamp(2rem, 4vw, 4.5rem);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.35), transparent 45%);
+      pointer-events: none;
+    }
+
+    .hero-logo {
+      position: absolute;
+      top: 1.6rem;
+      right: 1.8rem;
+      width: 86px;
+      height: 86px;
+      object-fit: contain;
+      opacity: 0.9;
+      z-index: 1;
+      filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.18));
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero h1 {
+      margin: 0 0 1rem;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 580px;
+      font-size: 1.05rem;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 2rem;
+    }
+
+    .hero-actions a {
+      text-decoration: none;
+      padding: 0.85rem 1.8rem;
+      border-radius: 999px;
+      font-weight: 600;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .hero-actions a.primary {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.18);
+    }
+
+    .hero-actions a.secondary {
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: #fff;
+      backdrop-filter: blur(6px);
+    }
+
+    .hero-actions a:hover {
+      transform: translateY(-3px);
+    }
+
+    .stat-grid {
+      margin-top: 2.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 1rem 1.25rem;
+      text-align: left;
+      backdrop-filter: blur(4px);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .stat strong {
+      font-size: 1.25rem;
+      display: block;
+    }
+
+    section {
+      margin-top: 2.5rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 2.25rem clamp(1.5rem, 4vw, 3rem);
+      box-shadow: 0 10px 35px rgba(38, 44, 82, 0.08);
+      border: 1px solid var(--border);
+    }
+
+    .section-heading {
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.25em;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    h2 {
+      margin: 0 0 1.5rem;
+      font-size: clamp(1.7rem, 3vw, 2.2rem);
+      color: var(--ink);
+    }
+
+    .goal-grid,
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .goal,
+    .card {
+      background: var(--surface-alt);
+      border-radius: 18px;
+      padding: 1.25rem 1.35rem;
+      border: 1px solid rgba(15, 63, 167, 0.12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .goal span,
+    .card span.badge {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .goal p,
+    .card p {
+      margin: 0.6rem 0 0;
+    }
+
+    .highlight-card {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      border-radius: 20px;
+      background: linear-gradient(120deg, rgba(0, 87, 255, 0.1), rgba(255, 183, 3, 0.18));
+      border: 1px dashed rgba(0, 87, 255, 0.3);
+    }
+
+    blockquote {
+      margin: 1rem 0 0;
+      padding-left: 1.5rem;
+      border-left: 3px solid var(--primary);
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .step {
+      padding: 1rem 1.2rem;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+    }
+
+    .step strong {
+      display: block;
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .timeline-card {
+      border-radius: 20px;
+      padding: 1.4rem;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      background: #fff;
+      box-shadow: 0 18px 35px rgba(13, 41, 80, 0.06);
+    }
+
+    .timeline-card h3 {
+      margin: 0 0 0.4rem;
+      font-size: 1rem;
+      color: var(--primary-dark);
+    }
+
+    .component-grid {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .component-card {
+      padding: 1.5rem;
+      border-radius: 20px;
+      border: 1px solid rgba(0, 87, 255, 0.15);
+      background: linear-gradient(180deg, rgba(0, 87, 255, 0.05), #fff 45%);
+    }
+
+    ul {
+      margin: 0.35rem 0 0 1.25rem;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 0.35rem;
+    }
+
+    .case-study {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .practice ol {
+      margin: 0.75rem 0 0 1.25rem;
+    }
+
+    .callout {
+      margin-top: 1.25rem;
+      padding: 1.35rem 1.5rem;
+      border-radius: 18px;
+      background: rgba(255, 183, 3, 0.12);
+      border: 1px solid rgba(255, 183, 3, 0.3);
+    }
+
+    .footer-cta {
+      text-align: center;
+      margin-top: 3rem;
+    }
+
+    .footer-cta a {
+      text-decoration: none;
+      color: #fff;
+      background: var(--primary);
+      padding: 0.9rem 2rem;
+      border-radius: 999px;
+      display: inline-flex;
+      gap: 0.35rem;
+      font-weight: 600;
+      box-shadow: 0 18px 40px rgba(0, 87, 255, 0.25);
+    }
+
+    @media (max-width: 640px) {
+      header.hero {
+        padding: 2.5rem 1.75rem;
+      }
+
+      .hero-logo {
+        width: 64px;
+        height: 64px;
+        top: 1rem;
+        right: 1rem;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      section {
+        padding: 1.75rem 1.35rem;
+      }
+    }
+  </style>
+</head>
+<body>
+    <div id="lesson-root"></div>
+  <script src="../data/lesson-pages.js"></script>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const lessonId = params.get('id');
+    const root = document.getElementById('lesson-root');
+    const page = lessonId && window.LESSON_PAGES ? window.LESSON_PAGES[lessonId] : null;
+
+    if (!page) {
+      document.title = 'Bài học - Mạng máy tính';
+      if (root) {
+        root.innerHTML = "\n          <main>\n            <header class=\"hero\">\n              <div class=\"hero-content\">\n                <p class=\"section-heading\" style=\"color: rgba(255,255,255,0.7); letter-spacing: 0.4em;\">Bài học</p>\n                <h1>Chọn bài học</h1>\n                <p>Thiếu mã bài. Hãy quay lại trang chủ và chọn bài học.</p>\n                <div class=\"hero-actions\">\n                  <a href=\"../index.html\" class=\"primary\">← Về trang chủ</a>\n                </div>\n              </div>\n            </header>\n          </main>\n        ";
+        const hero = root.querySelector('header.hero');
+        if (hero && !hero.querySelector('.hero-logo')) {
+          const img = document.createElement('img');
+          img.className = 'hero-logo';
+          img.src = '../logo.png';
+          img.alt = 'Logo khóa học';
+          hero.appendChild(img);
+        }
+      }
+    } else {
+      document.title = page.title;
+      if (root) {
+        root.innerHTML = page.main;
+        const hero = root.querySelector('header.hero');
+        if (hero && !hero.querySelector('.hero-logo')) {
+          const img = document.createElement('img');
+          img.className = 'hero-logo';
+          img.src = '../logo.png';
+          img.alt = 'Logo khóa học';
+          hero.appendChild(img);
+        }
+      }
+    }
+  </script>
+</body>
+</html>

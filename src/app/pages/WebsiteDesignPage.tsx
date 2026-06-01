@@ -6,6 +6,13 @@ import {
 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
+import stirlingImg from "../../imports/stirling.png";
+import homeassistantImg from "../../imports/homeassistant.png";
+import drumsImg from "../../imports/DRUMS.png";
+import ImmichImg from "../../imports/immich.jpg";
+import engineImg from "../../imports/4enginesmonitoring.jpg";
+import testlaptopImg from "../../imports/testlaptop.jpg";
+import mangmaytinhImg from "../../imports/mangmaytinh.png";
 
 const features = [
   { icon: Smartphone, title: "Responsive Design", desc: "Hoàn hảo trên mọi thiết bị — máy tính, tablet, điện thoại", color: "text-purple-400", bg: "bg-purple-500/10" },
@@ -85,22 +92,53 @@ const techStack = [
 
 const portfolio = [
   {
-    name: "TechStore Pro",
-    type: "E-commerce",
-    img: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=80",
-    tags: ["React", "Next.js", "Stripe"],
+    name: "STIRLING PDF",
+    type: "Office tools",
+    img: stirlingImg,
+    tags: ["MIT", "Open Source", "GitHub"],
+    url: "https://pdf.nguyenduyquyen.online/",
   },
   {
-    name: "MediCare Clinic",
-    type: "Y Tế",
-    img: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=600&q=80",
-    tags: ["SEO", "CMS", "Booking"],
+    name: "HOME ASSISTANT",
+    type: "Smart Home",
+    img: homeassistantImg,
+    tags: ["Smart Home", "Open Source", "GitHub"],
+    url: "https://home.nguyenduyquyen.online/",
   },
   {
-    name: "GreenFood Market",
-    type: "Thực Phẩm",
-    img: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&q=80",
-    tags: ["Mobile-first", "PWA", "Payment"],
+    name: "DRUMS",
+    type: "Monitoring system",
+    img: drumsImg,
+    tags: ["React", "MySQL", "Python"],
+    url: "https://drums.dqtech.cloud/",
+  },
+   {
+    name: "PERSONAL ALBUM",
+    type: "Photo management",
+    img: ImmichImg,
+    tags: ["Immich", "Open Source", "GitHub"],
+    url: "https://photos.nguyenduyquyen.online/",
+  },
+  {
+    name: "4 Engines Monitoring",
+    type: "Monitoring system",
+    img: engineImg,
+    tags: ["Diesel Engine", "Modbus", "Data collection"],
+    url: "https://ormin.dqcloud.online//",
+  },
+  {
+    name: "Test Laptop",
+    type: "Tutorial Document",
+    img: testlaptopImg,
+    tags: ["HTML", "CSS", "Python"],
+    url: "/test_laptop/index.html",
+  },
+    {
+    name: "Mạng máy tính cơ bản",
+    type: "Learning Course",
+    img: mangmaytinhImg,
+    tags: ["HTML", "CSS", "Python"],
+    url: "/khoa-hoc-mang-may-tinh/index.html",
   },
 ];
 
@@ -284,16 +322,18 @@ export function WebsiteDesignPage() {
                 transition={{ delay: i * 0.1 }}
                 className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5"
               >
-                <div className="aspect-video overflow-hidden">
+                <a href={p.url} target="_blank" rel="noopener noreferrer" className="block aspect-video overflow-hidden">
                   <img
                     src={p.img}
                     alt={p.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                </div>
+                </a>
                 <div className="p-5">
                   <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-xs mb-3">{p.type}</Badge>
-                  <h3 className="text-white mb-3">{p.name}</h3>
+                  <a href={p.url} target="_blank" rel="noopener noreferrer">
+                    <h3 className="text-white mb-3 hover:text-purple-300 transition-colors">{p.name}</h3>
+                  </a>
                   <div className="flex flex-wrap gap-2">
                     {p.tags.map((tag) => (
                       <span key={tag} className="text-xs px-2 py-1 bg-white/5 text-gray-400 rounded-lg border border-white/10">

@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bài 2: Phân loại mạng (LAN, WAN, MAN, PAN)</title>
+  <style>
+    :root {
+      --primary: #0057ff;
+      --primary-dark: #0039a8;
+      --accent: #ffb703;
+      --ink: #1f2532;
+      --muted: #5b6476;
+      --surface: #ffffff;
+      --surface-alt: #f2f4ff;
+      --border: rgba(15, 63, 167, 0.1);
+      --radius: 24px;
+      --shadow: 0 20px 60px rgba(15, 87, 255, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top, rgba(169, 200, 255, 0.4), transparent 55%),
+        #eef2ff;
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    header.hero {
+      background: linear-gradient(120deg, var(--primary), #7357ff);
+      border-radius: var(--radius);
+      padding: 3.5rem clamp(2rem, 4vw, 4.5rem);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.35), transparent 45%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero h1 {
+      margin: 0 0 1rem;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 640px;
+      font-size: 1.05rem;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 2rem;
+    }
+
+    .hero-actions a {
+      text-decoration: none;
+      padding: 0.85rem 1.8rem;
+      border-radius: 999px;
+      font-weight: 600;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .hero-actions a.primary {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.18);
+    }
+
+    .hero-actions a.secondary {
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: #fff;
+      backdrop-filter: blur(6px);
+    }
+
+    .hero-actions a:hover {
+      transform: translateY(-3px);
+    }
+
+    .stat-grid {
+      margin-top: 2.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 1rem 1.25rem;
+      text-align: left;
+      backdrop-filter: blur(4px);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .stat strong {
+      font-size: 1.25rem;
+      display: block;
+    }
+
+    section {
+      margin-top: 2.5rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 2.25rem clamp(1.5rem, 4vw, 3rem);
+      box-shadow: 0 10px 35px rgba(38, 44, 82, 0.08);
+      border: 1px solid var(--border);
+    }
+
+    .section-heading {
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.25em;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    h2 {
+      margin: 0 0 1.5rem;
+      font-size: clamp(1.7rem, 3vw, 2.2rem);
+      color: var(--ink);
+    }
+
+    h3 {
+      margin: 0 0 0.4rem;
+      font-size: 1rem;
+      color: var(--primary-dark);
+    }
+
+    .goal-grid,
+    .card-grid,
+    .type-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .goal,
+    .card,
+    .type-card {
+      background: var(--surface-alt);
+      border-radius: 18px;
+      padding: 1.25rem 1.35rem;
+      border: 1px solid rgba(15, 63, 167, 0.12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .goal span,
+    .card span.badge,
+    .type-card span.badge {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .goal p,
+    .card p,
+    .type-card p {
+      margin: 0.6rem 0 0;
+    }
+
+    .highlight-card {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      border-radius: 20px;
+      background: linear-gradient(120deg, rgba(0, 87, 255, 0.1), rgba(255, 183, 3, 0.18));
+      border: 1px dashed rgba(0, 87, 255, 0.3);
+    }
+
+    blockquote {
+      margin: 1rem 0 0;
+      padding-left: 1.5rem;
+      border-left: 3px solid var(--primary);
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    ul {
+      margin: 0.35rem 0 0 1.25rem;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 0.35rem;
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(15, 63, 167, 0.12);
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      text-align: left;
+      padding: 0.9rem 1rem;
+      border-bottom: 1px solid rgba(15, 63, 167, 0.12);
+    }
+
+    .comparison-table th {
+      background: rgba(0, 87, 255, 0.08);
+      color: var(--primary-dark);
+      font-weight: 600;
+    }
+
+    .comparison-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .case-study {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .practice ol {
+      margin: 0.75rem 0 0 1.25rem;
+    }
+
+    .callout {
+      margin-top: 1.25rem;
+      padding: 1.35rem 1.5rem;
+      border-radius: 18px;
+      background: rgba(255, 183, 3, 0.12);
+      border: 1px solid rgba(255, 183, 3, 0.3);
+    }
+
+    .footer-cta {
+      text-align: center;
+      margin-top: 3rem;
+    }
+
+    .footer-cta a {
+      text-decoration: none;
+      color: #fff;
+      background: var(--primary);
+      padding: 0.9rem 2rem;
+      border-radius: 999px;
+      display: inline-flex;
+      gap: 0.35rem;
+      font-weight: 600;
+      box-shadow: 0 18px 40px rgba(0, 87, 255, 0.25);
+    }
+
+    @media (max-width: 640px) {
+      header.hero {
+        padding: 2.5rem 1.75rem;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      section {
+        padding: 1.75rem 1.35rem;
+      }
+
+      .comparison-table {
+        font-size: 0.95rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <div class="hero-content">
+        <p class="section-heading" style="color: rgba(255,255,255,0.7); letter-spacing: 0.4em;">Bài học 02</p>
+        <h1>Phân loại mạng (LAN, WAN, MAN, PAN)</h1>
+        <p>
+          Bài học giúp bạn phân biệt các loại mạng theo phạm vi hoạt động, hiểu mục đích sử dụng và áp dụng đúng loại mạng cho tình huống thực tế.
+        </p>
+        <div class="hero-actions">
+          <a href="#content" class="primary">Xem nội dung</a>
+          <a href="#practice" class="secondary">Làm bài tập</a>
+        </div>
+        <div class="stat-grid">
+          <div class="stat">
+            <strong>PAN</strong>
+            Mạng cá nhân
+          </div>
+          <div class="stat">
+            <strong>LAN</strong>
+            Mạng cục bộ
+          </div>
+          <div class="stat">
+            <strong>WAN</strong>
+            Mạng diện rộng
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section>
+      <p class="section-heading">Mục tiêu</p>
+      <h2>Kết quả học tập mong đợi</h2>
+      <div class="goal-grid">
+        <div class="goal">
+          <span>🎯 Mục tiêu 01</span>
+          <p>Phân biệt được các loại mạng: <strong>LAN, WAN, MAN, PAN</strong>.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 02</span>
+          <p>Hiểu <strong>phạm vi hoạt động</strong> và <strong>mục đích sử dụng</strong> của từng loại mạng.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 03</span>
+          <p>Áp dụng đúng loại mạng cho <strong>tình huống thực tế</strong> (nhà ở, văn phòng, doanh nghiệp, thành phố).</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 04</span>
+          <p>Tránh nhầm lẫn giữa các khái niệm mạng phổ biến trong đời sống và công việc.</p>
+        </div>
+      </div>
+      <div class="highlight-card">
+        <strong>Đặt vấn đề:</strong>
+        <p>Bạn sử dụng:</p>
+        <ul>
+          <li>Wi-Fi ở nhà để kết nối laptop và điện thoại.</li>
+          <li>Internet để gửi email cho người ở quốc gia khác.</li>
+          <li>Bluetooth để kết nối tai nghe không dây.</li>
+        </ul>
+        <blockquote>
+          Các kết nối này có phải cùng một loại mạng không? Nếu không, chúng khác nhau ở điểm nào?
+        </blockquote>
+        <p>Để trả lời, chúng ta cần hiểu cách <strong>phân loại mạng máy tính theo phạm vi hoạt động</strong>.</p>
+      </div>
+    </section>
+
+    <section id="content">
+      <p class="section-heading">Nội dung</p>
+      <h2>Phân loại mạng theo phạm vi</h2>
+      <div class="card-grid">
+        <div class="card">
+          <span class="badge">📖 Định nghĩa</span>
+          <p>Là cách chia mạng máy tính dựa trên <strong>phạm vi địa lý và quy mô kết nối</strong>.</p>
+        </div>
+      </div>
+      <div style="margin-top: 1.5rem;">
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>Loại mạng</th>
+              <th>Tên đầy đủ</th>
+              <th>Phạm vi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>PAN</td>
+              <td>Personal Area Network</td>
+              <td>Cá nhân</td>
+            </tr>
+            <tr>
+              <td>LAN</td>
+              <td>Local Area Network</td>
+              <td>Cục bộ</td>
+            </tr>
+            <tr>
+              <td>MAN</td>
+              <td>Metropolitan Area Network</td>
+              <td>Thành phố</td>
+            </tr>
+            <tr>
+              <td>WAN</td>
+              <td>Wide Area Network</td>
+              <td>Toàn cầu</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Các loại mạng</p>
+      <h2>Tóm tắt theo từng loại</h2>
+      <div class="type-grid">
+        <div class="type-card">
+          <span class="badge">a. PAN – Mạng cá nhân</span>
+          <ul>
+            <li>Kết nối các thiết bị <strong>xung quanh một người</strong>.</li>
+            <li>Thường dùng <strong>Bluetooth, NFC</strong>.</li>
+            <li>Khoảng cách: <strong>vài mét</strong>.</li>
+          </ul>
+          <p>📌 Ví dụ: Điện thoại ↔ Tai nghe Bluetooth.</p>
+        </div>
+        <div class="type-card">
+          <span class="badge">b. LAN – Mạng cục bộ</span>
+          <ul>
+            <li>Kết nối thiết bị trong <strong>nhà, văn phòng, lớp học</strong>.</li>
+            <li>Tốc độ cao, ổn định.</li>
+            <li>Dùng <strong>Ethernet, Wi-Fi</strong>.</li>
+          </ul>
+          <p>📌 Ví dụ: Máy tính, máy in trong công ty.</p>
+        </div>
+        <div class="type-card">
+          <span class="badge">c. MAN – Mạng đô thị</span>
+          <ul>
+            <li>Kết nối nhiều LAN trong <strong>một thành phố</strong>.</li>
+            <li>Thường do <strong>ISP hoặc tổ chức lớn</strong> quản lý.</li>
+          </ul>
+          <p>📌 Ví dụ: Mạng trường đại học nhiều cơ sở trong cùng thành phố.</p>
+        </div>
+        <div class="type-card">
+          <span class="badge">d. WAN – Mạng diện rộng</span>
+          <ul>
+            <li>Kết nối trên <strong>quy mô quốc gia hoặc toàn cầu</strong>.</li>
+            <li>Internet là <strong>WAN lớn nhất</strong>.</li>
+          </ul>
+          <p>📌 Ví dụ: Truy cập website đặt tại Mỹ từ Việt Nam.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Thông số</p>
+      <h2>Các thông số kỹ thuật cần nhớ</h2>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Tiêu chí</th>
+            <th>PAN</th>
+            <th>LAN</th>
+            <th>MAN</th>
+            <th>WAN</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Phạm vi</td>
+            <td>Cá nhân</td>
+            <td>Tòa nhà</td>
+            <td>Thành phố</td>
+            <td>Toàn cầu</td>
+          </tr>
+          <tr>
+            <td>Công nghệ</td>
+            <td>Bluetooth</td>
+            <td>Ethernet, Wi-Fi</td>
+            <td>Cáp quang</td>
+            <td>Internet, vệ tinh</td>
+          </tr>
+          <tr>
+            <td>Tốc độ</td>
+            <td>Thấp</td>
+            <td>Cao</td>
+            <td>Trung bình</td>
+            <td>Thấp hơn LAN</td>
+          </tr>
+          <tr>
+            <td>Chi phí</td>
+            <td>Rất thấp</td>
+            <td>Thấp</td>
+            <td>Cao</td>
+            <td>Rất cao</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <p class="section-heading">Ví dụ</p>
+      <h2>Case study: Mạng công ty đa địa điểm</h2>
+      <div class="case-study">
+        <div>
+          <p><strong>Bài toán:</strong> Một công ty có:</p>
+          <ul>
+            <li>Văn phòng 1: Hà Nội.</li>
+            <li>Văn phòng 2: TP.HCM.</li>
+            <li>Nhân viên làm việc tại nhà.</li>
+          </ul>
+          <p><strong>Giải pháp mạng:</strong></p>
+          <ul>
+            <li>Trong mỗi văn phòng → <strong>LAN</strong>.</li>
+            <li>Kết nối giữa Hà Nội ↔ TP.HCM → <strong>WAN</strong>.</li>
+            <li>Nhân viên dùng tai nghe, chuột không dây → <strong>PAN</strong>.</li>
+          </ul>
+          <p>👉 Kết hợp nhiều loại mạng trong <strong>một hệ thống hoàn chỉnh</strong>.</p>
+        </div>
+        <div class="callout">
+          <strong>Gợi ý:</strong>
+          <p>Khi thiết kế mạng, hãy bắt đầu từ phạm vi nhỏ nhất (PAN/LAN) rồi mở rộng ra MAN/WAN.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="practice" class="practice">
+      <p class="section-heading">Thực hành</p>
+      <h2>Tổng kết &amp; bài tập thực hành</h2>
+      <h3>Tổng kết kiến thức</h3>
+      <ul>
+        <li>PAN → Cá nhân → Bluetooth.</li>
+        <li>LAN → Cục bộ → Nhà, văn phòng.</li>
+        <li>MAN → Thành phố → Tổ chức lớn.</li>
+        <li>WAN → Toàn cầu → Internet.</li>
+      </ul>
+      <p>👉 Phân loại mạng giúp <strong>thiết kế hệ thống hiệu quả và tiết kiệm chi phí</strong>.</p>
+      <div class="callout">
+        <strong>Bài tập về nhà:</strong>
+        <p>Hãy mô tả hệ thống mạng tại nhà bạn hoặc nơi làm việc, trả lời:</p>
+        <ol>
+          <li>Có những loại mạng nào? (PAN/LAN/WAN?)</li>
+          <li>Thiết bị nào thuộc từng loại?</li>
+          <li>Nếu mở rộng quy mô, bạn sẽ cần thêm loại mạng nào?</li>
+        </ol>
+        <p>📌 Viết ngắn gọn 5–7 dòng.</p>
+      </div>
+    </section>
+
+    <div class="footer-cta">
+      <a href="../index.html">← Về trang chủ</a>
+    </div>
+  </main>
+</body>
+</html>

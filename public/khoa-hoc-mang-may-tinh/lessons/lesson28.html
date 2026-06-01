@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bài 28: Bảo mật mạng cơ bản: Firewall và IDS/IPS</title>
+  <style>
+    :root {
+      --primary: #0057ff;
+      --primary-dark: #0039a8;
+      --accent: #ffb703;
+      --ink: #1f2532;
+      --muted: #5b6476;
+      --surface: #ffffff;
+      --surface-alt: #f2f4ff;
+      --border: rgba(15, 63, 167, 0.1);
+      --radius: 24px;
+      --shadow: 0 20px 60px rgba(15, 87, 255, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top, rgba(169, 200, 255, 0.4), transparent 55%),
+        #eef2ff;
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    header.hero {
+      background: linear-gradient(120deg, var(--primary), #7357ff);
+      border-radius: var(--radius);
+      padding: 3.5rem clamp(2rem, 4vw, 4.5rem);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.35), transparent 45%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero h1 {
+      margin: 0 0 1rem;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 640px;
+      font-size: 1.05rem;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 2rem;
+    }
+
+    .hero-actions a {
+      text-decoration: none;
+      padding: 0.85rem 1.8rem;
+      border-radius: 999px;
+      font-weight: 600;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .hero-actions a.primary {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.18);
+    }
+
+    .hero-actions a.secondary {
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: #fff;
+      backdrop-filter: blur(6px);
+    }
+
+    .hero-actions a:hover {
+      transform: translateY(-3px);
+    }
+
+    .stat-grid {
+      margin-top: 2.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 1rem 1.25rem;
+      text-align: left;
+      backdrop-filter: blur(4px);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .stat strong {
+      font-size: 1.25rem;
+      display: block;
+    }
+
+    section {
+      margin-top: 2.5rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 2.25rem clamp(1.5rem, 4vw, 3rem);
+      box-shadow: 0 10px 35px rgba(38, 44, 82, 0.08);
+      border: 1px solid var(--border);
+    }
+
+    .section-heading {
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.25em;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    h2 {
+      margin: 0 0 1.5rem;
+      font-size: clamp(1.7rem, 3vw, 2.2rem);
+      color: var(--ink);
+    }
+
+    .goal-grid,
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .goal,
+    .card {
+      background: var(--surface-alt);
+      border-radius: 18px;
+      padding: 1.25rem 1.35rem;
+      border: 1px solid rgba(15, 63, 167, 0.12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .goal span,
+    .card span.badge {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .goal p,
+    .card p {
+      margin: 0.6rem 0 0;
+    }
+
+    .highlight-card {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      border-radius: 20px;
+      background: linear-gradient(120deg, rgba(0, 87, 255, 0.1), rgba(255, 183, 3, 0.18));
+      border: 1px dashed rgba(0, 87, 255, 0.3);
+    }
+
+    blockquote {
+      margin: 1rem 0 0;
+      padding-left: 1.5rem;
+      border-left: 3px solid var(--primary);
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .step {
+      padding: 1rem 1.2rem;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: #fff;
+    }
+
+    .step strong {
+      display: block;
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .timeline-card {
+      border-radius: 20px;
+      padding: 1.4rem;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      background: #fff;
+      box-shadow: 0 18px 35px rgba(13, 41, 80, 0.06);
+    }
+
+    .timeline-card h3 {
+      margin: 0 0 0.4rem;
+      font-size: 1rem;
+      color: var(--primary-dark);
+    }
+
+    .component-grid {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .component-card {
+      padding: 1.5rem;
+      border-radius: 20px;
+      border: 1px solid rgba(0, 87, 255, 0.15);
+      background: linear-gradient(180deg, rgba(0, 87, 255, 0.05), #fff 45%);
+    }
+
+    ul {
+      margin: 0.35rem 0 0 1.25rem;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 0.35rem;
+    }
+
+    .case-study {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .practice ol {
+      margin: 0.75rem 0 0 1.25rem;
+    }
+
+    .callout {
+      margin-top: 1.25rem;
+      padding: 1.35rem 1.5rem;
+      border-radius: 18px;
+      background: rgba(255, 183, 3, 0.12);
+      border: 1px solid rgba(255, 183, 3, 0.3);
+    }
+
+    .footer-cta {
+      text-align: center;
+      margin-top: 3rem;
+    }
+
+    .footer-cta a {
+      text-decoration: none;
+      color: #fff;
+      background: var(--primary);
+      padding: 0.9rem 2rem;
+      border-radius: 999px;
+      display: inline-flex;
+      gap: 0.35rem;
+      font-weight: 600;
+      box-shadow: 0 18px 40px rgba(0, 87, 255, 0.25);
+    }
+
+    @media (max-width: 640px) {
+      header.hero {
+        padding: 2.5rem 1.75rem;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      section {
+        padding: 1.75rem 1.35rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <div class="hero-content">
+        <p class="section-heading" style="color: rgba(255,255,255,0.7); letter-spacing: 0.4em;">Bài học 28</p>
+        <h1>Bảo mật mạng cơ bản: Firewall và IDS/IPS</h1>
+        <p>
+          Firewall và IDS/IPS là tuyến phòng thủ quan trọng giúp chặn truy cập trái phép và phát hiện tấn công. Bài học
+          này giúp bạn hiểu cách các lớp bảo mật phối hợp để bảo vệ mạng.
+        </p>
+        <div class="hero-actions">
+          <a href="#objectives" class="primary">Bắt đầu học</a>
+          <a href="#practice" class="secondary">Làm bài tập</a>
+        </div>
+        <div class="stat-grid">
+          <div class="stat">
+            <strong>25 phút</strong>
+            Thời lượng gợi ý
+          </div>
+          <div class="stat">
+            <strong>5 phần</strong>
+            Chủ đề trọng tâm
+          </div>
+          <div class="stat">
+            <strong>Defense in Depth</strong>
+            Phòng thủ nhiều lớp
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section id="objectives">
+      <p class="section-heading">Mục tiêu</p>
+      <h2>Kết quả học tập mong đợi</h2>
+      <div class="goal-grid">
+        <div class="goal">
+          <span>🎯 Mục tiêu 01</span>
+          <p>Hiểu vì sao bảo mật mạng là bắt buộc.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 02</span>
+          <p>Giải thích Firewall là gì và cách hoạt động.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 03</span>
+          <p>Phân biệt IDS và IPS.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 04</span>
+          <p>Nhận biết vai trò của Firewall và IDS/IPS trong mạng.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 05</span>
+          <p>Hiểu tư duy phòng thủ nhiều lớp.</p>
+        </div>
+      </div>
+      <div class="highlight-card">
+        <strong>Đặt vấn đề:</strong>
+        <blockquote>
+          "Làm sao chặn truy cập trái phép và phát hiện tấn công đang diễn ra?"
+        </blockquote>
+        <p>Câu trả lời nằm ở Firewall và IDS/IPS.</p>
+      </div>
+    </section>
+
+    <section id="overview">
+      <p class="section-heading">Khái niệm</p>
+      <h2>Firewall, IDS và IPS</h2>
+      <div class="card-grid">
+        <div class="card">
+          <span class="badge">🛡️ Firewall</span>
+          <p>Hệ thống kiểm soát và lọc lưu lượng mạng dựa trên quy tắc bảo mật.</p>
+        </div>
+        <div class="card">
+          <span class="badge">🔍 IDS</span>
+          <p>Hệ thống phát hiện xâm nhập, giám sát và gửi cảnh báo.</p>
+        </div>
+        <div class="card">
+          <span class="badge">🚫 IPS</span>
+          <p>Hệ thống ngăn chặn xâm nhập, phát hiện và chặn ngay tấn công.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Nguyên lý</p>
+      <h2>Firewall hoạt động thế nào?</h2>
+      <div class="steps">
+        <div class="step">
+          <strong>Kiểm tra</strong>
+          IP nguồn/đích, port, protocol, trạng thái kết nối.
+        </div>
+        <div class="step">
+          <strong>Áp quy tắc</strong>
+          Allow hoặc deny/drop lưu lượng.
+        </div>
+        <div class="step">
+          <strong>Ghi log</strong>
+          Theo dõi hoạt động và điều chỉnh chính sách.
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">So sánh</p>
+      <h2>Firewall vs IDS vs IPS</h2>
+      <div class="timeline">
+        <article class="timeline-card">
+          <h3>Firewall</h3>
+          <ul>
+            <li>Chặn traffic dựa trên quy tắc.</li>
+            <li>Phát hiện tấn công ở mức cơ bản.</li>
+            <li>Là tuyến phòng thủ đầu tiên.</li>
+          </ul>
+        </article>
+        <article class="timeline-card">
+          <h3>IDS</h3>
+          <ul>
+            <li>Giám sát và phát hiện bất thường.</li>
+            <li>Chỉ cảnh báo, không chặn.</li>
+            <li>Hoạt động ở chế độ quan sát.</li>
+          </ul>
+        </article>
+        <article class="timeline-card">
+          <h3>IPS</h3>
+          <ul>
+            <li>Phát hiện và chặn ngay.</li>
+            <li>Hoạt động inline với lưu lượng.</li>
+            <li>Phản ứng tức thì với tấn công.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Kỹ thuật</p>
+      <h2>Các loại Firewall & cách phát hiện</h2>
+      <div class="component-grid">
+        <div class="component-card">
+          <h3>Loại Firewall</h3>
+          <ul>
+            <li>Packet Filtering.</li>
+            <li>Stateful Firewall.</li>
+            <li>Application Firewall.</li>
+            <li>NGFW (tích hợp IDS/IPS).</li>
+          </ul>
+        </div>
+        <div class="component-card">
+          <h3>Kiểu phát hiện</h3>
+          <ul>
+            <li>Signature-based: dựa mẫu tấn công.</li>
+            <li>Anomaly-based: dựa hành vi bất thường.</li>
+          </ul>
+        </div>
+        <div class="component-card">
+          <h3>Defense in Depth</h3>
+          <ul>
+            <li>Kết hợp nhiều lớp bảo vệ.</li>
+            <li>Giảm rủi ro khi một lớp bị vượt qua.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Ví dụ</p>
+      <h2>Case study: mạng doanh nghiệp nhỏ</h2>
+      <div class="case-study">
+        <div>
+          <p>🏢 Có web server, mail server và nhân viên truy cập Internet.</p>
+          <p>🛡️ Firewall chỉ mở các port cần thiết.</p>
+          <p>🔍 IDS phát hiện scan, brute force; IPS chặn IP tấn công.</p>
+          <p>✅ Hệ thống an toàn hơn và có cảnh báo rõ ràng.</p>
+        </div>
+        <div class="callout">
+          <strong>Kết luận:</strong>
+          <p>Bảo mật hiệu quả cần firewall + IDS/IPS kết hợp.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="practice" class="practice">
+      <p class="section-heading">Thực hành</p>
+      <h2>Tổng kết & bài tập</h2>
+      <p>Trả lời ngắn gọn 2-3 dòng cho mỗi câu:</p>
+      <ol>
+        <li>Vì sao firewall chưa đủ để bảo mật hoàn toàn?</li>
+        <li>Khi nào nên dùng IDS, khi nào cần IPS?</li>
+        <li>Gia đình bạn đang dùng firewall nào?</li>
+      </ol>
+      <div class="callout">
+        <strong>Gợi ý:</strong>
+        <p>Liên hệ đến vai trò giám sát và phản ứng tức thì.</p>
+      </div>
+    </section>
+
+    <div class="footer-cta">
+      <a href="../index.html">← Về trang chủ</a>
+    </div>
+  </main>
+</body>
+</html>

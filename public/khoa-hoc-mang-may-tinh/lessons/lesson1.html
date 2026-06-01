@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bài 1: Tổng quan về mạng máy tính</title>
+  <style>
+    :root {
+      --primary: #0057ff;
+      --primary-dark: #0039a8;
+      --accent: #ffb703;
+      --ink: #1f2532;
+      --muted: #5b6476;
+      --surface: #ffffff;
+      --surface-alt: #f2f4ff;
+      --border: rgba(15, 63, 167, 0.1);
+      --radius: 24px;
+      --shadow: 0 20px 60px rgba(15, 87, 255, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top, rgba(169, 200, 255, 0.4), transparent 55%),
+        #eef2ff;
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    header.hero {
+      background: linear-gradient(120deg, var(--primary), #7357ff);
+      border-radius: var(--radius);
+      padding: 3.5rem clamp(2rem, 4vw, 4.5rem);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.35), transparent 45%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero h1 {
+      margin: 0 0 1rem;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 580px;
+      font-size: 1.05rem;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 2rem;
+    }
+
+    .hero-actions a {
+      text-decoration: none;
+      padding: 0.85rem 1.8rem;
+      border-radius: 999px;
+      font-weight: 600;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .hero-actions a.primary {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.18);
+    }
+
+    .hero-actions a.secondary {
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: #fff;
+      backdrop-filter: blur(6px);
+    }
+
+    .hero-actions a:hover {
+      transform: translateY(-3px);
+    }
+
+    .stat-grid {
+      margin-top: 2.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 1rem 1.25rem;
+      text-align: left;
+      backdrop-filter: blur(4px);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .stat strong {
+      font-size: 1.25rem;
+      display: block;
+    }
+
+    section {
+      margin-top: 2.5rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 2.25rem clamp(1.5rem, 4vw, 3rem);
+      box-shadow: 0 10px 35px rgba(38, 44, 82, 0.08);
+      border: 1px solid var(--border);
+    }
+
+    .section-heading {
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.25em;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    h2 {
+      margin: 0 0 1.5rem;
+      font-size: clamp(1.7rem, 3vw, 2.2rem);
+      color: var(--ink);
+    }
+
+    .goal-grid,
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .goal,
+    .card {
+      background: var(--surface-alt);
+      border-radius: 18px;
+      padding: 1.25rem 1.35rem;
+      border: 1px solid rgba(15, 63, 167, 0.12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .goal span,
+    .card span.badge {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .goal p,
+    .card p {
+      margin: 0.6rem 0 0;
+    }
+
+    .highlight-card {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      border-radius: 20px;
+      background: linear-gradient(120deg, rgba(0, 87, 255, 0.1), rgba(255, 183, 3, 0.18));
+      border: 1px dashed rgba(0, 87, 255, 0.3);
+    }
+
+    blockquote {
+      margin: 1rem 0 0;
+      padding-left: 1.5rem;
+      border-left: 3px solid var(--primary);
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .step {
+      padding: 1rem 1.2rem;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+    }
+
+    .step strong {
+      display: block;
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .timeline-card {
+      border-radius: 20px;
+      padding: 1.4rem;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      background: #fff;
+      box-shadow: 0 18px 35px rgba(13, 41, 80, 0.06);
+    }
+
+    .timeline-card h3 {
+      margin: 0 0 0.4rem;
+      font-size: 1rem;
+      color: var(--primary-dark);
+    }
+
+    .component-grid {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .component-card {
+      padding: 1.5rem;
+      border-radius: 20px;
+      border: 1px solid rgba(0, 87, 255, 0.15);
+      background: linear-gradient(180deg, rgba(0, 87, 255, 0.05), #fff 45%);
+    }
+
+    ul {
+      margin: 0.35rem 0 0 1.25rem;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 0.35rem;
+    }
+
+    .case-study {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .practice ol {
+      margin: 0.75rem 0 0 1.25rem;
+    }
+
+    .callout {
+      margin-top: 1.25rem;
+      padding: 1.35rem 1.5rem;
+      border-radius: 18px;
+      background: rgba(255, 183, 3, 0.12);
+      border: 1px solid rgba(255, 183, 3, 0.3);
+    }
+
+    .footer-cta {
+      text-align: center;
+      margin-top: 3rem;
+    }
+
+    .footer-cta a {
+      text-decoration: none;
+      color: #fff;
+      background: var(--primary);
+      padding: 0.9rem 2rem;
+      border-radius: 999px;
+      display: inline-flex;
+      gap: 0.35rem;
+      font-weight: 600;
+      box-shadow: 0 18px 40px rgba(0, 87, 255, 0.25);
+    }
+
+    @media (max-width: 640px) {
+      header.hero {
+        padding: 2.5rem 1.75rem;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      section {
+        padding: 1.75rem 1.35rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <div class="hero-content">
+        <p class="section-heading" style="color: rgba(255,255,255,0.7); letter-spacing: 0.4em;">Bài học 01</p>
+        <h1>Tổng quan về mạng máy tính</h1>
+        <p>
+          Bài mở đầu giúp bạn hiểu mạng máy tính là gì, cách chúng hoạt động, vì sao Internet hình thành và các thành phần cốt lõi giúp mọi thiết bị trao đổi dữ liệu an toàn, nhanh chóng.
+        </p>
+        <div class="hero-actions">
+          <a href="#components" class="primary">Bắt đầu học</a>
+          <a href="#practice" class="secondary">Làm bài tập</a>
+        </div>
+        <div class="stat-grid">
+          <div class="stat">
+            <strong>20 phút</strong>
+            Thời lượng gợi ý
+          </div>
+          <div class="stat">
+            <strong>4 phần</strong>
+            Khái niệm chủ đạo
+          </div>
+          <div class="stat">
+            <strong>1960 → nay</strong>
+            Hành trình Internet
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section>
+      <p class="section-heading">Mục tiêu</p>
+      <h2>Kết quả học tập mong đợi</h2>
+      <div class="goal-grid">
+        <div class="goal">
+          <span>🎯 Mục tiêu 01</span>
+          <p>Hiểu khái niệm mạng máy tính và lý do thế giới cần đến kết nối này.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 02</span>
+          <p>Nhận diện các thành phần cơ bản tạo nên một mạng hoàn chỉnh.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 03</span>
+          <p>Nắm các cột mốc lịch sử chính trong quá trình hình thành và phát triển.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 04</span>
+          <p>Phân biệt mạng máy tính hiện đại với hệ thống độc lập, xây nền tảng cho bài học sau.</p>
+        </div>
+      </div>
+      <div class="highlight-card">
+        <strong>Đặt vấn đề:</strong>
+        <blockquote>
+          "Vì sao chỉ với một chiếc laptop bạn có thể gửi email, xem video và họp online với người ở phía bên kia Trái đất?"
+        </blockquote>
+        <p>Điều đó chỉ khả thi khi có mạng máy tính – xương sống của Internet và thế giới số.</p>
+      </div>
+    </section>
+
+    <section id="overview">
+      <p class="section-heading">Khái niệm</p>
+      <h2>Mạng máy tính là gì?</h2>
+      <div class="card-grid">
+        <div class="card">
+          <span class="badge">📖 Định nghĩa</span>
+          <p>Mạng máy tính là hệ thống gồm nhiều thiết bị (máy tính, máy chủ, smartphone, IoT...) được kết nối để trao đổi dữ liệu, chia sẻ tài nguyên và làm việc từ xa.</p>
+        </div>
+        <div class="card">
+          <span class="badge">✨ Lợi ích</span>
+          <ul>
+            <li>Trao đổi dữ liệu theo thời gian thực.</li>
+            <li>Chia sẻ tài nguyên: file, máy in, Internet.</li>
+            <li>Hỗ trợ cộng tác, họp và xử lý từ xa.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <span class="badge">🧩 Ví dụ</span>
+          <ul>
+            <li>Mạng LAN trong văn phòng.</li>
+            <li>Mạng gia đình với router Wi-Fi.</li>
+            <li>Mạng Internet toàn cầu.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Cơ chế</p>
+      <h2>Nguyên lý hoạt động tổng quan</h2>
+      <p>Mọi phiên truyền thông tin đều đi qua chu trình chung "thiết bị gửi → môi trường truyền → thiết bị nhận". Dữ liệu được chia thành gói tin, gửi qua dây hoặc sóng và ghép lại để hiển thị chính xác.</p>
+      <div class="steps">
+        <div class="step">
+          <strong>1. Chuẩn bị</strong>
+          Thiết bị gửi đóng gói dữ liệu theo giao thức chung (ví dụ TCP/IP).
+        </div>
+        <div class="step">
+          <strong>2. Vận chuyển</strong>
+          Các gói tin di chuyển qua môi trường truyền (cáp, quang, Wi-Fi, 4G/5G...).
+        </div>
+        <div class="step">
+          <strong>3. Lắp ráp</strong>
+          Thiết bị nhận kiểm tra, ghép thứ tự và thông báo nếu có lỗi để truyền lại.
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Lịch sử</p>
+      <h2>Từ máy tính độc lập đến "Everything Connected"</h2>
+      <p>Lịch sử mạng hình thành từ nhu cầu thực tế: chia sẻ tài nguyên, liên lạc từ xa và bảo vệ dữ liệu. Các giai đoạn chính gồm:</p>
+      <div class="timeline">
+        <article class="timeline-card">
+          <h3>1950–1960 · Máy tính độc lập</h3>
+          <ul>
+            <li>Máy tính cực đắt và cồng kềnh, mỗi hệ thống hoạt động riêng lẻ.</li>
+            <li>Người dùng phải đăng ký thời gian để sử dụng tài nguyên.</li>
+          </ul>
+        </article>
+        <article class="timeline-card">
+          <h3>1960–1980 · ARPANET & chia sẻ</h3>
+          <ul>
+            <li>Các phòng thí nghiệm của Mỹ kết nối để chia sẻ tài nguyên đắt đỏ.</li>
+            <li>Khái niệm gói tin và chuyển mạch ra đời, đặt nền móng cho Internet.</li>
+          </ul>
+        </article>
+        <article class="timeline-card">
+          <h3>1990–2010 · Internet bùng nổ</h3>
+          <ul>
+            <li>TCP/IP trở thành chuẩn chung, web và email phổ biến toàn cầu.</li>
+            <li>Wi-Fi, băng thông rộng giúp mọi cá nhân tiếp cận mạng.</li>
+          </ul>
+        </article>
+
+        <article class="timeline-card">
+          <h3></h3>
+          <ul>
+          
+          </ul>
+        </article>
+
+        <article class="timeline-card">
+          <h3>2010–nay · Đám mây & IoT</h3>
+          <ul>
+            <li>Cloud (AWS, Azure, GCP) biến hạ tầng mạng thành dịch vụ.</li>
+            <li>Smartphone và hàng tỷ thiết bị IoT kết nối mọi lúc mọi nơi.</li>
+            <p>  </p>
+
+          </ul>
+        </article>
+
+        <article class="timeline-card">
+          <h3></h3>
+          <ul>
+          
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section id="components">
+      <p class="section-heading">Trọng tâm</p>
+      <h2>4 nhóm thành phần của một mạng hoàn chỉnh</h2>
+      <div class="component-grid">
+        <div class="component-card">
+          <h3>1. Thiết bị đầu cuối</h3>
+          <p>Nơi dữ liệu được tạo ra và sử dụng: PC, laptop, điện thoại, máy chủ, camera IP, thiết bị IoT...</p>
+          <ul>
+            <li>Gửi dữ liệu: email, file, video, yêu cầu web.</li>
+            <li>Nhận dữ liệu từ thiết bị khác để xử lý hoặc hiển thị.</li>
+          </ul>
+        </div>
+        <div class="component-card">
+          <h3>2. Thiết bị mạng</h3>
+          <p>Các thiết bị trung gian quyết định hiệu năng, độ ổn định và bảo mật.</p>
+          <ul>
+            <li>Switch: kết nối thiết bị trong LAN.</li>
+            <li>Router: nối các mạng với nhau.</li>
+            <li>Access Point, modem, firewall, repeater...</li>
+          </ul>
+        </div>
+        <div class="component-card">
+          <h3>3. Môi trường truyền dẫn</h3>
+          <p>"Con đường" tín hiệu di chuyển, có dây lẫn không dây.</p>
+          <ul>
+            <li>Có dây: cáp xoắn đôi (phổ biến, rẻ), cáp quang (tốc độ cao), cáp đồng trục.</li>
+            <li>Không dây: Wi-Fi, Bluetooth, sóng di động 4G/5G.</li>
+          </ul>
+          <p>Cùng thiết bị nhưng môi trường khác sẽ cho chất lượng mạng khác nhau.</p>
+        </div>
+        <div class="component-card">
+          <h3>4. Giao thức mạng</h3>
+          <p>Bộ quy tắc giúp thiết bị hiểu nhau: đóng gói dữ liệu, gửi/nhận, xác nhận và xử lý lỗi.</p>
+          <ul>
+            <li>TCP/IP – nền tảng Internet.</li>
+            <li>HTTP/HTTPS – truy cập web.</li>
+            <li>FTP, SMTP, DNS – truyền file, email, phân giải tên miền.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Ví dụ</p>
+      <h2>Case study: mạng gia đình thông minh</h2>
+      <div class="case-study">
+        <div>
+          <p>📡 Router kết nối đường truyền của ISP, phát Wi-Fi cho laptop, điện thoại, TV.</p>
+          <p>🔁 Các thiết bị chia sẻ Internet, truy cập dịch vụ online và truyền dữ liệu nội bộ.</p>
+          <p>🛡️ Firewall tích hợp bảo vệ khỏi truy cập trái phép, trong khi giao thức WPA2 đảm bảo mã hóa.</p>
+        </div>
+        <div class="callout">
+          <strong>Kết luận:</strong>
+          <p>Mạng gia đình là mô hình thu nhỏ của mạng doanh nghiệp: có đầu cuối, thiết bị mạng, môi trường truyền và giao thức đồng nhất.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="practice" class="practice">
+      <p class="section-heading">Thực hành</p>
+      <h2>Tổng kết & bài tập</h2>
+      <p>Quan sát mạng ở nhà hoặc nơi làm việc để củng cố kiến thức:</p>
+      <ol>
+        <li>Liệt kê các thiết bị đầu cuối và thiết bị mạng bạn đang dùng.</li>
+        <li>Xác định môi trường truyền (cáp, Wi-Fi, 4G...).</li>
+        <li>Mô tả lợi ích cụ thể mà mạng đó mang lại cho bạn/đội nhóm.</li>
+      </ol>
+      <div class="callout">
+        <strong>Mẹo nhỏ:</strong>
+        <p>Chụp nhanh sơ đồ tay hoặc ghi chú lại để sử dụng cho bài học sau về mô hình OSI.</p>
+      </div>
+    </section>
+
+    <div class="footer-cta">
+      <a href="../index.html">← Về trang chủ</a>
+    </div>
+  </main>
+</body>
+</html>
