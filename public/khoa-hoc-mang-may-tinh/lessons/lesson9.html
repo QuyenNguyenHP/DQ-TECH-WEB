@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bài 9: Kỹ thuật mã hóa tín hiệu và truyền dữ liệu</title>
+  <style>
+    :root {
+      --primary: #0057ff;
+      --primary-dark: #0039a8;
+      --accent: #ffb703;
+      --ink: #1f2532;
+      --muted: #5b6476;
+      --surface: #ffffff;
+      --surface-alt: #f2f4ff;
+      --border: rgba(15, 63, 167, 0.1);
+      --radius: 24px;
+      --shadow: 0 20px 60px rgba(15, 87, 255, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top, rgba(169, 200, 255, 0.4), transparent 55%),
+        #eef2ff;
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    header.hero {
+      background: linear-gradient(120deg, var(--primary), #7357ff);
+      border-radius: var(--radius);
+      padding: 3.5rem clamp(2rem, 4vw, 4.5rem);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.35), transparent 45%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero h1 {
+      margin: 0 0 1rem;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 640px;
+      font-size: 1.05rem;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 2rem;
+    }
+
+    .hero-actions a {
+      text-decoration: none;
+      padding: 0.85rem 1.8rem;
+      border-radius: 999px;
+      font-weight: 600;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .hero-actions a.primary {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.18);
+    }
+
+    .hero-actions a.secondary {
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: #fff;
+      backdrop-filter: blur(6px);
+    }
+
+    .hero-actions a:hover {
+      transform: translateY(-3px);
+    }
+
+    .stat-grid {
+      margin-top: 2.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 1rem 1.25rem;
+      text-align: left;
+      backdrop-filter: blur(4px);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .stat strong {
+      font-size: 1.25rem;
+      display: block;
+    }
+
+    section {
+      margin-top: 2.5rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 2.25rem clamp(1.5rem, 4vw, 3rem);
+      box-shadow: 0 10px 35px rgba(38, 44, 82, 0.08);
+      border: 1px solid var(--border);
+    }
+
+    .section-heading {
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.25em;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    h2 {
+      margin: 0 0 1.5rem;
+      font-size: clamp(1.7rem, 3vw, 2.2rem);
+      color: var(--ink);
+    }
+
+    h3 {
+      margin: 0 0 0.4rem;
+      font-size: 1rem;
+      color: var(--primary-dark);
+    }
+
+    .goal-grid,
+    .card-grid,
+    .encoding-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .goal,
+    .card,
+    .encoding-card {
+      background: var(--surface-alt);
+      border-radius: 18px;
+      padding: 1.25rem 1.35rem;
+      border: 1px solid rgba(15, 63, 167, 0.12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .goal span,
+    .card span.badge,
+    .encoding-card span.badge {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .goal p,
+    .card p,
+    .encoding-card p {
+      margin: 0.6rem 0 0;
+    }
+
+    .highlight-card {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      border-radius: 20px;
+      background: linear-gradient(120deg, rgba(0, 87, 255, 0.1), rgba(255, 183, 3, 0.18));
+      border: 1px dashed rgba(0, 87, 255, 0.3);
+    }
+
+    blockquote {
+      margin: 1rem 0 0;
+      padding-left: 1.5rem;
+      border-left: 3px solid var(--primary);
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    ul {
+      margin: 0.35rem 0 0 1.25rem;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 0.35rem;
+    }
+
+    .flow {
+      background: #fff;
+      border-radius: 16px;
+      padding: 1rem 1.25rem;
+      border: 1px solid rgba(15, 63, 167, 0.12);
+      font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace;
+      font-size: 0.95rem;
+      color: #1f2532;
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(15, 63, 167, 0.12);
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      text-align: left;
+      padding: 0.9rem 1rem;
+      border-bottom: 1px solid rgba(15, 63, 167, 0.12);
+    }
+
+    .comparison-table th {
+      background: rgba(0, 87, 255, 0.08);
+      color: var(--primary-dark);
+      font-weight: 600;
+    }
+
+    .comparison-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .case-study {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .practice ol {
+      margin: 0.75rem 0 0 1.25rem;
+    }
+
+    .callout {
+      margin-top: 1.25rem;
+      padding: 1.35rem 1.5rem;
+      border-radius: 18px;
+      background: rgba(255, 183, 3, 0.12);
+      border: 1px solid rgba(255, 183, 3, 0.3);
+    }
+
+    .footer-cta {
+      text-align: center;
+      margin-top: 3rem;
+    }
+
+    .footer-cta a {
+      text-decoration: none;
+      color: #fff;
+      background: var(--primary);
+      padding: 0.9rem 2rem;
+      border-radius: 999px;
+      display: inline-flex;
+      gap: 0.35rem;
+      font-weight: 600;
+      box-shadow: 0 18px 40px rgba(0, 87, 255, 0.25);
+    }
+
+    @media (max-width: 640px) {
+      header.hero {
+        padding: 2.5rem 1.75rem;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      section {
+        padding: 1.75rem 1.35rem;
+      }
+
+      .comparison-table {
+        font-size: 0.95rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <div class="hero-content">
+        <p class="section-heading" style="color: rgba(255,255,255,0.7); letter-spacing: 0.4em;">Bài học 09</p>
+        <h1>Kỹ thuật mã hóa tín hiệu và truyền dữ liệu</h1>
+        <p>
+          Bài học giúp bạn hiểu vì sao dữ liệu số cần được mã hóa trước khi truyền, phân biệt mã hóa tín hiệu và mã hóa dữ liệu, và nắm các kỹ thuật phổ biến.
+        </p>
+        <div class="hero-actions">
+          <a href="#content" class="primary">Xem nội dung</a>
+          <a href="#practice" class="secondary">Làm bài tập</a>
+        </div>
+        <div class="stat-grid">
+          <div class="stat">
+            <strong>3 nhóm mã hóa</strong>
+            Số–số, số–tương tự, tương tự–tương tự
+          </div>
+          <div class="stat">
+            <strong>Bit &amp; Baud</strong>
+            Thông số cốt lõi
+          </div>
+          <div class="stat">
+            <strong>Wi-Fi Case</strong>
+            Ví dụ thực tế
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section>
+      <p class="section-heading">Mục tiêu</p>
+      <h2>Kết quả học tập mong đợi</h2>
+      <div class="goal-grid">
+        <div class="goal">
+          <span>🎯 Mục tiêu 01</span>
+          <p>Hiểu <strong>vì sao dữ liệu số cần phải mã hóa trước khi truyền</strong>.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 02</span>
+          <p>Phân biệt được <strong>mã hóa tín hiệu</strong> và <strong>mã hóa dữ liệu</strong>.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 03</span>
+          <p>Nhận biết các <strong>kỹ thuật mã hóa tín hiệu phổ biến</strong> (NRZ, Manchester, AM/FM/PM...).</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 04</span>
+          <p>Hiểu ảnh hưởng của mã hóa đến <strong>tốc độ, độ tin cậy và nhiễu</strong>.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 05</span>
+          <p>Áp dụng kiến thức để <strong>giải thích quá trình truyền dữ liệu thực tế</strong>.</p>
+        </div>
+      </div>
+      <div class="highlight-card">
+        <strong>Đặt vấn đề:</strong>
+        <blockquote>
+          “Khi bạn gửi một tin nhắn ‘Hello’ từ điện thoại, làm sao chữ H – e – l – l – o lại biến thành tín hiệu điện, truyền đi trên cáp hoặc sóng vô tuyến, rồi lại hiện đúng nội dung ở thiết bị nhận?”
+        </blockquote>
+        <p>👉 Máy tính <strong>không truyền chữ</strong>, mà truyền <strong>tín hiệu</strong>. 👉 Để truyền được, dữ liệu phải được <strong>mã hóa</strong>.</p>
+      </div>
+    </section>
+
+    <section id="content">
+      <p class="section-heading">Khái niệm</p>
+      <h2>Nền tảng cốt lõi</h2>
+      <div class="card-grid">
+        <div class="card">
+          <span class="badge">📖 Mã hóa tín hiệu</span>
+          <p>Là quá trình <strong>chuyển dữ liệu số (0/1)</strong> thành <strong>tín hiệu vật lý</strong> (điện, ánh sáng, sóng vô tuyến) để truyền qua môi trường.</p>
+        </div>
+        <div class="card">
+          <span class="badge">📖 Truyền dữ liệu</span>
+          <p>Là quá trình <strong>gửi – nhận dữ liệu</strong> giữa các thiết bị thông qua dây đồng, cáp quang, hoặc sóng vô tuyến.</p>
+        </div>
+      </div>
+      <div class="highlight-card">
+        <strong>Luồng tổng quát:</strong>
+        <div class="flow">Dữ liệu → Mã hóa → Tín hiệu → Truyền → Giải mã → Dữ liệu</div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Kỹ thuật</p>
+      <h2>Các nhóm mã hóa tín hiệu phổ biến</h2>
+      <div class="encoding-grid">
+        <div class="encoding-card">
+          <span class="badge">🔸 Digital → Digital</span>
+          <ul>
+            <li><strong>NRZ</strong> (Non-Return to Zero).</li>
+            <li><strong>Manchester</strong>.</li>
+            <li><strong>Differential Manchester</strong>.</li>
+          </ul>
+        </div>
+        <div class="encoding-card">
+          <span class="badge">🔸 Digital → Analog</span>
+          <ul>
+            <li><strong>ASK</strong> – Amplitude Shift Keying.</li>
+            <li><strong>FSK</strong> – Frequency Shift Keying.</li>
+            <li><strong>PSK</strong> – Phase Shift Keying.</li>
+          </ul>
+        </div>
+        <div class="encoding-card">
+          <span class="badge">🔸 Analog → Analog</span>
+          <ul>
+            <li><strong>AM</strong> – Điều biên.</li>
+            <li><strong>FM</strong> – Điều tần.</li>
+            <li><strong>PM</strong> – Điều pha.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Thông số</p>
+      <h2>Các thông số kỹ thuật cần nhớ</h2>
+      <table class="comparison-table">
+        <thead>
+          <tr>
+            <th>Thông số</th>
+            <th>Ý nghĩa</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Bit rate</td>
+            <td>Số bit truyền trong 1 giây (bps)</td>
+          </tr>
+          <tr>
+            <td>Baud rate</td>
+            <td>Số tín hiệu / giây</td>
+          </tr>
+          <tr>
+            <td>Băng thông</td>
+            <td>Dải tần truyền</td>
+          </tr>
+          <tr>
+            <td>Nhiễu</td>
+            <td>Tín hiệu không mong muốn</td>
+          </tr>
+          <tr>
+            <td>SNR</td>
+            <td>Tỷ lệ tín hiệu / nhiễu</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <p class="section-heading">Ví dụ</p>
+      <h2>Case study: Truyền dữ liệu qua Wi-Fi</h2>
+      <div class="case-study">
+        <div>
+          <ol>
+            <li>Dữ liệu số từ máy tính.</li>
+            <li>Mã hóa thành tín hiệu số.</li>
+            <li>Điều chế thành sóng vô tuyến (OFDM, QAM).</li>
+            <li>Truyền qua không khí.</li>
+            <li>Thiết bị nhận giải điều chế và giải mã.</li>
+          </ol>
+          <p>👉 Nếu mã hóa kém:</p>
+          <ul>
+            <li>Tốc độ chậm.</li>
+            <li>Dễ lỗi.</li>
+            <li>Mất dữ liệu.</li>
+          </ul>
+        </div>
+        <div class="callout">
+          <strong>Ghi nhớ:</strong>
+          <p>Mã hóa tốt giúp tăng tốc độ, ổn định và khả năng chống nhiễu khi truyền dữ liệu.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="practice" class="practice">
+      <p class="section-heading">Thực hành</p>
+      <h2>Tổng kết &amp; bài tập thực hành</h2>
+      <h3>🔎 Tổng kết nhanh</h3>
+      <ul>
+        <li>Dữ liệu <strong>luôn phải mã hóa trước khi truyền</strong>.</li>
+        <li>Mã hóa ảnh hưởng trực tiếp đến: tốc độ, độ ổn định, khả năng chống nhiễu.</li>
+        <li>Mỗi môi trường truyền dùng <strong>kỹ thuật mã hóa khác nhau</strong>.</li>
+      </ul>
+      <div class="callout">
+        <strong>Phần B – Bài thực hành:</strong>
+        <p><strong>Yêu cầu:</strong> Mô tả quá trình truyền dữ liệu khi gửi 1 tin nhắn từ điện thoại qua Wi-Fi.</p>
+        <ol>
+          <li>Dữ liệu ban đầu là gì?</li>
+          <li>Được mã hóa thành tín hiệu nào?</li>
+          <li>Truyền qua môi trường gì?</li>
+          <li>Thiết bị nhận giải mã ra sao?</li>
+        </ol>
+      </div>
+    </section>
+
+    <div class="footer-cta">
+      <a href="../index.html">← Về trang chủ</a>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💻 Laptop Testing Procedure</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="lang-switcher">
+        <a href="index_vn.html">VN</a>
+    </div>
+    <div class="container">
+        <header>
+            <img src="my_logo.jpeg" alt="DQ.TECH Logo" class="logo">
+            <h1>💻 Laptop Testing Procedure</h1>
+            <p class="subtitle">Complete guide to verify used laptop condition before purchase</p>
+        </header>
+
+        <div class="content">
+            <!-- Required Software Section -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h2>🧰 Required Software (Install Before Testing)</h2>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="software-grid">
+                        <div class="software-item">
+                            <strong>🔎 CPU-Z (required)</strong>
+                            CPU, RAM, motherboard verification
+                        </div>
+                        <div class="software-item">
+                            <strong>💽 CrystalDiskInfo (required)</strong>
+                            SSD/HDD health check
+                        </div>
+                        <div class="software-item">
+                            <strong>🌡 HWMonitor (required)</strong>
+                            Live temperature monitoring
+                        </div>
+                        <div class="software-item">
+                            <strong>🧪 Cinebench (required)</strong>
+                            Short CPU stability/performance test
+                        </div>
+                        <div class="software-item">
+                            <strong>🔥 AIDA64 Trial (required)</strong>
+                            CPU + RAM stress test
+                        </div>
+                        <div class="software-item">
+                            <strong>🎮 GPU-Z (required for dedicated GPU)</strong>
+                            GPU verification and monitoring
+                        </div>
+                        <div class="software-item">
+                            <strong>🪟 Windows Built-in Tools</strong>
+                            <code>powercfg /batteryreport</code> and <code>mdsched.exe</code>
+                        </div>
+                        <div class="software-item">
+                            <strong>🔋 BatteryInfoView (optional)</strong>
+                            Detailed battery details
+                        </div>
+                        <div class="software-item">
+                            <strong>🧠 MemTest86 (optional)</strong>
+                            Advanced RAM test
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BIOS Lock Check -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h2>1. 🔐 BIOS Lock Check (Do First)</h2>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <ol>
+                        <li>Power on laptop and enter BIOS/UEFI (press <code>F2</code>, <code>Del</code>,
+                            <code>Esc</code>, or brand-specific key)
+                        </li>
+                        <li>Verify you can access BIOS settings without a password</li>
+                        <li>Check for:
+                            <ul>
+                                <li>Admin/Supervisor password lock</li>
+                                <li>Secure boot changes blocked by password</li>
+                                <li>Boot order changes blocked by password</li>
+                            </ul>
+                        </li>
+                    </ol>
+                    <div class="danger-box">
+                        <strong>⚠️ Red Flag:</strong> If BIOS is locked and seller cannot remove it, do not proceed with
+                        purchase.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Physical Checks -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h2>2. 👀 Quick Physical Checks (Before Software)</h2>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <ul class="checklist">
+                        <li><strong>🖥 Screen:</strong> Check for dead pixels, discoloration, and brightness uniformity
+                        </li>
+                        <li><strong>⌨ Keyboard:</strong> Test every single key</li>
+                        <li><strong>🖱 Trackpad:</strong> Verify left/right click and multi-touch gestures (scroll,
+                            pinch)</li>
+                        <li><strong>🔌 Ports:</strong> Test USB ports, HDMI output, and audio jack</li>
+                        <li><strong>📶 Wireless:</strong> Confirm Wi-Fi connection and Bluetooth pairing</li>
+                        <li><strong>🎥 Camera & Audio:</strong> Test webcam and microphone</li>
+                        <li><strong>🌬 Thermals/Noise:</strong> Listen for unusual fan noise and check for obvious
+                            overheating during normal use</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Essential Software Tests -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h2>3. 🧪 Essential Software Tests</h2>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <h3>3.1 🔍 Check Overall Hardware Info</h3>
+                    <ul>
+                        <li><strong>CPU-Z</strong> (free): Confirms CPU, RAM, motherboard details<br>
+                            Download: <a href="https://www.cpuid.com" target="_blank">https://www.cpuid.com</a></li>
+                        <li><strong>GPU-Z</strong> (if dedicated GPU): Confirms GPU model is genuine</li>
+                    </ul>
+
+                    <h3>3.2 💽 Check SSD/HDD Health (Critical)</h3>
+                    <p><strong>CrystalDiskInfo</strong> (free) - Check for:</p>
+                    <ul>
+                        <li>Health status: <code>Good</code> / <code>Caution</code> / <code>Bad</code></li>
+                        <li>Power-on hours</li>
+                        <li>Reallocated or bad sectors</li>
+                    </ul>
+                    <div class="danger-box">
+                        <strong>Decision rule:</strong> If health is not <code>Good</code>, avoid buying.
+                    </div>
+
+                    <h3>3.3 🔋 Check Battery Health</h3>
+                    <h4>Windows built-in (recommended)</h4>
+                    <ol>
+                        <li>Open Command Prompt</li>
+                        <li>Run the following command:</li>
+                    </ol>
+                    <div class="code-block">powercfg /batteryreport</div>
+                    <ol start="3">
+                        <li>Open generated battery report and compare:
+                            <ul>
+                                <li>Design Capacity</li>
+                                <li>Full Charge Capacity</li>
+                            </ul>
+                        </li>
+                    </ol>
+                    <div class="warning-box">
+                        <strong>Rule:</strong> If Full Charge Capacity is below 70% of Design Capacity, battery is
+                        heavily worn.
+                    </div>
+                    <p><strong>Optional tool:</strong> BatteryInfoView (NirSoft) for detailed battery stats</p>
+
+                    <h3>3.4 🌡 Temperature & Stability Test</h3>
+
+                    <h4>Step A: Baseline Idle Check (HWMonitor)</h4>
+                    <ol>
+                        <li>Close unnecessary apps and let laptop sit idle for 5 to 10 minutes</li>
+                        <li>Open <strong>HWMonitor</strong> and watch:
+                            <ul>
+                                <li>CPU package/core temperatures</li>
+                                <li>Fan speed (if sensor available)</li>
+                                <li>CPU utilization at idle</li>
+                            </ul>
+                        </li>
+                        <li>Record idle values:</li>
+                    </ol>
+                    <div class="temp-guide">
+                        <div class="temp-item temp-good">
+                            <strong>✓ Good</strong><br>
+                            35-50°C
+                        </div>
+                        <div class="temp-item temp-warning">
+                            <strong>⚠ Warning</strong><br>
+                            50-60°C
+                        </div>
+                        <div class="temp-item temp-danger">
+                            <strong>✗ Red Flag</strong><br>
+                            Above 60°C at idle
+                        </div>
+                    </div>
+
+                    <h4>Step B: Short Load Test (Cinebench)</h4>
+                    <ol>
+                        <li>Keep <strong>HWMonitor</strong> open during the benchmark</li>
+                        <li>Run one short CPU test in <strong>Cinebench</strong> (single run is enough for screening)
+                        </li>
+                        <li>During run, check for:
+                            <ul>
+                                <li>System freeze, restart, blue screen, or app crash</li>
+                                <li>Sudden clock drops with high temperature (possible thermal throttling)</li>
+                                <li>Fan behavior (very loud, rattling, unstable RPM)</li>
+                            </ul>
+                        </li>
+                    </ol>
+                    <div class="danger-box">
+                        <strong>Immediate fail condition:</strong> Test cannot complete due to crash/shutdown
+                    </div>
+
+                    <h4>Step C: Sustained Stress Test (AIDA64 Trial)</h4>
+                    <ol>
+                        <li>Open <strong>AIDA64</strong> → Stress Test</li>
+                        <li>Select CPU and RAM-related stress options</li>
+                        <li>Run for 10 to 15 minutes while monitoring <strong>HWMonitor</strong></li>
+                        <li>Stop test immediately if:
+                            <ul>
+                                <li>Temperature stays above ~95°C for more than 1 to 2 minutes</li>
+                                <li>System becomes unstable (freeze/restart/errors)</li>
+                                <li>Fan noise becomes abnormally harsh (grinding/clicking)</li>
+                            </ul>
+                        </li>
+                    </ol>
+
+                    <h4>📈 Temperature Interpretation Guide</h4>
+                    <div class="info-box">
+                        <ul>
+                            <li>Peak up to low 90s°C under heavy stress can be normal on thin laptops</li>
+                            <li>Sustained near 95°C or above is a risk, especially with throttling or instability</li>
+                            <li>If idle is high and stress temperatures spike quickly, cooling system likely needs
+                                service (dust, dried thermal paste, or failing fan)</li>
+                        </ul>
+                    </div>
+
+                    <h4>✅ Pass/Fail for Thermal Test</h4>
+                    <div class="decision-box">
+                        <div class="decision-item pass">
+                            <strong>✓ PASS</strong><br>
+                            Stable benchmarks, no crash, idle below ~50°C, no sustained >95°C, normal fan sound
+                        </div>
+                        <div class="decision-item fail">
+                            <strong>✗ FAIL</strong><br>
+                            Crash/restart, persistent overheating, obvious throttling, or abnormal fan noise
+                        </div>
+                    </div>
+
+                    <h3>3.5 🧠 RAM Test</h3>
+                    <p><strong>Windows Memory Diagnostic</strong></p>
+                    <ol>
+                        <li>Press <code>Win + R</code></li>
+                        <li>Run <code>mdsched.exe</code></li>
+                    </ol>
+                    <p><strong>MemTest86</strong> (advanced, bootable USB) for deeper validation</p>
+                </div>
+            </div>
+
+            <!-- Red Flags -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h2>4. 🚩 Red Flags (Do Not Ignore)</h2>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="danger-box">
+                        <ul>
+                            <li>SSD health = <code>Caution</code> or <code>Bad</code></li>
+                            <li>Battery below 60-70% health</li>
+                            <li>Random shutdown during stress tests</li>
+                            <li>High idle temperature above ~60°C</li>
+                            <li>Strange fan noise</li>
+                            <li>BIOS password locked</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Final Decision -->
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h2>5. 🏁 Fast Pass/Fail Decision</h2>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="section-content">
+                    <div class="decision-box">
+                        <div class="decision-item pass">
+                            <strong>✓ PASS</strong>
+                            <p>No BIOS lock, storage health good, acceptable battery health, stable temperatures, no
+                                crashes, all core hardware working</p>
+                        </div>
+                        <div class="decision-item fail">
+                            <strong>✗ FAIL</strong>
+                            <p>Any major red flag: locked BIOS, failing drive, severe thermal instability, major battery
+                                degradation, repeated crashes</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>💡 Remember: A thorough test now saves money and headaches later!</p>
+            <p>Always test in person before making final payment</p>
+            <p>from DQ.TECH 💻</p>
+        </footer>
+    </div>
+
+    <script>
+        function toggleSection(header) {
+            const content = header.nextElementSibling;
+            const isActive = content.classList.contains('active');
+
+            // Toggle active class
+            if (isActive) {
+                content.classList.remove('active');
+                header.classList.remove('active');
+            } else {
+                content.classList.add('active');
+                header.classList.add('active');
+            }
+        }
+
+        // Open first section by default
+        document.addEventListener('DOMContentLoaded', function () {
+            const firstSection = document.querySelector('.section-header');
+            if (firstSection) {
+                toggleSection(firstSection);
+            }
+        });
+    </script>
+    <div class="qr-code">
+        <img src="dqtech_store_qr.png" alt="DQ.TECH QR Code">
+        <span>DQ TECH</span>
+    </div>
+</body>
+
+</html>

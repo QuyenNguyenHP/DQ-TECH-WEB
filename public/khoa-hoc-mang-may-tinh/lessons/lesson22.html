@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bài 22: Giao thức Web: HTTP và HTTPS</title>
+  <style>
+    :root {
+      --primary: #0057ff;
+      --primary-dark: #0039a8;
+      --accent: #ffb703;
+      --ink: #1f2532;
+      --muted: #5b6476;
+      --surface: #ffffff;
+      --surface-alt: #f2f4ff;
+      --border: rgba(15, 63, 167, 0.1);
+      --radius: 24px;
+      --shadow: 0 20px 60px rgba(15, 87, 255, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top, rgba(169, 200, 255, 0.4), transparent 55%),
+        #eef2ff;
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    header.hero {
+      background: linear-gradient(120deg, var(--primary), #7357ff);
+      border-radius: var(--radius);
+      padding: 3.5rem clamp(2rem, 4vw, 4.5rem);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.35), transparent 45%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero h1 {
+      margin: 0 0 1rem;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 640px;
+      font-size: 1.05rem;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 2rem;
+    }
+
+    .hero-actions a {
+      text-decoration: none;
+      padding: 0.85rem 1.8rem;
+      border-radius: 999px;
+      font-weight: 600;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .hero-actions a.primary {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.18);
+    }
+
+    .hero-actions a.secondary {
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: #fff;
+      backdrop-filter: blur(6px);
+    }
+
+    .hero-actions a:hover {
+      transform: translateY(-3px);
+    }
+
+    .stat-grid {
+      margin-top: 2.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 1rem 1.25rem;
+      text-align: left;
+      backdrop-filter: blur(4px);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .stat strong {
+      font-size: 1.25rem;
+      display: block;
+    }
+
+    section {
+      margin-top: 2.5rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 2.25rem clamp(1.5rem, 4vw, 3rem);
+      box-shadow: 0 10px 35px rgba(38, 44, 82, 0.08);
+      border: 1px solid var(--border);
+    }
+
+    .section-heading {
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.25em;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    h2 {
+      margin: 0 0 1.5rem;
+      font-size: clamp(1.7rem, 3vw, 2.2rem);
+      color: var(--ink);
+    }
+
+    .goal-grid,
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .goal,
+    .card {
+      background: var(--surface-alt);
+      border-radius: 18px;
+      padding: 1.25rem 1.35rem;
+      border: 1px solid rgba(15, 63, 167, 0.12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .goal span,
+    .card span.badge {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .goal p,
+    .card p {
+      margin: 0.6rem 0 0;
+    }
+
+    .highlight-card {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      border-radius: 20px;
+      background: linear-gradient(120deg, rgba(0, 87, 255, 0.1), rgba(255, 183, 3, 0.18));
+      border: 1px dashed rgba(0, 87, 255, 0.3);
+    }
+
+    blockquote {
+      margin: 1rem 0 0;
+      padding-left: 1.5rem;
+      border-left: 3px solid var(--primary);
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .step {
+      padding: 1rem 1.2rem;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: #fff;
+    }
+
+    .step strong {
+      display: block;
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .timeline-card {
+      border-radius: 20px;
+      padding: 1.4rem;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      background: #fff;
+      box-shadow: 0 18px 35px rgba(13, 41, 80, 0.06);
+    }
+
+    .timeline-card h3 {
+      margin: 0 0 0.4rem;
+      font-size: 1rem;
+      color: var(--primary-dark);
+    }
+
+    .component-grid {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .component-card {
+      padding: 1.5rem;
+      border-radius: 20px;
+      border: 1px solid rgba(0, 87, 255, 0.15);
+      background: linear-gradient(180deg, rgba(0, 87, 255, 0.05), #fff 45%);
+    }
+
+    ul {
+      margin: 0.35rem 0 0 1.25rem;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 0.35rem;
+    }
+
+    .case-study {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .practice ol {
+      margin: 0.75rem 0 0 1.25rem;
+    }
+
+    .callout {
+      margin-top: 1.25rem;
+      padding: 1.35rem 1.5rem;
+      border-radius: 18px;
+      background: rgba(255, 183, 3, 0.12);
+      border: 1px solid rgba(255, 183, 3, 0.3);
+    }
+
+    .footer-cta {
+      text-align: center;
+      margin-top: 3rem;
+    }
+
+    .footer-cta a {
+      text-decoration: none;
+      color: #fff;
+      background: var(--primary);
+      padding: 0.9rem 2rem;
+      border-radius: 999px;
+      display: inline-flex;
+      gap: 0.35rem;
+      font-weight: 600;
+      box-shadow: 0 18px 40px rgba(0, 87, 255, 0.25);
+    }
+
+    code {
+      background: rgba(0, 87, 255, 0.08);
+      color: var(--primary-dark);
+      padding: 0.15rem 0.4rem;
+      border-radius: 6px;
+      font-size: 0.92em;
+    }
+
+    @media (max-width: 640px) {
+      header.hero {
+        padding: 2.5rem 1.75rem;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      section {
+        padding: 1.75rem 1.35rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <div class="hero-content">
+        <p class="section-heading" style="color: rgba(255,255,255,0.7); letter-spacing: 0.4em;">Bài học 22</p>
+        <h1>Giao thức Web: HTTP và HTTPS</h1>
+        <p>
+          Mỗi lần bạn bấm vào một liên kết, HTTP/HTTPS chịu trách nhiệm đưa dữ liệu từ server về trình duyệt. Bài học
+          này giúp bạn hiểu cách web vận hành và vì sao HTTPS là tiêu chuẩn bắt buộc.
+        </p>
+        <div class="hero-actions">
+          <a href="#objectives" class="primary">Bắt đầu học</a>
+          <a href="#practice" class="secondary">Làm bài tập</a>
+        </div>
+        <div class="stat-grid">
+          <div class="stat">
+            <strong>25 phút</strong>
+            Thời lượng gợi ý
+          </div>
+          <div class="stat">
+            <strong>6 phần</strong>
+            Chủ đề trọng tâm
+          </div>
+          <div class="stat">
+            <strong>Port 80/443</strong>
+            HTTP/HTTPS
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section id="objectives">
+      <p class="section-heading">Mục tiêu</p>
+      <h2>Kết quả học tập mong đợi</h2>
+      <div class="goal-grid">
+        <div class="goal">
+          <span>🎯 Mục tiêu 01</span>
+          <p>Hiểu HTTP và HTTPS là gì.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 02</span>
+          <p>Nắm cách trình duyệt và web server giao tiếp.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 03</span>
+          <p>Phân biệt HTTP và HTTPS.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 04</span>
+          <p>Hiểu vai trò của mã hóa và chứng chỉ số.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 05</span>
+          <p>Nhận diện các phương thức HTTP phổ biến.</p>
+        </div>
+      </div>
+      <div class="highlight-card">
+        <strong>Đặt vấn đề:</strong>
+        <blockquote>
+          "Điều gì xảy ra phía sau khi bạn truy cập <code>http://example.com</code> hay <code>https://example.com</code>?"
+        </blockquote>
+        <p>Câu trả lời nằm ở giao thức web và lớp bảo mật TLS.</p>
+      </div>
+    </section>
+
+    <section id="overview">
+      <p class="section-heading">Khái niệm</p>
+      <h2>HTTP và HTTPS</h2>
+      <div class="card-grid">
+        <div class="card">
+          <span class="badge">📖 HTTP</span>
+          <p>Giao thức truyền dữ liệu giữa trình duyệt và web server, chạy trên TCP port 80.</p>
+        </div>
+        <div class="card">
+          <span class="badge">🔒 HTTPS</span>
+          <p>HTTP kết hợp TLS/SSL để mã hóa, xác thực và đảm bảo toàn vẹn dữ liệu trên port 443.</p>
+        </div>
+        <div class="card">
+          <span class="badge">⚠️ HTTP đặc trưng</span>
+          <ul>
+            <li>Stateless.</li>
+            <li>Không mã hóa dữ liệu.</li>
+            <li>Dễ bị nghe lén nếu dùng dữ liệu nhạy cảm.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Nguyên lý</p>
+      <h2>Request - Response & TLS Handshake</h2>
+      <div class="steps">
+        <div class="step">
+          <strong>1. HTTP Request</strong>
+          Trình duyệt gửi request (GET, POST...) đến server.
+        </div>
+        <div class="step">
+          <strong>2. HTTP Response</strong>
+          Server trả về HTML/CSS/JS hoặc dữ liệu API.
+        </div>
+        <div class="step">
+          <strong>3. TLS Handshake</strong>
+          Với HTTPS, client xác thực certificate và tạo khóa mã hóa.
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">So sánh</p>
+      <h2>HTTP vs HTTPS</h2>
+      <div class="timeline">
+        <article class="timeline-card">
+          <h3>HTTP</h3>
+          <ul>
+            <li>Không mã hóa.</li>
+            <li>Dữ liệu dễ bị nghe lén.</li>
+            <li>Port 80.</li>
+            <li>Không có chứng chỉ số.</li>
+          </ul>
+        </article>
+        <article class="timeline-card">
+          <h3>HTTPS</h3>
+          <ul>
+            <li>Mã hóa dữ liệu.</li>
+            <li>Xác thực danh tính website.</li>
+            <li>Port 443.</li>
+            <li>Tiêu chuẩn bắt buộc của web hiện đại.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Kỹ thuật</p>
+      <h2>Phương thức HTTP & Status Code</h2>
+      <div class="component-grid">
+        <div class="component-card">
+          <h3>HTTP Methods</h3>
+          <ul>
+            <li>GET: lấy dữ liệu.</li>
+            <li>POST: gửi dữ liệu.</li>
+            <li>PUT: cập nhật.</li>
+            <li>DELETE: xóa.</li>
+            <li>HEAD: kiểm tra.</li>
+          </ul>
+        </div>
+        <div class="component-card">
+          <h3>Status Code</h3>
+          <ul>
+            <li>2xx: thành công (200).</li>
+            <li>3xx: chuyển hướng (301).</li>
+            <li>4xx: lỗi client (404).</li>
+            <li>5xx: lỗi server (500).</li>
+          </ul>
+        </div>
+        <div class="component-card">
+          <h3>Request gồm</h3>
+          <ul>
+            <li>Method + URL.</li>
+            <li>Header.</li>
+            <li>Body (nếu có).</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Ví dụ</p>
+      <h2>Case study: website thương mại điện tử</h2>
+      <div class="case-study">
+        <div>
+          <p>🛍️ Người dùng nhập email, mật khẩu, thẻ ngân hàng.</p>
+          <p>🔓 Nếu dùng HTTP: dữ liệu có thể bị nghe lén.</p>
+          <p>🔒 HTTPS mã hóa dữ liệu và bảo vệ người dùng.</p>
+          <p>✅ Vì vậy mọi website đăng nhập bắt buộc HTTPS.</p>
+        </div>
+        <div class="callout">
+          <strong>Kết luận:</strong>
+          <p>HTTPS không chỉ là lựa chọn, mà là tiêu chuẩn bắt buộc cho web an toàn.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="practice" class="practice">
+      <p class="section-heading">Thực hành</p>
+      <h2>Tổng kết & bài tập</h2>
+      <p>Thực hành nhanh trên trình duyệt:</p>
+      <ol>
+        <li>Truy cập một website bất kỳ.</li>
+        <li>Kiểm tra HTTP hay HTTPS.</li>
+        <li>Xem certificate được cấp bởi ai.</li>
+        <li>Nêu điều gì xảy ra khi certificate hết hạn.</li>
+      </ol>
+      <div class="callout">
+        <strong>Gợi ý:</strong>
+        <p>Trả lời ngắn gọn 5-7 dòng, tập trung vào bảo mật và trải nghiệm người dùng.</p>
+      </div>
+    </section>
+
+    <div class="footer-cta">
+      <a href="../index.html">← Về trang chủ</a>
+    </div>
+  </main>
+</body>
+</html>

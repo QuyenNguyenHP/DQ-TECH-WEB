@@ -1,85 +1,181 @@
-# 🚀 Deploy `DQ TECH WEB V2` lên VPS với Apache2
+# DQ TECH WEB V2
 
-Hướng dẫn này dành cho repo:
+README này chuẩn hóa lại tài liệu cho dự án `DQ TECH WEB V2`, gồm:
+
+- Frontend build bằng `Vite`
+- Backend nhẹ bằng `Python` để phục vụ content API và upload ảnh
+- Mô hình deploy production trên `Apache2`
+
+## Tổng quan
+
+Thông tin đang dùng:
 
 - Project local: `C:\Users\Quyen PC\Desktop\DQ TECH WEB V2`
 - VPS IP: `31.97.189.234`
 - Domain: `dqtech.cloud`
 - Web server: `Apache2`
+- Frontend: `Vite`
+- Backend content/upload: `Python`
 
-Repo hiện tại là frontend dùng `Vite`, nên cách deploy phù hợp nhất là:
+Mô hình triển khai khuyến nghị:
 
-1. Build frontend ra thư mục `dist`
-2. Copy `dist` lên VPS
-3. Cấu hình `Apache2` để serve domain `dqtech.cloud`
-4. Bật HTTPS bằng Let's Encrypt
+- Frontend build ra thư mục `dist/`
+- Apache serve file tĩnh từ `dist/`
+- Backend Python chạy nội bộ trên `127.0.0.1:8000`
+- Apache reverse proxy cho:
+  - `/api/content`
+  - `/uploads`
 
-## 📌 Mô hình triển khai
+Lợi ích:
 
-Frontend build tĩnh:
+- Frontend và backend tách rõ trách nhiệm
+- Dễ quản lý bằng `systemd`
+- Upload ảnh không phụ thuộc vào Vite dev server
 
-- `Vite` build ra file tĩnh trong `dist/`
-- `Apache2` serve trực tiếp các file này
+## Cấu trúc chính
 
-Nếu sau này bạn có backend API riêng:
+```text
+DQ TECH WEB V2/
+|-- backend/
+|   |-- apache/
+|   |   `-- dqtech.cloud.conf.example
+|   |-- data/
+|   |-- uploads/
+|   |-- dqtech-content-api.service.example
+|   `-- server.py
+|-- src/
+|-- .env.example
+|-- package.json
+`-- README.md
+```
 
-- Có thể chạy backend ở port nội bộ như `3000` hoặc `8000`
-- Dùng `Apache reverse proxy` để chuyển tiếp request API
+## Chạy local
 
-README này ưu tiên cách triển khai frontend static vì đơn giản, ổn định và phù hợp với repo hiện tại.
+### 1. Cài dependencies frontend
 
-## 1. ✅ Chuẩn bị domain
+```bash
+npm install
+```
 
-Vào nơi quản lý DNS của domain `dqtech.cloud` và tạo:
+### 2. Chạy frontend dev
+
+```bash
+npm run dev
+```
+
+### 3. Chạy backend local
+
+```bash
+npm run dev:api
+```
+
+Hoặc:
+
+```bash
+python backend/server.py
+```
+
+### 4. Build frontend
+
+```bash
+npm run build
+```
+
+## Biến môi trường
+
+### Frontend
+
+File mẫu:
+
+```text
+.env.example
+```
+
+Nội dung hiện tại:
+
+```env
+VITE_CONTENT_API_BASE=/api/content
+```
+
+Với cấu hình này, frontend gọi API qua cùng domain, phù hợp khi Apache đang reverse proxy backend.
+
+### Backend
+
+Backend `backend/server.py` hỗ trợ các biến môi trường sau:
+
+- `CONTENT_API_HOST`: mặc định `127.0.0.1`
+- `CONTENT_API_PORT`: mặc định `8000`
+- `CONTENT_API_MAX_BODY_MB`: mặc định `20`
+- `CONTENT_API_ALLOW_ORIGIN`: tùy chọn, dùng khi cần CORS
+
+Ví dụ chạy backend ở cổng khác:
+
+```bash
+CONTENT_API_PORT=8131 python3 backend/server.py
+```
+
+## Backend content API
+
+Backend hiện phục vụ:
+
+- `GET /api/content/health`
+- `GET /api/content/bootstrap`
+- `GET /api/content/assets?target=products`
+- `GET /api/content/assets?target=blogs`
+- `POST /api/content/upload`
+- CRUD cho:
+  - `/api/content/products`
+  - `/api/content/blogs`
+
+Backend ghi dữ liệu vào:
+
+- `backend/data/content-store.json`
+- `backend/uploads/products`
+- `backend/uploads/blogs`
+
+Nếu deploy production, các thư mục trên phải có quyền ghi cho user chạy service.
+
+## Chuẩn bị domain
+
+Tạo DNS:
 
 - Bản ghi `A`
 - Host: `@`
 - Value: `31.97.189.234`
 
-Nếu muốn dùng thêm `www`:
+Nếu dùng thêm `www`:
 
 - Bản ghi `A`
 - Host: `www`
 - Value: `31.97.189.234`
 
-Kiểm tra DNS đã trỏ đúng:
+Kiểm tra:
 
 ```bash
 ping dqtech.cloud
-```
-
-hoặc:
-
-```bash
 nslookup dqtech.cloud
 ```
 
-Kết quả cần trả về IP `31.97.189.234`.
-
-## 2. 🖥️ SSH vào VPS
-
-Từ máy local:
+## SSH vào VPS
 
 ```bash
 ssh root@31.97.189.234
 ```
 
-Nếu bạn dùng user khác:
+Hoặc:
 
 ```bash
 ssh your_user@31.97.189.234
 ```
 
-## 3. 📦 Cài các gói cần thiết trên VPS
-
-Giả sử VPS dùng Ubuntu/Debian:
+## Cài gói cần thiết trên VPS
 
 ```bash
 apt update && apt upgrade -y
-apt install -y apache2 curl unzip rsync
+apt install -y apache2 curl unzip rsync python3 python3-venv python3-pip
 ```
 
-Cài Node.js LTS để build nếu bạn muốn build trực tiếp trên VPS:
+Nếu muốn build trực tiếp trên VPS:
 
 ```bash
 curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
@@ -88,116 +184,148 @@ node -v
 npm -v
 ```
 
-## 4. 🧱 Build project
+## Upload source lên VPS
 
-Có 2 cách.
-
-### Cách A: Build trên máy local rồi upload `dist` lên VPS
-
-Tại máy local, trong thư mục project:
-
-```bash
-npm install
-npm run build
-```
-
-Sau khi build xong sẽ có thư mục:
-
-```text
-dist/
-```
-
-### Cách B: Upload source lên VPS rồi build trên VPS
-
-Tạo thư mục project trên VPS:
+Tạo thư mục source:
 
 ```bash
 mkdir -p /var/www/dqtech-app
 ```
 
-Upload source từ máy local lên VPS:
+Upload source từ máy local:
 
 ```bash
 scp -r "C:\Users\Quyen PC\Desktop\DQ TECH WEB V2\*" root@31.97.189.234:/var/www/dqtech-app/
 ```
 
-Vào thư mục project trên VPS:
+Hoặc dùng `rsync`:
+
+```bash
+rsync -avz "C:\Users\Quyen PC\Desktop\DQ TECH WEB V2\" root@31.97.189.234:/var/www/dqtech-app/
+```
+
+## Deploy frontend
+
+Có 2 cách.
+
+### Cách A: Build ở local
+
+Trên máy local:
+
+```bash
+npm install
+npm run build
+```
+
+Trên VPS:
+
+```bash
+mkdir -p /var/www/dqtech.cloud
+rsync -avz dist/ root@31.97.189.234:/var/www/dqtech.cloud/
+chown -R www-data:www-data /var/www/dqtech.cloud
+chmod -R 755 /var/www/dqtech.cloud
+```
+
+### Cách B: Build trên VPS
 
 ```bash
 cd /var/www/dqtech-app
 npm install
 npm run build
-```
-
-## 5. 📁 Tạo thư mục chạy web trên Apache
-
-Tạo thư mục public cho domain:
-
-```bash
 mkdir -p /var/www/dqtech.cloud
-```
-
-Nếu bạn build trên local, dùng `scp` hoặc `rsync` để upload thư mục `dist`:
-
-```bash
-scp -r dist/* root@31.97.189.234:/var/www/dqtech.cloud/
-```
-
-Khuyến nghị dùng `rsync` để cập nhật nhanh hơn:
-
-```bash
-rsync -avz dist/ root@31.97.189.234:/var/www/dqtech.cloud/
-```
-
-Phân quyền:
-
-```bash
+cp -r dist/* /var/www/dqtech.cloud/
 chown -R www-data:www-data /var/www/dqtech.cloud
 chmod -R 755 /var/www/dqtech.cloud
 ```
 
-## 6. ⚙️ Tạo VirtualHost cho Apache2
+## Deploy backend Python
 
-Tạo file config:
+### Chạy thử thủ công
 
 ```bash
-nano /etc/apache2/sites-available/dqtech.cloud.conf
+cd /var/www/dqtech-app
+python3 backend/server.py
 ```
 
-Dán nội dung sau:
+### Cấp quyền ghi cho backend
+
+```bash
+chown -R www-data:www-data /var/www/dqtech-app/backend/data /var/www/dqtech-app/backend/uploads
+chmod -R 775 /var/www/dqtech-app/backend/data /var/www/dqtech-app/backend/uploads
+```
+
+### Chạy bằng systemd
+
+Repo đã có file mẫu:
+
+```text
+backend/dqtech-content-api.service.example
+```
+
+Copy sang `systemd`:
+
+```bash
+cp /var/www/dqtech.cloud/backend/dqtech-content-api.service.example /etc/systemd/system/dqtech-content-api.service
+```
+
+Kích hoạt service:
+
+```bash
+systemctl daemon-reload
+systemctl enable --now dqtech-content-api
+systemctl restart dqtech-content-api
+systemctl status dqtech-content-api
+```
+
+Nếu muốn đổi cổng backend, sửa biến:
+
+```ini
+Environment=CONTENT_API_PORT=8131
+```
+
+## Cấu hình Apache
+
+### Bật các module cần thiết
+
+```bash
+a2enmod rewrite proxy proxy_http ssl headers
+systemctl reload apache2
+```
+
+### Dùng file VirtualHost mẫu
+
+Repo đã có file:
+
+```text
+backend/apache/dqtech.cloud.conf.example
+```
+
+Copy vào Apache:
+
+```bash
+cp /var/www/dqtech-app/backend/apache/dqtech.cloud.conf.example /etc/apache2/sites-available/dqtech.cloud.conf
+```
+
+File này đã gồm:
+
+- Redirect HTTP sang HTTPS
+- Serve frontend từ `/var/www/dqtech.cloud`
+- Proxy `/api/content` về `127.0.0.1:8000`
+- Proxy `/uploads` về `127.0.0.1:8000`
+- Rewrite về `index.html` để hỗ trợ client-side routing
+
+Nếu backend chạy ở cổng `8131`, sửa các dòng proxy trong file Apache:
 
 ```apache
-<VirtualHost *:80>
-    ServerName dqtech.cloud
-    ServerAlias www.dqtech.cloud
-
-    DocumentRoot /var/www/dqtech.cloud
-
-    <Directory /var/www/dqtech.cloud>
-        Options Indexes FollowSymLinks
-        AllowOverride All
-        Require all granted
-    </Directory>
-
-    ErrorLog ${APACHE_LOG_DIR}/dqtech.cloud_error.log
-    CustomLog ${APACHE_LOG_DIR}/dqtech.cloud_access.log combined
-
-    RewriteEngine On
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^ /index.html [L]
-</VirtualHost>
+ProxyPass /api/content http://127.0.0.1:8131/api/content retry=0 timeout=60
+ProxyPassReverse /api/content http://127.0.0.1:8131/api/content
+ProxyPass /uploads http://127.0.0.1:8131/uploads retry=0 timeout=60
+ProxyPassReverse /uploads http://127.0.0.1:8131/uploads
 ```
 
-Lý do cần đoạn rewrite:
-
-- App Vite/React thường dùng client-side routing
-- Khi refresh các route như `/about` hoặc `/services`, Apache phải trả về `index.html`
-
-## 7. 🔧 Bật site và module cần thiết
+### Enable site
 
 ```bash
-a2enmod rewrite
 a2ensite dqtech.cloud.conf
 a2dissite 000-default.conf
 apache2ctl configtest
@@ -206,7 +334,7 @@ systemctl enable apache2
 systemctl status apache2
 ```
 
-Nếu `configtest` báo:
+Nếu kết quả:
 
 ```text
 Syntax OK
@@ -214,7 +342,16 @@ Syntax OK
 
 thì cấu hình hợp lệ.
 
-## 8. 🔥 Mở firewall
+## Bật HTTPS bằng Let's Encrypt
+
+```bash
+apt install -y certbot python3-certbot-apache
+certbot --apache -d dqtech.cloud -d www.dqtech.cloud
+systemctl status certbot.timer
+certbot renew --dry-run
+```
+
+## Mở firewall
 
 Nếu VPS dùng `ufw`:
 
@@ -225,68 +362,36 @@ ufw enable
 ufw status
 ```
 
-## 9. 🌐 Kiểm tra web qua HTTP
+## Quy trình cập nhật bản mới
 
-Mở trình duyệt:
-
-```text
-http://dqtech.cloud
-```
-
-Nếu mọi thứ đúng, site sẽ lên qua HTTP.
-
-## 10. 🔒 Bật HTTPS với Let's Encrypt
-
-Cài Certbot:
-
-```bash
-apt install -y certbot python3-certbot-apache
-```
-
-Tạo SSL:
-
-```bash
-certbot --apache -d dqtech.cloud -d www.dqtech.cloud
-```
-
-Sau khi thành công, kiểm tra auto renew:
-
-```bash
-systemctl status certbot.timer
-certbot renew --dry-run
-```
-
-Sau đó truy cập:
-
-```text
-https://dqtech.cloud
-```
-
-## 11. 🚀 Quy trình cập nhật bản mới
-
-Mỗi lần update frontend:
-
-### Nếu build ở local
+### Trường hợp build ở local
 
 ```bash
 npm run build
 rsync -avz dist/ root@31.97.189.234:/var/www/dqtech.cloud/
 ```
 
-### Nếu build trên VPS
+Nếu backend thay đổi, đồng bộ lại thư mục `backend/` và restart service:
+
+```bash
+systemctl restart dqtech-content-api
+systemctl reload apache2
+```
+
+### Trường hợp build trên VPS
 
 ```bash
 cd /var/www/dqtech-app
 git pull
 npm install
 npm run build
-rm -rf /var/www/dqtech.cloud/*
 cp -r dist/* /var/www/dqtech.cloud/
 chown -R www-data:www-data /var/www/dqtech.cloud
+systemctl restart dqtech-content-api
 systemctl reload apache2
 ```
 
-## 12. 🧪 Lệnh kiểm tra nhanh
+## Kiểm tra nhanh
 
 Kiểm tra Apache:
 
@@ -295,33 +400,59 @@ systemctl status apache2
 apache2ctl configtest
 ```
 
-Xem log lỗi:
+Kiểm tra backend:
+
+```bash
+systemctl status dqtech-content-api
+ss -tulpn | grep 8000
+```
+
+Nếu backend chạy cổng `8131`:
+
+```bash
+ss -tulpn | grep 8131
+```
+
+Xem log Apache:
 
 ```bash
 tail -f /var/log/apache2/dqtech.cloud_error.log
-```
-
-Xem log truy cập:
-
-```bash
 tail -f /var/log/apache2/dqtech.cloud_access.log
 ```
 
-Kiểm tra file đã lên đúng chưa:
+Xem log backend:
+
+```bash
+journalctl -u dqtech-content-api -f
+```
+
+Kiểm tra file frontend:
 
 ```bash
 ls -la /var/www/dqtech.cloud
 ```
 
-## 13. 🛠️ Lỗi thường gặp
+## Lỗi thường gặp
+
+### Không upload được ảnh
+
+Kiểm tra:
+
+1. Backend Python có đang chạy không
+2. Apache có proxy đúng `/api/content` và `/uploads` không
+3. Thư mục `backend/uploads` có quyền ghi cho `www-data` không
+4. Backend đang chạy cổng `8000` hay `8131`
+5. Đã restart `dqtech-content-api` sau khi sửa service chưa
 
 ### `403 Forbidden`
 
-Kiểm tra quyền thư mục:
+Kiểm tra quyền:
 
 ```bash
 chown -R www-data:www-data /var/www/dqtech.cloud
 chmod -R 755 /var/www/dqtech.cloud
+chown -R www-data:www-data /var/www/dqtech-app/backend/data /var/www/dqtech-app/backend/uploads
+chmod -R 775 /var/www/dqtech-app/backend/data /var/www/dqtech-app/backend/uploads
 ```
 
 ### `404` khi refresh route
@@ -330,23 +461,18 @@ chmod -R 755 /var/www/dqtech.cloud
 
 ```apache
 RewriteEngine On
+RewriteCond %{REQUEST_URI} !^/api/content [NC]
+RewriteCond %{REQUEST_URI} !^/uploads [NC]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^ /index.html [L]
-```
-
-và đã bật module:
-
-```bash
-a2enmod rewrite
-systemctl reload apache2
 ```
 
 ### Domain chưa vào được
 
 Kiểm tra:
 
-1. DNS đã trỏ về `31.97.189.234`
+1. DNS đã trỏ đúng IP `31.97.189.234`
 2. Port `80` và `443` đã mở
 3. Apache đang chạy
 
@@ -358,63 +484,37 @@ Kiểm tra:
 2. Truy cập được `http://dqtech.cloud` trước khi chạy `certbot`
 3. Port `80` và `443` không bị chặn
 
-## 14. 🔁 Reverse proxy cho backend API (tùy chọn)
+### Apache proxy sai cổng
 
-Nếu sau này bạn chạy backend ở:
+Nếu backend chạy `8131` mà Apache vẫn trỏ `8000`, toàn bộ upload và CRUD sẽ lỗi. Kiểm tra lại:
 
-```text
-127.0.0.1:8000
+```apache
+ProxyPass /api/content http://127.0.0.1:8131/api/content
+ProxyPass /uploads http://127.0.0.1:8131/uploads
 ```
 
-thì bật module:
+Sau đó:
 
 ```bash
-a2enmod proxy
-a2enmod proxy_http
+apache2ctl configtest
 systemctl reload apache2
 ```
 
-Rồi thêm vào file VirtualHost:
-
-```apache
-ProxyPreserveHost On
-ProxyPass /api http://127.0.0.1:8000/api
-ProxyPassReverse /api http://127.0.0.1:8000/api
-```
-
-Khi đó:
-
-- Frontend vẫn chạy trên `dqtech.cloud`
-- API sẽ đi qua `dqtech.cloud/api`
-
-## 15. 📂 Cấu trúc deploy khuyến nghị
+## Cấu trúc deploy khuyến nghị
 
 ```text
 /var/www/
-├── dqtech-app/        # source code, nếu muốn build trên VPS
-└── dqtech.cloud/      # file build cuối cùng để Apache serve
+|-- dqtech-app/      # source code, backend Python, file mẫu
+`-- dqtech.cloud/    # file build cuối cùng để Apache serve
 ```
 
-## 16. ✅ Checklist hoàn tất
+## Checklist hoàn tất
 
 - `dqtech.cloud` trỏ về `31.97.189.234`
 - Apache2 đã cài
-- `dist/` đã upload vào `/var/www/dqtech.cloud`
-- VirtualHost đã enable
-- `a2enmod rewrite` đã bật
+- Frontend `dist/` đã deploy vào `/var/www/dqtech.cloud`
+- Backend Python đang chạy bằng `systemd`
+- Apache đang proxy đúng `/api/content` và `/uploads`
+- Thư mục `backend/data` và `backend/uploads` có quyền ghi
 - `https://dqtech.cloud` truy cập được
-
-## 17. 💡 Khuyến nghị thực tế
-
-- Cách ổn nhất: build ở local rồi `rsync` thư mục `dist/` lên VPS
-- Không nên sửa trực tiếp file trong `/var/www/dqtech.cloud`
-- Nếu có backend, nên chạy backend bằng `systemd` rồi reverse proxy qua Apache
-- Trước mỗi lần deploy, luôn chạy `npm run build` để chắc chắn project build thành công
-
----
-
-Nếu cần, có thể viết tiếp:
-
-- file `deploy.sh` để deploy tự động bằng một lệnh
-- file Apache config tối ưu sẵn cho production
-- file `systemd service` cho backend
+- Upload ảnh trong admin hoạt động bình thường

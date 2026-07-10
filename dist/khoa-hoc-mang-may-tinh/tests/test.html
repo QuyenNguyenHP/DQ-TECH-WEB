@@ -1,0 +1,313 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Trắc nghiệm - Mạng máy tính</title>
+  <style>
+    :root {
+      --primary: #0057ff;
+      --primary-dark: #0039a8;
+      --accent: #ffb703;
+      --ink: #1f2532;
+      --muted: #5b6476;
+      --surface: #ffffff;
+      --surface-alt: #f2f4ff;
+      --border: rgba(15, 63, 167, 0.1);
+      --radius: 24px;
+      --shadow: 0 20px 60px rgba(15, 87, 255, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top, rgba(169, 200, 255, 0.4), transparent 55%),
+        #eef2ff;
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    header.hero {
+      background: linear-gradient(120deg, var(--primary), #7357ff);
+      border-radius: var(--radius);
+      padding: 3rem clamp(2rem, 4vw, 4.5rem);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.35), transparent 45%);
+      pointer-events: none;
+    }
+
+    .hero-logo {
+      position: absolute;
+      top: 1.6rem;
+      right: 1.8rem;
+      width: 86px;
+      height: 86px;
+      object-fit: contain;
+      opacity: 0.9;
+      z-index: 1;
+      filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.18));
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero h1 {
+      margin: 0 0 1rem;
+      font-size: clamp(2rem, 4vw, 3rem);
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 620px;
+      font-size: 1.05rem;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    section {
+      margin-top: 2.5rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 2.25rem clamp(1.5rem, 4vw, 3rem);
+      box-shadow: 0 10px 35px rgba(38, 44, 82, 0.08);
+      border: 1px solid var(--border);
+    }
+
+    .section-heading {
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.25em;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    h2 {
+      margin: 0 0 1rem;
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      color: var(--ink);
+    }
+
+    #dq-quiz-form {
+      margin-top: 1.5rem;
+    }
+
+    .dq-quiz-item {
+      margin-bottom: 1.25rem;
+      padding: 1.5rem;
+      border: 1px solid rgba(0, 87, 255, 0.1);
+      border-radius: 18px;
+      background: var(--surface-alt);
+    }
+
+    .dq-question-text {
+      font-weight: 600;
+      font-size: 1rem;
+      display: block;
+      margin-bottom: 0.75rem;
+      color: var(--primary-dark);
+    }
+
+    .dq-options-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      gap: 0.65rem;
+    }
+
+    .dq-option-label {
+      display: flex;
+      align-items: center;
+      padding: 0.85rem 1rem;
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      cursor: pointer;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      line-height: 1.4;
+      gap: 0.65rem;
+    }
+
+    .dq-option-label:hover {
+      border-color: var(--primary);
+      box-shadow: 0 8px 18px rgba(0, 87, 255, 0.12);
+      transform: translateY(-2px);
+    }
+
+    .dq-option-label.dq-correct {
+      border-color: #16c47f;
+      background: rgba(22, 196, 127, 0.15);
+      color: #0e5c3f;
+    }
+
+    .dq-option-label.dq-incorrect {
+      border-color: #ff5c70;
+      background: rgba(255, 92, 112, 0.15);
+      color: #7a1122;
+    }
+
+    .dq-option-label input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary);
+    }
+
+    .dq-submit-btn {
+      width: 100%;
+      margin-top: 1.5rem;
+      padding: 1rem 1.5rem;
+      border: none;
+      border-radius: 999px;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      background: var(--primary);
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+      box-shadow: 0 18px 35px rgba(0, 87, 255, 0.2);
+    }
+
+    .dq-submit-btn:hover {
+      transform: translateY(-3px);
+      background: var(--primary-dark);
+    }
+
+    #dq-result-box {
+      margin-top: 1.5rem;
+      padding: 1.25rem;
+      border-radius: 16px;
+      font-weight: 600;
+      text-align: center;
+      display: none;
+    }
+
+    .dq-feedback {
+      margin-top: 0.85rem;
+      border-radius: 14px;
+      padding: 0.9rem 1rem;
+      display: none;
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    .dq-correct-ans {
+      background: rgba(22, 196, 127, 0.15);
+      color: #0e5c3f;
+      border-left: 4px solid #16c47f;
+    }
+
+    .dq-explanation {
+      background: rgba(0, 87, 255, 0.08);
+      color: var(--ink);
+      border-left: 4px solid var(--primary);
+    }
+
+    .footer-cta {
+      text-align: center;
+      margin-top: 2.5rem;
+    }
+
+    .footer-cta a {
+      text-decoration: none;
+      color: #fff;
+      background: var(--primary);
+      padding: 0.9rem 2rem;
+      border-radius: 999px;
+      font-weight: 600;
+      box-shadow: 0 18px 35px rgba(0, 87, 255, 0.2);
+      display: inline-flex;
+      gap: 0.35rem;
+      align-items: center;
+    }
+
+    @media (max-width: 640px) {
+      header.hero {
+        padding: 2.25rem 1.5rem;
+      }
+
+      .hero-logo {
+        width: 64px;
+        height: 64px;
+        top: 1rem;
+        right: 1rem;
+      }
+
+      section {
+        padding: 1.75rem 1.25rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="hero">
+        <img class="hero-logo" src="../logo.png" alt="Logo khóa học" />
+        <div class="hero-content">
+        <p class="section-heading" style="color: rgba(255,255,255,0.7); letter-spacing: 0.35em;">
+            Trắc nghiệm
+        </p>
+
+        <h1 id="lessonTitle"></h1>
+
+        <p>Kiểm tra kiến thức bạn đã học.</p>
+        <p>Hãy chọn đáp án đúng nhất cho từng câu hỏi bạn nhé.</p>
+        </div>
+    </header> 
+
+    <section>
+      <p class="section-heading">Bài tập</p>
+      <p>Chúc bạn làm bài thật tốt! Sau khi nộp bài, hệ thống sẽ hiển thị đáp án đúng và giải thích chi tiết cho từng câu.</p>
+
+      <form id="dq-quiz-form">
+        <div id="dq-questions-container"></div>
+        <button type="button" class="dq-submit-btn" onclick="dqSubmitQuiz()">Nộp bài &amp; xem kết quả</button>
+      </form>
+
+      <div id="dq-result-box"></div>
+    </section>
+
+    <div class="footer-cta">
+      <a href="../index.html"> Quay về trang chủ</a>
+    </div>
+  </main>
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const lessonId = Number(params.get('id'));
+    window.LESSON_ID = Number.isFinite(lessonId) ? lessonId : 0;
+
+    if (!window.LESSON_ID) {
+      const titleEl = document.getElementById('lessonTitle');
+      const container = document.getElementById('dq-questions-container');
+      if (titleEl) {
+        titleEl.textContent = 'Chọn bài kiểm tra';
+      }
+      if (container) {
+        container.innerHTML = '<p>Thiếu mã bài. Hãy quay lại trang chủ và chọn bài test.</p>';
+      }
+    }
+  </script>
+  <script src="../data/quizzes.js"></script>
+  <script src="../data/quiz-runner.js"></script>
+</body>
+</html>

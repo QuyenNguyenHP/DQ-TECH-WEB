@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bài 18: Công nghệ NAT (Network Address Translation).</title>
+  <style>
+    :root {
+      --primary: #0057ff;
+      --primary-dark: #0039a8;
+      --accent: #ffb703;
+      --ink: #1f2532;
+      --muted: #5b6476;
+      --surface: #ffffff;
+      --surface-alt: #f2f4ff;
+      --border: rgba(15, 63, 167, 0.1);
+      --radius: 24px;
+      --shadow: 0 20px 60px rgba(15, 87, 255, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top, rgba(169, 200, 255, 0.4), transparent 55%),
+        #eef2ff;
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    header.hero {
+      background: linear-gradient(120deg, var(--primary), #7357ff);
+      border-radius: var(--radius);
+      padding: 3.5rem clamp(2rem, 4vw, 4.5rem);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.35), transparent 45%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero h1 {
+      margin: 0 0 1rem;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 580px;
+      font-size: 1.05rem;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 2rem;
+    }
+
+    .hero-actions a {
+      text-decoration: none;
+      padding: 0.85rem 1.8rem;
+      border-radius: 999px;
+      font-weight: 600;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .hero-actions a.primary {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.18);
+    }
+
+    .hero-actions a.secondary {
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: #fff;
+      backdrop-filter: blur(6px);
+    }
+
+    .hero-actions a:hover {
+      transform: translateY(-3px);
+    }
+
+    .stat-grid {
+      margin-top: 2.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 1rem 1.25rem;
+      text-align: left;
+      backdrop-filter: blur(4px);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .stat strong {
+      font-size: 1.25rem;
+      display: block;
+    }
+
+    section {
+      margin-top: 2.5rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 2.25rem clamp(1.5rem, 4vw, 3rem);
+      box-shadow: 0 10px 35px rgba(38, 44, 82, 0.08);
+      border: 1px solid var(--border);
+    }
+
+    .section-heading {
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.25em;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    h2 {
+      margin: 0 0 1.5rem;
+      font-size: clamp(1.7rem, 3vw, 2.2rem);
+      color: var(--ink);
+    }
+
+    h3 {
+      margin: 0 0 0.8rem;
+      color: var(--primary-dark);
+    }
+
+    .goal-grid,
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .goal,
+    .card {
+      background: var(--surface-alt);
+      border-radius: 18px;
+      padding: 1.25rem 1.35rem;
+      border: 1px solid rgba(15, 63, 167, 0.12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .goal span,
+    .card span.badge {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .goal p,
+    .card p {
+      margin: 0.6rem 0 0;
+    }
+
+    .highlight-card {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      border-radius: 20px;
+      background: linear-gradient(120deg, rgba(0, 87, 255, 0.1), rgba(255, 183, 3, 0.18));
+      border: 1px dashed rgba(0, 87, 255, 0.3);
+    }
+
+    blockquote {
+      margin: 1rem 0 0;
+      padding-left: 1.5rem;
+      border-left: 3px solid var(--primary);
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .step {
+      padding: 1rem 1.2rem;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: #fff;
+    }
+
+    .step strong {
+      display: block;
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .component-grid {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .component-card {
+      padding: 1.5rem;
+      border-radius: 20px;
+      border: 1px solid rgba(0, 87, 255, 0.15);
+      background: linear-gradient(180deg, rgba(0, 87, 255, 0.05), #fff 45%);
+    }
+
+    ul,
+    ol {
+      margin: 0.35rem 0 0 1.25rem;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 0.35rem;
+    }
+
+    code {
+      font-family: "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: 0.95em;
+      color: #0b1b3f;
+      background: rgba(15, 87, 255, 0.08);
+      padding: 0.1rem 0.35rem;
+      border-radius: 6px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.75rem;
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    th,
+    td {
+      padding: 0.75rem 0.9rem;
+      text-align: left;
+      font-size: 0.95rem;
+    }
+
+    th {
+      background: var(--surface-alt);
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    tr + tr td {
+      border-top: 1px solid rgba(15, 63, 167, 0.1);
+    }
+
+    .table-block {
+      margin-top: 1.5rem;
+    }
+
+    .case-study {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .practice ol {
+      margin: 0.75rem 0 0 1.25rem;
+    }
+
+    .callout {
+      margin-top: 1.25rem;
+      padding: 1.35rem 1.5rem;
+      border-radius: 18px;
+      background: rgba(255, 183, 3, 0.12);
+      border: 1px solid rgba(255, 183, 3, 0.3);
+    }
+
+    .footer-cta {
+      text-align: center;
+      margin-top: 3rem;
+    }
+
+    .footer-cta a {
+      text-decoration: none;
+      color: #fff;
+      background: var(--primary);
+      padding: 0.9rem 2rem;
+      border-radius: 999px;
+      display: inline-flex;
+      gap: 0.35rem;
+      font-weight: 600;
+      box-shadow: 0 18px 40px rgba(0, 87, 255, 0.25);
+    }
+
+    @media (max-width: 640px) {
+      header.hero {
+        padding: 2.5rem 1.75rem;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      section {
+        padding: 1.75rem 1.35rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <div class="hero-content">
+        <p class="section-heading" style="color: rgba(255,255,255,0.7); letter-spacing: 0.4em;">Bài học 18</p>
+        <h1>Công nghệ NAT (Network Address Translation)</h1>
+        <p>
+          Bài học giới thiệu NAT là gì, vì sao NAT ra đời, cách mạng private truy cập Internet, các loại NAT phổ biến
+          và vai trò của NAT trong IPv4.
+        </p>
+        <div class="hero-actions">
+          <a href="#content" class="primary">Bắt đầu học</a>
+          <a href="#practice" class="secondary">Làm bài tập</a>
+        </div>
+        <div class="stat-grid">
+          <div class="stat">
+            <strong>3 loại</strong>
+            Static · Dynamic · PAT
+          </div>
+          <div class="stat">
+            <strong>1 bảng</strong>
+            So sánh nhanh
+          </div>
+          <div class="stat">
+            <strong>IPv4</strong>
+            NAT là giải pháp then chốt
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section>
+      <p class="section-heading">Mục tiêu</p>
+      <h2>Kết quả học tập mong đợi</h2>
+      <div class="goal-grid">
+        <div class="goal">
+          <span>🎯 Mục tiêu 01</span>
+          <p>Hiểu NAT là gì và vì sao NAT ra đời.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 02</span>
+          <p>Phân biệt các loại NAT phổ biến.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 03</span>
+          <p>Hiểu cách mạng Private truy cập Internet.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 04</span>
+          <p>Nhận biết vai trò của NAT trong IPv4.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 05</span>
+          <p>Chuẩn bị nền tảng cho PAT, Firewall, IPv6.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Đặt vấn đề</p>
+      <h2>Làm sao nhiều thiết bị dùng chung một IP Public?</h2>
+      <p>Gia đình bạn có:</p>
+      <ul>
+        <li>1 modem / router</li>
+        <li>Nhiều thiết bị: laptop, điện thoại, TV</li>
+      </ul>
+      <p>Nhà mạng chỉ cấp 1 IP Public.</p>
+      <div class="highlight-card">
+        <strong>Câu hỏi:</strong>
+        <blockquote>Làm sao nhiều thiết bị private cùng truy cập Internet thông qua 1 IP Public duy nhất?</blockquote>
+        <p>Câu trả lời là <strong>NAT</strong>.</p>
+      </div>
+    </section>
+
+    <section id="content">
+      <p class="section-heading">Khái niệm</p>
+      <h2>NAT là gì và vì sao cần NAT?</h2>
+      <div class="card-grid">
+        <div class="card">
+          <span class="badge">📖 NAT là gì?</span>
+          <p><strong>NAT (Network Address Translation)</strong> là công nghệ chuyển đổi địa chỉ IP Private ↔ IP Public.</p>
+          <ul>
+            <li>Thực hiện trên router hoặc firewall.</li>
+            <li>Hoạt động ở Layer 3 &amp; Layer 4.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <span class="badge">✅ NAT giúp</span>
+          <ul>
+            <li>Tiết kiệm IPv4.</li>
+            <li>Tăng bảo mật cơ bản.</li>
+            <li>Kéo dài tuổi thọ IPv4.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <span class="badge">❓ Vì sao cần NAT</span>
+          <ul>
+            <li>IPv4 cạn kiệt.</li>
+            <li>Số thiết bị tăng nhanh.</li>
+            <li>Không thể cấp IP Public cho mọi thiết bị.</li>
+          </ul>
+          <p>👉 NAT là giải pháp tạm thời nhưng cực kỳ hiệu quả.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Nguyên lý</p>
+      <h2>Cách NAT dịch địa chỉ</h2>
+      <div class="steps">
+        <div class="step">
+          <strong>1. Gửi ra ngoài</strong>
+          Thiết bị private gửi packet ra Internet.
+        </div>
+        <div class="step">
+          <strong>2. Dịch địa chỉ</strong>
+          Router thay IP nguồn Private → IP Public.
+        </div>
+        <div class="step">
+          <strong>3. Lưu bảng</strong>
+          Router lưu thông tin vào NAT Table.
+        </div>
+        <div class="step">
+          <strong>4. Nhận phản hồi</strong>
+          Server Internet trả dữ liệu về IP Public.
+        </div>
+        <div class="step">
+          <strong>5. Dịch ngược</strong>
+          Router dịch ngược → IP Private ban đầu.
+        </div>
+      </div>
+      <p>📌 Người ngoài không thấy IP nội bộ.</p>
+      <div class="callout">
+        <strong>NAT Table lưu:</strong>
+        <ul>
+          <li>IP Private</li>
+          <li>IP Public</li>
+          <li>Port (nếu có)</li>
+        </ul>
+        <p>Giúp router gửi dữ liệu đúng thiết bị.</p>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Các loại NAT</p>
+      <h2>Static, Dynamic và PAT</h2>
+      <div class="component-grid">
+        <div class="component-card">
+          <h3>a. Static NAT</h3>
+          <p>1 IP Private ↔ 1 IP Public (cố định).</p>
+          <p><strong>Dùng cho:</strong></p>
+          <ul>
+            <li>Server nội bộ</li>
+            <li>Camera</li>
+            <li>Web server</li>
+          </ul>
+        </div>
+        <div class="component-card">
+          <h3>b. Dynamic NAT</h3>
+          <p>IP Private ↔ IP Public (lấy từ pool).</p>
+          <p>📌 Ít dùng trong gia đình.</p>
+        </div>
+        <div class="component-card">
+          <h3>c. PAT (NAT Overload)</h3>
+          <p>Nhiều IP Private → 1 IP Public.</p>
+          <p>Phân biệt bằng Port.</p>
+          <p>📌 Đây là NAT phổ biến nhất hiện nay.</p>
+        </div>
+      </div>
+      <div class="table-block">
+        <h3>d. So sánh nhanh</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Loại NAT</th>
+              <th>IP Public</th>
+              <th>Số thiết bị</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Static</td>
+              <td>1</td>
+              <td>1</td>
+            </tr>
+            <tr>
+              <td>Dynamic</td>
+              <td>N</td>
+              <td>≤ N</td>
+            </tr>
+            <tr>
+              <td>PAT</td>
+              <td>1</td>
+              <td>Rất nhiều</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Ví dụ</p>
+      <h2>Case study: Mạng gia đình</h2>
+      <div class="case-study">
+        <div>
+          <p>Router có IP Public: <code>113.x.x.x</code></p>
+          <p>Thiết bị:</p>
+          <ul>
+            <li>Laptop: <code>192.168.1.10</code></li>
+            <li>Phone: <code>192.168.1.20</code></li>
+          </ul>
+        </div>
+        <div class="callout">
+          <strong>Quá trình:</strong>
+          <ul>
+            <li><code>192.168.1.10:5000 → 113.x.x.x:40001</code></li>
+            <li><code>192.168.1.20:5001 → 113.x.x.x:40002</code></li>
+          </ul>
+          <p>👉 Router dùng <strong>PAT</strong> để phân biệt.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="practice" class="practice">
+      <p class="section-heading">Thực hành</p>
+      <h2>Tổng kết &amp; bài tập</h2>
+      <p><strong>Tổng kết kiến thức:</strong></p>
+      <ul>
+        <li>NAT chuyển IP Private ↔ Public.</li>
+        <li>Giải quyết bài toán cạn IPv4.</li>
+        <li>NAT tạo lớp bảo mật cơ bản.</li>
+        <li>PAT là loại NAT phổ biến nhất.</li>
+        <li>IPv6 không cần NAT.</li>
+      </ul>
+      <p><strong>Không có NAT → Internet IPv4 không tồn tại đến hôm nay.</strong></p>
+      <div class="callout">
+        <strong>Bài tập về nhà:</strong>
+        <p>Hãy trả lời:</p>
+        <ol>
+          <li>Vì sao NAT giúp tăng bảo mật?</li>
+          <li>Nhà bạn đang dùng loại NAT nào?</li>
+          <li>Nếu đặt Web Server trong LAN, cần NAT gì?</li>
+        </ol>
+        <p>📌 Mỗi câu 2–3 dòng.</p>
+      </div>
+    </section>
+
+    <div class="footer-cta">
+      <a href="../index.html">← Về trang chủ</a>
+    </div>
+  </main>
+</body>
+</html>

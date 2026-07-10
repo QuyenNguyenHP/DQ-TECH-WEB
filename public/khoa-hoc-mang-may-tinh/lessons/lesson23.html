@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bài 23: Email Protocols: SMTP, POP3, IMAP</title>
+  <style>
+    :root {
+      --primary: #0057ff;
+      --primary-dark: #0039a8;
+      --accent: #ffb703;
+      --ink: #1f2532;
+      --muted: #5b6476;
+      --surface: #ffffff;
+      --surface-alt: #f2f4ff;
+      --border: rgba(15, 63, 167, 0.1);
+      --radius: 24px;
+      --shadow: 0 20px 60px rgba(15, 87, 255, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top, rgba(169, 200, 255, 0.4), transparent 55%),
+        #eef2ff;
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    header.hero {
+      background: linear-gradient(120deg, var(--primary), #7357ff);
+      border-radius: var(--radius);
+      padding: 3.5rem clamp(2rem, 4vw, 4.5rem);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.35), transparent 45%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero h1 {
+      margin: 0 0 1rem;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 640px;
+      font-size: 1.05rem;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 2rem;
+    }
+
+    .hero-actions a {
+      text-decoration: none;
+      padding: 0.85rem 1.8rem;
+      border-radius: 999px;
+      font-weight: 600;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .hero-actions a.primary {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.18);
+    }
+
+    .hero-actions a.secondary {
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: #fff;
+      backdrop-filter: blur(6px);
+    }
+
+    .hero-actions a:hover {
+      transform: translateY(-3px);
+    }
+
+    .stat-grid {
+      margin-top: 2.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 1rem 1.25rem;
+      text-align: left;
+      backdrop-filter: blur(4px);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .stat strong {
+      font-size: 1.25rem;
+      display: block;
+    }
+
+    section {
+      margin-top: 2.5rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 2.25rem clamp(1.5rem, 4vw, 3rem);
+      box-shadow: 0 10px 35px rgba(38, 44, 82, 0.08);
+      border: 1px solid var(--border);
+    }
+
+    .section-heading {
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.25em;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    h2 {
+      margin: 0 0 1.5rem;
+      font-size: clamp(1.7rem, 3vw, 2.2rem);
+      color: var(--ink);
+    }
+
+    .goal-grid,
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .goal,
+    .card {
+      background: var(--surface-alt);
+      border-radius: 18px;
+      padding: 1.25rem 1.35rem;
+      border: 1px solid rgba(15, 63, 167, 0.12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .goal span,
+    .card span.badge {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .goal p,
+    .card p {
+      margin: 0.6rem 0 0;
+    }
+
+    .highlight-card {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      border-radius: 20px;
+      background: linear-gradient(120deg, rgba(0, 87, 255, 0.1), rgba(255, 183, 3, 0.18));
+      border: 1px dashed rgba(0, 87, 255, 0.3);
+    }
+
+    blockquote {
+      margin: 1rem 0 0;
+      padding-left: 1.5rem;
+      border-left: 3px solid var(--primary);
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .step {
+      padding: 1rem 1.2rem;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: #fff;
+    }
+
+    .step strong {
+      display: block;
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .timeline-card {
+      border-radius: 20px;
+      padding: 1.4rem;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      background: #fff;
+      box-shadow: 0 18px 35px rgba(13, 41, 80, 0.06);
+    }
+
+    .timeline-card h3 {
+      margin: 0 0 0.4rem;
+      font-size: 1rem;
+      color: var(--primary-dark);
+    }
+
+    .component-grid {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .component-card {
+      padding: 1.5rem;
+      border-radius: 20px;
+      border: 1px solid rgba(0, 87, 255, 0.15);
+      background: linear-gradient(180deg, rgba(0, 87, 255, 0.05), #fff 45%);
+    }
+
+    ul {
+      margin: 0.35rem 0 0 1.25rem;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 0.35rem;
+    }
+
+    .case-study {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .practice ol {
+      margin: 0.75rem 0 0 1.25rem;
+    }
+
+    .callout {
+      margin-top: 1.25rem;
+      padding: 1.35rem 1.5rem;
+      border-radius: 18px;
+      background: rgba(255, 183, 3, 0.12);
+      border: 1px solid rgba(255, 183, 3, 0.3);
+    }
+
+    .footer-cta {
+      text-align: center;
+      margin-top: 3rem;
+    }
+
+    .footer-cta a {
+      text-decoration: none;
+      color: #fff;
+      background: var(--primary);
+      padding: 0.9rem 2rem;
+      border-radius: 999px;
+      display: inline-flex;
+      gap: 0.35rem;
+      font-weight: 600;
+      box-shadow: 0 18px 40px rgba(0, 87, 255, 0.25);
+    }
+
+    code {
+      background: rgba(0, 87, 255, 0.08);
+      color: var(--primary-dark);
+      padding: 0.15rem 0.4rem;
+      border-radius: 6px;
+      font-size: 0.92em;
+    }
+
+    @media (max-width: 640px) {
+      header.hero {
+        padding: 2.5rem 1.75rem;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      section {
+        padding: 1.75rem 1.35rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <div class="hero-content">
+        <p class="section-heading" style="color: rgba(255,255,255,0.7); letter-spacing: 0.4em;">Bài học 23</p>
+        <h1>Email Protocols: SMTP, POP3, IMAP</h1>
+        <p>
+          Email hoạt động nhờ ba giao thức chính: SMTP để gửi, POP3/IMAP để nhận. Bài học này giúp bạn hiểu quy trình
+          gửi - nhận email và vì sao IMAP là lựa chọn phổ biến hiện nay.
+        </p>
+        <div class="hero-actions">
+          <a href="#objectives" class="primary">Bắt đầu học</a>
+          <a href="#practice" class="secondary">Làm bài tập</a>
+        </div>
+        <div class="stat-grid">
+          <div class="stat">
+            <strong>25 phút</strong>
+            Thời lượng gợi ý
+          </div>
+          <div class="stat">
+            <strong>5 phần</strong>
+            Chủ đề trọng tâm
+          </div>
+          <div class="stat">
+            <strong>TCP-based</strong>
+            Giao thức tin cậy
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section id="objectives">
+      <p class="section-heading">Mục tiêu</p>
+      <h2>Kết quả học tập mong đợi</h2>
+      <div class="goal-grid">
+        <div class="goal">
+          <span>🎯 Mục tiêu 01</span>
+          <p>Hiểu email hoạt động như thế nào.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 02</span>
+          <p>Phân biệt vai trò của SMTP, POP3, IMAP.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 03</span>
+          <p>Nắm quy trình gửi và nhận email.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 04</span>
+          <p>So sánh POP3 và IMAP trong thực tế.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 05</span>
+          <p>Áp dụng đúng giao thức trong doanh nghiệp.</p>
+        </div>
+      </div>
+      <div class="highlight-card">
+        <strong>Đặt vấn đề:</strong>
+        <blockquote>
+          "Vì sao một email có thể xuất hiện trên nhiều thiết bị khác nhau mà không bị mất?"
+        </blockquote>
+        <p>Câu trả lời nằm ở SMTP, POP3 và IMAP.</p>
+      </div>
+    </section>
+
+    <section id="overview">
+      <p class="section-heading">Khái niệm</p>
+      <h2>Hệ thống email gồm gì?</h2>
+      <div class="card-grid">
+        <div class="card">
+          <span class="badge">📬 Mail Client</span>
+          <p>Gmail, Outlook, Thunderbird... nơi bạn soạn và đọc email.</p>
+        </div>
+        <div class="card">
+          <span class="badge">🏢 Mail Server</span>
+          <p>Máy chủ lưu trữ và chuyển tiếp email giữa các domain.</p>
+        </div>
+        <div class="card">
+          <span class="badge">🔧 Protocols</span>
+          <p>SMTP để gửi, POP3/IMAP để nhận và đồng bộ.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Nguyên lý</p>
+      <h2>Quy trình gửi & nhận email</h2>
+      <div class="steps">
+        <div class="step">
+          <strong>SMTP (Gửi)</strong>
+          Client gửi email đến server, server chuyển tiếp đến server người nhận.
+        </div>
+        <div class="step">
+          <strong>POP3 (Nhận)</strong>
+          Tải email về máy và thường xóa trên server.
+        </div>
+        <div class="step">
+          <strong>IMAP (Nhận)</strong>
+          Đồng bộ email, dữ liệu luôn nằm trên server.
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">So sánh</p>
+      <h2>POP3 và IMAP</h2>
+      <div class="timeline">
+        <article class="timeline-card">
+          <h3>POP3</h3>
+          <ul>
+            <li>Lưu email ở máy người dùng.</li>
+            <li>Ít đồng bộ giữa thiết bị.</li>
+            <li>Phù hợp một thiết bị duy nhất.</li>
+          </ul>
+        </article>
+        <article class="timeline-card">
+          <h3>IMAP</h3>
+          <ul>
+            <li>Email nằm trên server.</li>
+            <li>Đồng bộ tốt nhiều thiết bị.</li>
+            <li>Chuẩn hiện đại phổ biến.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Kỹ thuật</p>
+      <h2>Cổng kết nối phổ biến</h2>
+      <div class="component-grid">
+        <div class="component-card">
+          <h3>SMTP</h3>
+          <ul>
+            <li>25: không mã hóa.</li>
+            <li>587: TLS.</li>
+          </ul>
+        </div>
+        <div class="component-card">
+          <h3>POP3</h3>
+          <ul>
+            <li>110: không mã hóa.</li>
+            <li>995: SSL.</li>
+          </ul>
+        </div>
+        <div class="component-card">
+          <h3>IMAP</h3>
+          <ul>
+            <li>143: không mã hóa.</li>
+            <li>993: SSL.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Ví dụ</p>
+      <h2>Case study: email doanh nghiệp</h2>
+      <div class="case-study">
+        <div>
+          <p>📱 Nhân viên dùng điện thoại, laptop, webmail.</p>
+          <p>🔁 Cần đồng bộ email và không mất dữ liệu.</p>
+          <p>✅ SMTP để gửi, IMAP để nhận và đồng bộ.</p>
+        </div>
+        <div class="callout">
+          <strong>Kết luận:</strong>
+          <p>IMAP là lựa chọn phù hợp cho môi trường đa thiết bị.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="practice" class="practice">
+      <p class="section-heading">Thực hành</p>
+      <h2>Tổng kết & bài tập</h2>
+      <p>Kiểm tra cấu hình email của bạn:</p>
+      <ol>
+        <li>Mail client đang dùng POP3 hay IMAP?</li>
+        <li>SMTP dùng port nào?</li>
+        <li>Vì sao nhà cung cấp khuyên dùng IMAP?</li>
+      </ol>
+      <div class="callout">
+        <strong>Gợi ý:</strong>
+        <p>Trả lời 5-7 dòng, liên hệ với nhu cầu đồng bộ nhiều thiết bị.</p>
+      </div>
+    </section>
+
+    <div class="footer-cta">
+      <a href="../index.html">← Về trang chủ</a>
+    </div>
+  </main>
+</body>
+</html>

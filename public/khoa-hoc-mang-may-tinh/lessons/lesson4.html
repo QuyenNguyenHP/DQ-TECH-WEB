@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bài 4: Mô hình OSI</title>
+  <style>
+    :root {
+      --primary: #0057ff;
+      --primary-dark: #0039a8;
+      --accent: #ffb703;
+      --ink: #1f2532;
+      --muted: #5b6476;
+      --surface: #ffffff;
+      --surface-alt: #f2f4ff;
+      --border: rgba(15, 63, 167, 0.1);
+      --radius: 24px;
+      --shadow: 0 20px 60px rgba(15, 87, 255, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top, rgba(169, 200, 255, 0.4), transparent 55%),
+        #eef2ff;
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    header.hero {
+      background: linear-gradient(120deg, var(--primary), #7357ff);
+      border-radius: var(--radius);
+      padding: 3.5rem clamp(2rem, 4vw, 4.5rem);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.35), transparent 45%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero h1 {
+      margin: 0 0 1rem;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 640px;
+      font-size: 1.05rem;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 2rem;
+    }
+
+    .hero-actions a {
+      text-decoration: none;
+      padding: 0.85rem 1.8rem;
+      border-radius: 999px;
+      font-weight: 600;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .hero-actions a.primary {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.18);
+    }
+
+    .hero-actions a.secondary {
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: #fff;
+      backdrop-filter: blur(6px);
+    }
+
+    .hero-actions a:hover {
+      transform: translateY(-3px);
+    }
+
+    .stat-grid {
+      margin-top: 2.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 1rem 1.25rem;
+      text-align: left;
+      backdrop-filter: blur(4px);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .stat strong {
+      font-size: 1.25rem;
+      display: block;
+    }
+
+    section {
+      margin-top: 2.5rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 2.25rem clamp(1.5rem, 4vw, 3rem);
+      box-shadow: 0 10px 35px rgba(38, 44, 82, 0.08);
+      border: 1px solid var(--border);
+    }
+
+    .section-heading {
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.25em;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    h2 {
+      margin: 0 0 1.5rem;
+      font-size: clamp(1.7rem, 3vw, 2.2rem);
+      color: var(--ink);
+    }
+
+    h3 {
+      margin: 0 0 0.4rem;
+      font-size: 1rem;
+      color: var(--primary-dark);
+    }
+
+    .goal-grid,
+    .card-grid,
+    .layer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .goal,
+    .card,
+    .layer-card {
+      background: var(--surface-alt);
+      border-radius: 18px;
+      padding: 1.25rem 1.35rem;
+      border: 1px solid rgba(15, 63, 167, 0.12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .goal span,
+    .card span.badge,
+    .layer-card span.badge {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .goal p,
+    .card p,
+    .layer-card p {
+      margin: 0.6rem 0 0;
+    }
+
+    .highlight-card {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      border-radius: 20px;
+      background: linear-gradient(120deg, rgba(0, 87, 255, 0.1), rgba(255, 183, 3, 0.18));
+      border: 1px dashed rgba(0, 87, 255, 0.3);
+    }
+
+    blockquote {
+      margin: 1rem 0 0;
+      padding-left: 1.5rem;
+      border-left: 3px solid var(--primary);
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .case-study {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      align-items: center;
+    }
+
+    ul {
+      margin: 0.35rem 0 0 1.25rem;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 0.35rem;
+    }
+
+    .practice ol {
+      margin: 0.75rem 0 0 1.25rem;
+    }
+
+    .callout {
+      margin-top: 1.25rem;
+      padding: 1.35rem 1.5rem;
+      border-radius: 18px;
+      background: rgba(255, 183, 3, 0.12);
+      border: 1px solid rgba(255, 183, 3, 0.3);
+    }
+
+    .footer-cta {
+      text-align: center;
+      margin-top: 3rem;
+    }
+
+    .footer-cta a {
+      text-decoration: none;
+      color: #fff;
+      background: var(--primary);
+      padding: 0.9rem 2rem;
+      border-radius: 999px;
+      display: inline-flex;
+      gap: 0.35rem;
+      font-weight: 600;
+      box-shadow: 0 18px 40px rgba(0, 87, 255, 0.25);
+    }
+
+    @media (max-width: 640px) {
+      header.hero {
+        padding: 2.5rem 1.75rem;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      section {
+        padding: 1.75rem 1.35rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <div class="hero-content">
+        <p class="section-heading" style="color: rgba(255,255,255,0.7); letter-spacing: 0.4em;">Bài học 04</p>
+        <h1>Mô hình OSI</h1>
+        <p>
+          Bài học giúp bạn hiểu mô hình tham chiếu 7 tầng OSI, cách các thiết bị từ nhiều hãng giao tiếp với nhau, và vì sao phân tầng giúp chẩn đoán sự cố mạng nhanh, chính xác.
+        </p>
+        <div class="hero-actions">
+          <a href="#layers" class="primary">Xem 7 tầng</a>
+          <a href="#practice" class="secondary">Làm bài tập</a>
+        </div>
+        <div class="stat-grid">
+          <div class="stat">
+            <strong>7 tầng</strong>
+            Chuẩn OSI
+          </div>
+          <div class="stat">
+            <strong>ISO</strong>
+            Tổ chức phát triển
+          </div>
+          <div class="stat">
+            <strong>Troubleshooting</strong>
+            Phân vùng lỗi nhanh
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section>
+      <p class="section-heading">Mục tiêu</p>
+      <h2>Kết quả học tập mong đợi</h2>
+      <div class="goal-grid">
+        <div class="goal">
+          <span>🎯 Mục tiêu 01</span>
+          <p><strong>Tiêu chuẩn hóa tư duy:</strong> Hiểu cách các hãng công nghệ khác nhau giao tiếp nhờ một quy chuẩn chung.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 02</span>
+          <p><strong>Kỹ năng xử lý sự cố:</strong> Biết cách phân vùng lỗi theo tầng (tầng 1 phần cứng, tầng 3 định tuyến IP).</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 03</span>
+          <p><strong>Nền tảng chuyên môn:</strong> Nắm thứ tự và chức năng 7 tầng để học CCNA, CompTIA Network+.</p>
+        </div>
+      </div>
+      <div class="highlight-card">
+        <strong>Đặt vấn đề:</strong>
+        <blockquote>
+          "Hãy tưởng tượng bạn gửi một bức thư tay cho một người bạn ở nước ngoài. Để thư đến đích, bạn cần: viết thư (Dữ liệu), chọn ngôn ngữ chung (Định dạng), cho vào bì thư (Đóng gói), ghi địa chỉ (Địa chỉ hóa), và gửi qua bưu điện (Truyền dẫn)."
+        </blockquote>
+        <p>Trong mạng máy tính, nếu không có một mô hình chung, máy tính Dell sẽ không thể “nói chuyện” được với MacBook. <strong>Mô hình OSI</strong> chính là “luật giao thông” toàn cầu để mọi thiết bị mạng đều hiểu nhau.</p>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Khái niệm</p>
+      <h2>Mô hình OSI là gì?</h2>
+      <div class="card-grid">
+        <div class="card">
+          <span class="badge">📖 Định nghĩa</span>
+          <p>Mô hình OSI (Open Systems Interconnection) là mô hình tham chiếu gồm <strong>7 tầng</strong>, do tổ chức ISO phát triển. Nó chia nhỏ quá trình truyền tin phức tạp thành 7 bước logic.</p>
+        </div>
+        <div class="card">
+          <span class="badge">🧭 Ý nghĩa</span>
+          <p>Giúp mọi thiết bị, hệ điều hành và hãng công nghệ có chung ngôn ngữ để trao đổi dữ liệu an toàn, nhất quán.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="layers">
+      <p class="section-heading">Cấu trúc</p>
+      <h2>Chức năng 7 tầng (từ trên xuống dưới)</h2>
+      <div class="layer-grid">
+        <div class="layer-card">
+          <span class="badge">Tầng 7 · Application</span>
+          <p>Cung cấp giao diện giữa người dùng và mạng (HTTP, FTP, SMTP).</p>
+        </div>
+        <div class="layer-card">
+          <span class="badge">Tầng 6 · Presentation</span>
+          <p>Mã hóa, nén và định dạng dữ liệu (JPG, MP4, SSL/TLS).</p>
+        </div>
+        <div class="layer-card">
+          <span class="badge">Tầng 5 · Session</span>
+          <p>Thiết lập, quản lý và kết thúc các phiên hội thoại.</p>
+        </div>
+        <div class="layer-card">
+          <span class="badge">Tầng 4 · Transport</span>
+          <p>Đảm bảo truyền dữ liệu tin cậy, sửa lỗi và kiểm soát luồng (TCP, UDP).</p>
+        </div>
+        <div class="layer-card">
+          <span class="badge">Tầng 3 · Network</span>
+          <p>Xác định con đường đi tốt nhất cho dữ liệu dựa trên địa chỉ IP (thiết bị: Router).</p>
+        </div>
+        <div class="layer-card">
+          <span class="badge">Tầng 2 · Data Link</span>
+          <p>Truyền dữ liệu giữa các thiết bị kề nhau dựa trên địa chỉ MAC (thiết bị: Switch).</p>
+        </div>
+        <div class="layer-card">
+          <span class="badge">Tầng 1 · Physical</span>
+          <p>Chuyển dữ liệu thành tín hiệu điện, ánh sáng hoặc sóng (cáp mạng, hub).</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Ghi nhớ</p>
+      <h2>Các thông số kỹ thuật cần nhớ</h2>
+      <div class="card-grid">
+        <div class="card">
+          <span class="badge">PDU</span>
+          <p>Mỗi tầng có một đơn vị dữ liệu riêng (Protocol Data Unit).</p>
+        </div>
+        <div class="card">
+          <span class="badge">Tầng 4</span>
+          <p>Segment.</p>
+        </div>
+        <div class="card">
+          <span class="badge">Tầng 3</span>
+          <p>Packet.</p>
+        </div>
+        <div class="card">
+          <span class="badge">Tầng 2</span>
+          <p>Frame.</p>
+        </div>
+        <div class="card">
+          <span class="badge">Tầng 1</span>
+          <p>Bits.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Ví dụ</p>
+      <h2>Ví dụ minh hoạ: "No Internet Connection"</h2>
+      <div class="case-study">
+        <div>
+          <p><strong>Kiểm tra tầng 1:</strong> Đèn xanh trên cổng mạng có sáng không? Dây cáp có bị đứt không?</p>
+          <p><strong>Kiểm tra tầng 2:</strong> Máy tính có nhận được địa chỉ MAC của Router không?</p>
+          <p><strong>Kiểm tra tầng 3:</strong> Máy tính đã được cấp địa chỉ IP đúng chưa? → Việc phân tầng giúp bạn tìm ra lỗi cực nhanh thay vì kiểm tra mò mẫm.</p>
+        </div>
+        <div class="callout">
+          <strong>Gợi ý:</strong>
+          <p>Bạn có thể kiểm tra theo từng tầng để khoanh vùng sự cố trước khi thay đổi cấu hình lớn.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="practice" class="practice">
+      <p class="section-heading">Thực hành</p>
+      <h2>Tổng kết &amp; bài tập thực hành</h2>
+      <ol>
+        <li><strong>Mẹo nhớ:</strong> Học thuộc câu thần chú (từ tầng 1 đến 7): <strong>"Phải Đi Ngủ Trưa Sau Phiên Ăn"</strong> (Physical, Data Link, Network, Transport, Session, Presentation, Application).</li>
+        <li><strong>Tra cứu:</strong> Hãy tìm xem địa chỉ MAC của máy tính bạn là gì bằng lệnh <code>getmac</code> trong CMD.</li>
+      </ol>
+    </section>
+
+    <div class="footer-cta">
+      <a href="../index.html">← Về trang chủ</a>
+    </div>
+  </main>
+</body>
+</html>

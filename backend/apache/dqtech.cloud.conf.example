@@ -1,0 +1,45 @@
+<VirtualHost *:80>
+    ServerName dqtech.cloud
+    ServerAlias www.dqtech.cloud
+
+    RewriteEngine On
+    RewriteCond %{HTTP_HOST} ^(www\.)?dqtech\.cloud$ [NC]
+    RewriteRule ^ https://dqtech.cloud%{REQUEST_URI} [R=301,L]
+</VirtualHost>
+
+<IfModule mod_ssl.c>
+<VirtualHost *:443>
+    ServerName dqtech.cloud
+    ServerAlias www.dqtech.cloud
+
+    DocumentRoot /var/www/dqtech.cloud
+
+    <Directory /var/www/dqtech.cloud>
+        Options Indexes FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    ProxyPreserveHost On
+    RequestHeader set X-Forwarded-Proto "https"
+    ProxyPass /api/content http://127.0.0.1:8000/api/content retry=0 timeout=60
+    ProxyPassReverse /api/content http://127.0.0.1:8000/api/content
+    ProxyPass /uploads http://127.0.0.1:8000/uploads retry=0 timeout=60
+    ProxyPassReverse /uploads http://127.0.0.1:8000/uploads
+
+    RewriteEngine On
+    RewriteCond %{REQUEST_URI} !^/api/content [NC]
+    RewriteCond %{REQUEST_URI} !^/uploads [NC]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ /index.html [L]
+
+    ErrorLog ${APACHE_LOG_DIR}/dqtech.cloud_error.log
+    CustomLog ${APACHE_LOG_DIR}/dqtech.cloud_access.log combined
+
+    SSLEngine on
+    SSLCertificateFile /etc/letsencrypt/live/dqtech.cloud/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/dqtech.cloud/privkey.pem
+    Include /etc/letsencrypt/options-ssl-apache.conf
+</VirtualHost>
+</IfModule>

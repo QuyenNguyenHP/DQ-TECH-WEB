@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router";
 import { Search, Menu, X, Laptop, ShoppingBag, ChevronDown, Globe, Camera } from "lucide-react";
 import { Button } from "./ui/button";
 import { motion, AnimatePresence } from "motion/react";
-import logoImage from "../../imports/5.png";
+import logoImage from "../../imports/logo.png";
 
 const services = [
   {

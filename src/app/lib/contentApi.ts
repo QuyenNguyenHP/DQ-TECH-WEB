@@ -1,7 +1,7 @@
 import type { BlogPost } from "../data/blogPosts";
 import type { Product } from "../data/products";
 
-const API_BASE = "/api/content";
+const API_BASE = (import.meta.env.VITE_CONTENT_API_BASE || "/api/content").replace(/\/$/, "");
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {

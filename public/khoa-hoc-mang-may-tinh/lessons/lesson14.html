@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bài 14: Cách chia Subnet Mask (Chia mạng con) đơn giản nhất</title>
+  <style>
+    :root {
+      --primary: #0057ff;
+      --primary-dark: #0039a8;
+      --accent: #ffb703;
+      --ink: #1f2532;
+      --muted: #5b6476;
+      --surface: #ffffff;
+      --surface-alt: #f2f4ff;
+      --border: rgba(15, 63, 167, 0.1);
+      --radius: 24px;
+      --shadow: 0 20px 60px rgba(15, 87, 255, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top, rgba(169, 200, 255, 0.4), transparent 55%),
+        #eef2ff;
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    header.hero {
+      background: linear-gradient(120deg, var(--primary), #7357ff);
+      border-radius: var(--radius);
+      padding: 3.5rem clamp(2rem, 4vw, 4.5rem);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.35), transparent 45%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero h1 {
+      margin: 0 0 1rem;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 640px;
+      font-size: 1.05rem;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 2rem;
+    }
+
+    .hero-actions a {
+      text-decoration: none;
+      padding: 0.85rem 1.8rem;
+      border-radius: 999px;
+      font-weight: 600;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .hero-actions a.primary {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.18);
+    }
+
+    .hero-actions a.secondary {
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: #fff;
+      backdrop-filter: blur(6px);
+    }
+
+    .hero-actions a:hover {
+      transform: translateY(-3px);
+    }
+
+    .stat-grid {
+      margin-top: 2.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 1rem 1.25rem;
+      text-align: left;
+      backdrop-filter: blur(4px);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .stat strong {
+      font-size: 1.25rem;
+      display: block;
+    }
+
+    section {
+      margin-top: 2.5rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 2.25rem clamp(1.5rem, 4vw, 3rem);
+      box-shadow: 0 10px 35px rgba(38, 44, 82, 0.08);
+      border: 1px solid var(--border);
+    }
+
+    .section-heading {
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.25em;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    h2 {
+      margin: 0 0 1.5rem;
+      font-size: clamp(1.7rem, 3vw, 2.2rem);
+      color: var(--ink);
+    }
+
+    h3 {
+      margin: 0 0 0.4rem;
+      font-size: 1rem;
+      color: var(--primary-dark);
+    }
+
+    .goal-grid,
+    .card-grid,
+    .topic-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .goal,
+    .card,
+    .topic-card {
+      background: var(--surface-alt);
+      border-radius: 18px;
+      padding: 1.25rem 1.35rem;
+      border: 1px solid rgba(15, 63, 167, 0.12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .goal span,
+    .card span.badge,
+    .topic-card span.badge {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .goal p,
+    .card p,
+    .topic-card p {
+      margin: 0.6rem 0 0;
+    }
+
+    .highlight-card {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      border-radius: 20px;
+      background: linear-gradient(120deg, rgba(0, 87, 255, 0.1), rgba(255, 183, 3, 0.18));
+      border: 1px dashed rgba(0, 87, 255, 0.3);
+    }
+
+    blockquote {
+      margin: 1rem 0 0;
+      padding-left: 1.5rem;
+      border-left: 3px solid var(--primary);
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    ul {
+      margin: 0.35rem 0 0 1.25rem;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 0.35rem;
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(15, 63, 167, 0.12);
+    }
+
+    .comparison-table th,
+    .comparison-table td {
+      text-align: left;
+      padding: 0.9rem 1rem;
+      border-bottom: 1px solid rgba(15, 63, 167, 0.12);
+    }
+
+    .comparison-table th {
+      background: rgba(0, 87, 255, 0.08);
+      color: var(--primary-dark);
+      font-weight: 600;
+    }
+
+    .comparison-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .case-study {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      align-items: start;
+    }
+
+    .practice ol {
+      margin: 0.75rem 0 0 1.25rem;
+    }
+
+    .callout {
+      margin-top: 1.25rem;
+      padding: 1.35rem 1.5rem;
+      border-radius: 18px;
+      background: rgba(255, 183, 3, 0.12);
+      border: 1px solid rgba(255, 183, 3, 0.3);
+    }
+
+    .footer-cta {
+      text-align: center;
+      margin-top: 3rem;
+    }
+
+    .footer-cta a {
+      text-decoration: none;
+      color: #fff;
+      background: var(--primary);
+      padding: 0.9rem 2rem;
+      border-radius: 999px;
+      display: inline-flex;
+      gap: 0.35rem;
+      font-weight: 600;
+      box-shadow: 0 18px 40px rgba(0, 87, 255, 0.25);
+    }
+
+    @media (max-width: 640px) {
+      header.hero {
+        padding: 2.5rem 1.75rem;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      section {
+        padding: 1.75rem 1.35rem;
+      }
+
+      .comparison-table {
+        font-size: 0.95rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <div class="hero-content">
+        <p class="section-heading" style="color: rgba(255,255,255,0.7); letter-spacing: 0.4em;">Bài học 14</p>
+        <h1>Cách chia Subnet Mask (Chia mạng con) đơn giản nhất</h1>
+        <p>
+          Bài học giúp bạn hiểu vì sao cần chia subnet, cách tính nhanh, và áp dụng vào tình huống thực tế để tối ưu IP.
+        </p>
+        <div class="hero-actions">
+          <a href="#content" class="primary">Xem nội dung</a>
+          <a href="#practice" class="secondary">Làm bài tập</a>
+        </div>
+        <div class="stat-grid">
+          <div class="stat">
+            <strong>Subnet</strong>
+            Mượn bit host
+          </div>
+          <div class="stat">
+            <strong>Host</strong>
+            2^n − 2
+          </div>
+          <div class="stat">
+            <strong>Bước nhảy</strong>
+            256 − Mask
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section>
+      <p class="section-heading">Mục tiêu</p>
+      <h2>Kết quả học tập mong đợi</h2>
+      <div class="goal-grid">
+        <div class="goal">
+          <span>🎯 Mục tiêu 01</span>
+          <p>Hiểu <strong>vì sao cần chia subnet</strong>.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 02</span>
+          <p>Biết <strong>Subnet Mask là gì</strong>.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 03</span>
+          <p>Chia được mạng con theo <strong>số host hoặc số subnet</strong>.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 04</span>
+          <p>Xác định Network ID, Broadcast, dải IP sử dụng.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 05</span>
+          <p>Áp dụng chia subnet cho <strong>mạng thực tế</strong>.</p>
+        </div>
+      </div>
+      <div class="highlight-card">
+        <strong>Đặt vấn đề:</strong>
+        <p>Bạn có mạng <code>192.168.1.0/24</code> với 200 thiết bị, sau này cần tách phòng ban:</p>
+        <ul>
+          <li>Phòng Kế toán: 30 máy</li>
+          <li>Phòng Kỹ thuật: 50 máy</li>
+          <li>Phòng Server: 10 máy</li>
+        </ul>
+        <blockquote>
+          Làm sao chia mạng để mỗi phòng độc lập, không lãng phí IP, dễ quản lý và bảo mật?
+        </blockquote>
+        <p>Câu trả lời là <strong>chia Subnet (mạng con)</strong>.</p>
+      </div>
+    </section>
+
+    <section id="content">
+      <p class="section-heading">Nội dung</p>
+      <h2>Subnet Mask và nguyên lý chia subnet</h2>
+      <div class="topic-grid">
+        <div class="topic-card">
+          <span class="badge">a. Subnet Mask là gì?</span>
+          <ul>
+            <li>Phân chia IP thành phần Network và Host.</li>
+            <li>Giúp router biết thiết bị thuộc mạng nào.</li>
+          </ul>
+          <p>Ví dụ:</p>
+          <ul>
+            <li>IP: <code>192.168.1.10</code></li>
+            <li>Mask: <code>255.255.255.0</code></li>
+            <li>CIDR: <code>/24</code></li>
+          </ul>
+        </div>
+        <div class="topic-card">
+          <span class="badge">b. Vì sao phải chia subnet?</span>
+          <ul>
+            <li>Giảm broadcast</li>
+            <li>Tăng bảo mật</li>
+            <li>Quản lý mạng hiệu quả</li>
+            <li>Tối ưu tài nguyên IP</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="card-grid" style="margin-top: 1.5rem;">
+        <div class="card">
+          <span class="badge">Ý tưởng cốt lõi</span>
+          <blockquote>Mượn bit từ phần Host → tạo thêm Network</blockquote>
+          <ul>
+            <li>Mỗi subnet có Network Address và Broadcast Address.</li>
+            <li>Số IP sử dụng được: <code>2^host − 2</code>.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <span class="badge">Công thức nhanh</span>
+          <ul>
+            <li><strong>Số host tối đa:</strong> <code>2^n − 2</code></li>
+            <li><strong>Số subnet:</strong> <code>2^m</code></li>
+          </ul>
+          <p>Trong đó <code>n</code> là số bit host còn lại, <code>m</code> là số bit mượn.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Thông số</p>
+      <h2>Các thông số kỹ thuật cần nhớ</h2>
+      <div class="card-grid">
+        <div class="card">
+          <span class="badge">a. Subnet Mask phổ biến</span>
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>CIDR</th>
+                <th>Subnet Mask</th>
+                <th>Số host</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>/24</td>
+                <td>255.255.255.0</td>
+                <td>254</td>
+              </tr>
+              <tr>
+                <td>/25</td>
+                <td>255.255.255.128</td>
+                <td>126</td>
+              </tr>
+              <tr>
+                <td>/26</td>
+                <td>255.255.255.192</td>
+                <td>62</td>
+              </tr>
+              <tr>
+                <td>/27</td>
+                <td>255.255.255.224</td>
+                <td>30</td>
+              </tr>
+              <tr>
+                <td>/28</td>
+                <td>255.255.255.240</td>
+                <td>14</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <span class="badge">b. Cách tính nhanh</span>
+          <blockquote>Bước nhảy = 256 − Octet của Subnet Mask</blockquote>
+          <p>Ví dụ:</p>
+          <ul>
+            <li>Mask: <code>255.255.255.192</code></li>
+            <li>Bước nhảy: <code>256 − 192 = 64</code></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Ví dụ</p>
+      <h2>Case study: Chia 192.168.1.0/24 thành 4 subnet</h2>
+      <div class="case-study">
+        <div>
+          <p><strong>Bước 1:</strong> Cần 4 subnet → mượn 2 bit → <code>/24 → /26</code>.</p>
+          <p><strong>Bước 2:</strong> Mask: <code>255.255.255.192</code>, bước nhảy: <code>64</code>.</p>
+          <p><strong>Bước 3:</strong> Các subnet:</p>
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Subnet</th>
+                <th>Network</th>
+                <th>Usable IP</th>
+                <th>Broadcast</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td>192.168.1.0</td>
+                <td>.1 – .62</td>
+                <td>.63</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>192.168.1.64</td>
+                <td>.65 – .126</td>
+                <td>.127</td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>192.168.1.128</td>
+                <td>.129 – .190</td>
+                <td>.191</td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td>192.168.1.192</td>
+                <td>.193 – .254</td>
+                <td>.255</td>
+              </tr>
+            </tbody>
+          </table>
+          <p>👉 Mỗi subnet có <strong>62 host</strong>.</p>
+        </div>
+        <div class="callout">
+          <strong>Gợi ý:</strong>
+          <p>Khi chia subnet, hãy xác định số subnet trước, sau đó tính bước nhảy để chia nhanh.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="practice" class="practice">
+      <p class="section-heading">Thực hành</p>
+      <h2>Tổng kết &amp; bài tập thực hành</h2>
+      <h3>5.1. Tổng kết kiến thức</h3>
+      <ul>
+        <li>Subnet Mask giúp <strong>chia mạng con</strong>.</li>
+        <li>Chia subnet = mượn bit Host.</li>
+        <li>Luôn có Network Address và Broadcast Address.</li>
+        <li>Công thức nhanh: Host = <code>2^n − 2</code>, Bước nhảy = <code>256 − Mask</code>.</li>
+      </ul>
+      <p>👉 Chia subnet tốt = mạng gọn, nhanh, dễ quản lý.</p>
+      <div class="callout">
+        <strong>5.2. Bài tập về nhà:</strong>
+        <p>Cho mạng <code>192.168.10.0/24</code>:</p>
+        <ol>
+          <li>Chia thành <strong>8 subnet</strong>.</li>
+          <li>Xác định Subnet Mask, Network Address của subnet thứ 5, dải IP sử dụng được.</li>
+          <li>Mỗi subnet có bao nhiêu host?</li>
+        </ol>
+        <p>📌 Trình bày từng bước, không cần nhị phân.</p>
+      </div>
+    </section>
+
+    <div class="footer-cta">
+      <a href="../index.html">← Về trang chủ</a>
+    </div>
+  </main>
+</body>
+</html>

@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bài 16: Định tuyến (Routing) là gì? Static vs Dynamic Routing</title>
+  <style>
+    :root {
+      --primary: #0057ff;
+      --primary-dark: #0039a8;
+      --accent: #ffb703;
+      --ink: #1f2532;
+      --muted: #5b6476;
+      --surface: #ffffff;
+      --surface-alt: #f2f4ff;
+      --border: rgba(15, 63, 167, 0.1);
+      --radius: 24px;
+      --shadow: 0 20px 60px rgba(15, 87, 255, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: radial-gradient(circle at top, rgba(169, 200, 255, 0.4), transparent 55%),
+        #eef2ff;
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+    }
+
+    header.hero {
+      background: linear-gradient(120deg, var(--primary), #7357ff);
+      border-radius: var(--radius);
+      padding: 3.5rem clamp(2rem, 4vw, 4.5rem);
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.35), transparent 45%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero h1 {
+      margin: 0 0 1rem;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      letter-spacing: -0.02em;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 580px;
+      font-size: 1.05rem;
+      color: rgba(255, 255, 255, 0.85);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 2rem;
+    }
+
+    .hero-actions a {
+      text-decoration: none;
+      padding: 0.85rem 1.8rem;
+      border-radius: 999px;
+      font-weight: 600;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .hero-actions a.primary {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.18);
+    }
+
+    .hero-actions a.secondary {
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: #fff;
+      backdrop-filter: blur(6px);
+    }
+
+    .hero-actions a:hover {
+      transform: translateY(-3px);
+    }
+
+    .stat-grid {
+      margin-top: 2.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 18px;
+      padding: 1rem 1.25rem;
+      text-align: left;
+      backdrop-filter: blur(4px);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .stat strong {
+      font-size: 1.25rem;
+      display: block;
+    }
+
+    section {
+      margin-top: 2.5rem;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 2.25rem clamp(1.5rem, 4vw, 3rem);
+      box-shadow: 0 10px 35px rgba(38, 44, 82, 0.08);
+      border: 1px solid var(--border);
+    }
+
+    .section-heading {
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.25em;
+      color: var(--muted);
+      margin-bottom: 0.6rem;
+    }
+
+    h2 {
+      margin: 0 0 1.5rem;
+      font-size: clamp(1.7rem, 3vw, 2.2rem);
+      color: var(--ink);
+    }
+
+    h3 {
+      margin: 0 0 0.8rem;
+      color: var(--primary-dark);
+    }
+
+    .goal-grid,
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .goal,
+    .card {
+      background: var(--surface-alt);
+      border-radius: 18px;
+      padding: 1.25rem 1.35rem;
+      border: 1px solid rgba(15, 63, 167, 0.12);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .goal span,
+    .card span.badge {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--primary);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .goal p,
+    .card p {
+      margin: 0.6rem 0 0;
+    }
+
+    .highlight-card {
+      margin-top: 1.5rem;
+      padding: 1.5rem;
+      border-radius: 20px;
+      background: linear-gradient(120deg, rgba(0, 87, 255, 0.1), rgba(255, 183, 3, 0.18));
+      border: 1px dashed rgba(0, 87, 255, 0.3);
+    }
+
+    blockquote {
+      margin: 1rem 0 0;
+      padding-left: 1.5rem;
+      border-left: 3px solid var(--primary);
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .step {
+      padding: 1rem 1.2rem;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: #fff;
+    }
+
+    .step strong {
+      display: block;
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+
+    ul,
+    ol {
+      margin: 0.35rem 0 0 1.25rem;
+      padding: 0;
+    }
+
+    li {
+      margin-bottom: 0.35rem;
+    }
+
+    .code-block {
+      margin-top: 0.75rem;
+      background: #0f172a;
+      color: #e2e8f0;
+      padding: 0.85rem 1rem;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      overflow-x: auto;
+    }
+
+    .code-block code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+    }
+
+    code {
+      font-family: "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: 0.95em;
+      color: #0b1b3f;
+      background: rgba(15, 87, 255, 0.08);
+      padding: 0.1rem 0.35rem;
+      border-radius: 6px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.75rem;
+      background: #fff;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    th,
+    td {
+      padding: 0.75rem 0.9rem;
+      text-align: left;
+      font-size: 0.95rem;
+    }
+
+    th {
+      background: var(--surface-alt);
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    tr + tr td {
+      border-top: 1px solid rgba(15, 63, 167, 0.1);
+    }
+
+    .table-block {
+      margin-top: 1.5rem;
+    }
+
+    .case-study {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .practice ol {
+      margin: 0.75rem 0 0 1.25rem;
+    }
+
+    .callout {
+      margin-top: 1.25rem;
+      padding: 1.35rem 1.5rem;
+      border-radius: 18px;
+      background: rgba(255, 183, 3, 0.12);
+      border: 1px solid rgba(255, 183, 3, 0.3);
+    }
+
+    .footer-cta {
+      text-align: center;
+      margin-top: 3rem;
+    }
+
+    .footer-cta a {
+      text-decoration: none;
+      color: #fff;
+      background: var(--primary);
+      padding: 0.9rem 2rem;
+      border-radius: 999px;
+      display: inline-flex;
+      gap: 0.35rem;
+      font-weight: 600;
+      box-shadow: 0 18px 40px rgba(0, 87, 255, 0.25);
+    }
+
+    @media (max-width: 640px) {
+      header.hero {
+        padding: 2.5rem 1.75rem;
+      }
+
+      .hero-actions {
+        flex-direction: column;
+      }
+
+      section {
+        padding: 1.75rem 1.35rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <div class="hero-content">
+        <p class="section-heading" style="color: rgba(255,255,255,0.7); letter-spacing: 0.4em;">Bài học 16</p>
+        <h1>Định tuyến (Routing) là gì? Static vs Dynamic Routing</h1>
+        <p>
+          Bài học giải thích cách router chọn đường đi cho gói tin, vai trò của routing table, default route và sự khác biệt
+          giữa định tuyến tĩnh và định tuyến động trong thực tế.
+        </p>
+        <div class="hero-actions">
+          <a href="#content" class="primary">Bắt đầu học</a>
+          <a href="#practice" class="secondary">Làm bài tập</a>
+        </div>
+        <div class="stat-grid">
+          <div class="stat">
+            <strong>5 mục tiêu</strong>
+            Nền tảng routing
+          </div>
+          <div class="stat">
+            <strong>2 loại</strong>
+            Static vs Dynamic
+          </div>
+          <div class="stat">
+            <strong>1 bảng</strong>
+            So sánh tổng hợp
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section>
+      <p class="section-heading">Mục tiêu</p>
+      <h2>Kết quả học tập mong đợi</h2>
+      <div class="goal-grid">
+        <div class="goal">
+          <span>🎯 Mục tiêu 01</span>
+          <p>Hiểu định tuyến (Routing) là gì.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 02</span>
+          <p>Biết vai trò của router trong mạng.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 03</span>
+          <p>Phân biệt Static Routing và Dynamic Routing.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 04</span>
+          <p>Hiểu khi nào nên dùng Static, khi nào dùng Dynamic.</p>
+        </div>
+        <div class="goal">
+          <span>🎯 Mục tiêu 05</span>
+          <p>Chuẩn bị nền tảng cho Routing Protocols (RIP, OSPF, BGP).</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Đặt vấn đề</p>
+      <h2>Làm sao router biết phải gửi gói tin đi đâu?</h2>
+      <p>Máy tính của bạn gửi dữ liệu ra Internet và dữ liệu phải đi qua:</p>
+      <ul>
+        <li>Router gia đình</li>
+        <li>Router của ISP</li>
+        <li>Nhiều router trung gian khác</li>
+      </ul>
+      <p>Cuối cùng mới đến server đích.</p>
+      <div class="highlight-card">
+        <strong>Câu hỏi:</strong>
+        <blockquote>Làm sao mỗi router biết phải chuyển gói tin đi đâu tiếp theo khi có rất nhiều mạng khác nhau?</blockquote>
+        <p>Câu trả lời là <strong>Routing (Định tuyến)</strong>.</p>
+      </div>
+    </section>
+
+    <section id="content">
+      <p class="section-heading">Khái niệm</p>
+      <h2>Routing và vai trò của Routing Table</h2>
+      <div class="card-grid">
+        <div class="card">
+          <span class="badge">📖 Định nghĩa</span>
+          <p><strong>Routing</strong> là quá trình lựa chọn đường đi tốt nhất cho gói tin từ mạng nguồn đến mạng đích.</p>
+          <ul>
+            <li>Thực hiện bởi router.</li>
+            <li>Hoạt động ở Layer 3 (Network Layer).</li>
+          </ul>
+        </div>
+        <div class="card">
+          <span class="badge">🔁 Routing vs Switching</span>
+          <ul>
+            <li>Switching → trong cùng mạng.</li>
+            <li>Routing → giữa các mạng khác nhau.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <span class="badge">🧭 Routing Table</span>
+          <p>Router sử dụng routing table để quyết định đường đi.</p>
+          <ul>
+            <li>Network đích</li>
+            <li>Next-hop</li>
+            <li>Interface</li>
+            <li>Metric (độ ưu tiên)</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Nguyên lý</p>
+      <h2>Quy trình định tuyến cơ bản</h2>
+      <div class="steps">
+        <div class="step">
+          <strong>1. Nhận gói tin</strong>
+          Router nhận IP Packet.
+        </div>
+        <div class="step">
+          <strong>2. Đọc IP đích</strong>
+          Xác định địa chỉ IP mục tiêu.
+        </div>
+        <div class="step">
+          <strong>3. So khớp</strong>
+          So khớp với routing table.
+        </div>
+        <div class="step">
+          <strong>4. Chọn tuyến</strong>
+          Chọn tuyến đường phù hợp nhất.
+        </div>
+        <div class="step">
+          <strong>5. Chuyển tiếp</strong>
+          Chuyển packet sang router tiếp theo.
+        </div>
+      </div>
+      <p>📌 Router không quan tâm MAC cuối, chỉ quan tâm IP Network.</p>
+      <div class="callout">
+        <strong>Default Route</strong>
+        <p>Dùng khi không có route cụ thể.</p>
+        <p>Ký hiệu:</p>
+        <pre class="code-block"><code>0.0.0.0/0</code></pre>
+        <p>👉 “Không biết đi đâu thì đi theo đường này”.</p>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">So sánh</p>
+      <h2>Static Routing vs Dynamic Routing</h2>
+      <div class="card-grid">
+        <div class="card">
+          <span class="badge">🧊 Static Routing</span>
+          <p><strong>Khái niệm:</strong> Route được cấu hình thủ công, không tự động thay đổi.</p>
+          <p><strong>Phù hợp:</strong></p>
+          <ul>
+            <li>Mạng nhỏ</li>
+            <li>Route mặc định</li>
+            <li>Lab, test</li>
+          </ul>
+        </div>
+        <div class="card">
+          <span class="badge">⚡ Dynamic Routing</span>
+          <p><strong>Khái niệm:</strong> Router tự động học route thông qua routing protocol.</p>
+          <p><strong>Ví dụ:</strong></p>
+          <ul>
+            <li>RIP</li>
+            <li>OSPF</li>
+            <li>EIGRP</li>
+            <li>BGP</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="table-block">
+        <h3>Ưu điểm / Nhược điểm của Static Routing</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Ưu điểm</th>
+              <th>Nhược điểm</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Đơn giản</td>
+              <td>Không linh hoạt</td>
+            </tr>
+            <tr>
+              <td>Bảo mật</td>
+              <td>Không tự thích nghi</td>
+            </tr>
+            <tr>
+              <td>Ít tài nguyên</td>
+              <td>Khó quản lý khi mạng lớn</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-block">
+        <h3>Ưu điểm / Nhược điểm của Dynamic Routing</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Ưu điểm</th>
+              <th>Nhược điểm</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Tự động</td>
+              <td>Phức tạp</td>
+            </tr>
+            <tr>
+              <td>Linh hoạt</td>
+              <td>Tốn tài nguyên</td>
+            </tr>
+            <tr>
+              <td>Phù hợp mạng lớn</td>
+              <td>Cần kiến thức</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-block">
+        <h3>So sánh tổng hợp</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Tiêu chí</th>
+              <th>Static</th>
+              <th>Dynamic</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Cấu hình</td>
+              <td>Thủ công</td>
+              <td>Tự động</td>
+            </tr>
+            <tr>
+              <td>Mở rộng</td>
+              <td>Kém</td>
+              <td>Tốt</td>
+            </tr>
+            <tr>
+              <td>Phản ứng khi lỗi</td>
+              <td>Không</td>
+              <td>Có</td>
+            </tr>
+            <tr>
+              <td>Độ phức tạp</td>
+              <td>Thấp</td>
+              <td>Cao</td>
+            </tr>
+            <tr>
+              <td>Ứng dụng</td>
+              <td>Mạng nhỏ</td>
+              <td>Mạng lớn</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <p class="section-heading">Ví dụ</p>
+      <h2>Case study: chọn loại định tuyến phù hợp</h2>
+      <div class="case-study">
+        <div>
+          <h3>Case 1: Mạng văn phòng nhỏ</h3>
+          <ul>
+            <li>1 router</li>
+            <li>2 network</li>
+            <li>Static Routing</li>
+            <li>Đơn giản, dễ kiểm soát</li>
+          </ul>
+        </div>
+        <div class="callout">
+          <h3>Case 2: Mạng doanh nghiệp / ISP</h3>
+          <ul>
+            <li>Hàng chục router</li>
+            <li>Nhiều đường dự phòng</li>
+            <li>Dynamic Routing</li>
+            <li>Router tự học đường, tự chuyển hướng khi có sự cố</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="practice" class="practice">
+      <p class="section-heading">Thực hành</p>
+      <h2>Tổng kết &amp; bài tập</h2>
+      <p><strong>Tổng kết kiến thức:</strong></p>
+      <ul>
+        <li>Routing = chọn đường đi cho gói tin.</li>
+        <li>Router hoạt động ở Layer 3.</li>
+        <li>Routing Table quyết định đường đi.</li>
+        <li>Static: đơn giản, thủ công.</li>
+        <li>Dynamic: tự động, linh hoạt.</li>
+        <li>Routing là xương sống của Internet.</li>
+      </ul>
+      <div class="callout">
+        <strong>Bài tập về nhà:</strong>
+        <p>Giả sử bạn có:</p>
+        <ul>
+          <li>Mạng A: <code>192.168.1.0/24</code></li>
+          <li>Mạng B: <code>192.168.2.0/24</code></li>
+        </ul>
+        <ol>
+          <li>Có cần Routing không? Vì sao?</li>
+          <li>Dùng Static hay Dynamic Routing?</li>
+          <li>Nếu thêm mạng C, D, E… thì sao?</li>
+        </ol>
+        <p>📌 Trả lời ngắn gọn 6–8 dòng.</p>
+      </div>
+    </section>
+
+    <div class="footer-cta">
+      <a href="../index.html">← Về trang chủ</a>
+    </div>
+  </main>
+</body>
+</html>
