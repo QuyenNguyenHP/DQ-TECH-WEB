@@ -47,6 +47,15 @@ export function fetchUploadedAssets(target: "products" | "blogs") {
   return request<UploadedAsset[]>(`/assets?target=${encodeURIComponent(target)}`);
 }
 
+export function deleteUploadedAsset(target: "products" | "blogs", url: string) {
+  return request<{ ok: true }>(
+    `/assets?target=${encodeURIComponent(target)}&url=${encodeURIComponent(url)}`,
+    {
+      method: "DELETE",
+    }
+  );
+}
+
 export function createProduct(product: Product) {
   return request<Product>("/products", {
     method: "POST",

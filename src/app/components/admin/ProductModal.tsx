@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { X, Upload, Images } from "lucide-react";
-import { Button } from "../ui/button";
+import { Images, Trash2, Upload, X } from "lucide-react";
 import { toast } from "sonner";
-import { fetchUploadedAssets, uploadAsset, type UploadedAsset } from "../../lib/contentApi";
+import { deleteUploadedAsset, fetchUploadedAssets, uploadAsset, type UploadedAsset } from "../../lib/contentApi";
 import { normalizeCatalogPriceVnd } from "../../lib/currency";
+import { Button } from "../ui/button";
 
 interface ProductModalProps {
   product?: any;
@@ -46,7 +46,9 @@ export function ProductModal({ product, onClose, onSave }: ProductModalProps) {
   const [uploadingGallery, setUploadingGallery] = useState(false);
   const [libraryAssets, setLibraryAssets] = useState<UploadedAsset[]>([]);
   const [loadingLibrary, setLoadingLibrary] = useState(false);
-  const [showLibrary, setShowLibrary] = useState(false);
+  const [showMainLibrary, setShowMainLibrary] = useState(false);
+  const [showGalleryLibrary, setShowGalleryLibrary] = useState(false);
+  const [deletingAssetUrl, setDeletingAssetUrl] = useState<string | null>(null);
   const mainFileInputRef = useRef<HTMLInputElement>(null);
   const galleryFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -83,7 +85,6 @@ export function ProductModal({ product, onClose, onSave }: ProductModalProps) {
   const handleMainImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     if (!validateImageFile(file)) return;
 
     try {
@@ -167,9 +168,87 @@ export function ProductModal({ product, onClose, onSave }: ProductModalProps) {
 
     if (mode === "main") {
       setImagePreview(url);
+      setShowMainLibrary(false);
+      return;
     }
 
-    setShowLibrary(false);
+    setShowGalleryLibrary(false);
+  };
+
+  const handleDeleteLibraryAsset = async (asset: UploadedAsset) => {
+    if (!confirm(`Bạn có chắc muốn xóa ảnh "${asset.name}" khỏi thư viện?`)) return;
+
+    try {
+      setDeletingAssetUrl(asset.url);
+      await deleteUploadedAsset("products", asset.url);
+      setLibraryAssets((prev) => prev.filter((item) => item.url !== asset.url));
+      setFormData((prev) => {
+        const nextImages = prev.images.filter((item: string) => item !== asset.url);
+        const nextMain = prev.image === asset.url ? nextImages[0] || "" : prev.image;
+        if (prev.image === asset.url) {
+          setImagePreview(nextMain);
+        }
+
+        return {
+          ...prev,
+          image: nextMain,
+          images: nextImages,
+        };
+      });
+      toast.success("Đã xóa ảnh khỏi thư viện.");
+    } catch (error) {
+      toast.error("Không xóa được ảnh khỏi thư viện.");
+      console.error(error);
+    } finally {
+      setDeletingAssetUrl(null);
+    }
+  };
+
+  const renderLibraryGrid = (mode: "main" | "gallery") => {
+    if (loadingLibrary) {
+      return <p className="text-sm text-gray-500">Đang tải thư viện ảnh...</p>;
+    }
+
+    if (libraryAssets.length === 0) {
+      return <p className="text-sm text-gray-500">Chưa có ảnh nào trong thư viện.</p>;
+    }
+
+    return (
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 max-h-72 overflow-y-auto">
+        {libraryAssets.map((asset) => (
+          <div key={asset.url} className="overflow-hidden rounded-xl border border-white/10 bg-black/20">
+            <img src={asset.url} alt={asset.name} className="h-24 w-full object-cover" />
+            <div className="space-y-2 p-2">
+              <p className="truncate text-[11px] text-gray-400" title={asset.name}>
+                {asset.name}
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  onClick={() => applySelectedImage(asset.url, mode)}
+                  className={
+                    mode === "main"
+                      ? "rounded-lg bg-[#3B82F6] text-white hover:bg-blue-500"
+                      : "rounded-lg border border-white/10 bg-white/5 text-white hover:bg-white/10"
+                  }
+                >
+                  {mode === "main" ? "Ảnh chính" : "Thêm ảnh"}
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => void handleDeleteLibraryAsset(asset)}
+                  disabled={deletingAssetUrl === asset.url}
+                  className="rounded-lg border border-red-500/20 bg-red-500/10 text-red-300 hover:bg-red-500/20"
+                >
+                  <Trash2 className="mr-1 h-4 w-4" />
+                  {deletingAssetUrl === asset.url ? "Đang xóa" : "Xóa"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -207,48 +286,42 @@ export function ProductModal({ product, onClose, onSave }: ProductModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-[#0F1115] border border-white/10 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-[#0F1115] border-b border-white/10 px-6 py-4 flex items-center justify-between">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+      <div className="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-2xl border border-white/10 bg-[#0F1115]">
+        <div className="sticky top-0 flex items-center justify-between border-b border-white/10 bg-[#0F1115] px-6 py-4">
           <h2 className="text-xl font-bold text-white">{product ? "Sửa laptop" : "Thêm laptop mới"}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
-            <X className="w-5 h-5" />
+          <button onClick={onClose} className="text-gray-400 transition-colors hover:text-white">
+            <X className="h-5 w-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 p-6">
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Hình ảnh</label>
+            <label className="mb-2 block text-sm font-medium text-gray-300">Hình ảnh</label>
             <div className="flex gap-4">
               <div
                 onClick={() => mainFileInputRef.current?.click()}
-                className="w-32 h-32 rounded-xl border-2 border-dashed border-white/20 flex items-center justify-center cursor-pointer hover:border-[#3B82F6] transition-colors overflow-hidden group"
+                className="group flex h-32 w-32 cursor-pointer items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-white/20 transition-colors hover:border-[#3B82F6]"
               >
                 {imagePreview ? (
-                  <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                  <img src={imagePreview} alt="Preview" className="h-full w-full object-cover" />
                 ) : (
                   <div className="text-center">
-                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2 group-hover:text-[#3B82F6]" />
+                    <Upload className="mx-auto mb-2 h-8 w-8 text-gray-400 group-hover:text-[#3B82F6]" />
                     <p className="text-xs text-gray-400">Upload</p>
                   </div>
                 )}
               </div>
-              <input
-                ref={mainFileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleMainImageUpload}
-                className="hidden"
-              />
+              <input ref={mainFileInputRef} type="file" accept="image/*" onChange={handleMainImageUpload} className="hidden" />
               <div className="flex-1">
-                <div className="flex items-center justify-between gap-3 mb-2">
+                <div className="mb-2 flex items-center justify-between gap-3">
                   <p className="text-sm text-gray-400">Nhập đường dẫn ảnh hoặc chọn từ thư viện:</p>
                   <Button
                     type="button"
-                    onClick={() => setShowLibrary((prev) => !prev)}
-                    className="bg-white/5 border border-white/10 text-white hover:bg-white/10 rounded-xl"
+                    onClick={() => setShowMainLibrary((prev) => !prev)}
+                    className="rounded-xl border border-white/10 bg-white/5 text-white hover:bg-white/10"
                   >
-                    <Images className="w-4 h-4 mr-2" />
+                    <Images className="mr-2 h-4 w-4" />
                     Thư viện ảnh
                   </Button>
                 </div>
@@ -267,55 +340,22 @@ export function ProductModal({ product, onClose, onSave }: ProductModalProps) {
                     setImagePreview(nextImage);
                   }}
                   placeholder="/uploads/products/ten-file.jpg hoặc https://..."
-                  className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#3B82F6]"
+                  className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white placeholder-gray-500 focus:border-[#3B82F6] focus:outline-none"
                 />
-                {uploadingMainImage && <p className="text-xs text-gray-500 mt-2">Đang upload ảnh chính...</p>}
-                {showLibrary && (
-                  <div className="mt-3 rounded-xl border border-white/10 bg-white/5 p-3 space-y-3">
+                {uploadingMainImage && <p className="mt-2 text-xs text-gray-500">Đang upload ảnh chính...</p>}
+                {showMainLibrary && (
+                  <div className="mt-3 space-y-3 rounded-xl border border-white/10 bg-white/5 p-3">
                     <div className="flex items-center justify-between gap-3">
                       <p className="text-sm text-gray-300">Ảnh trong `backend/uploads/products`</p>
                       <Button
                         type="button"
                         onClick={() => void loadLibraryAssets()}
-                        className="bg-white/5 border border-white/10 text-white hover:bg-white/10 rounded-xl"
+                        className="rounded-xl border border-white/10 bg-white/5 text-white hover:bg-white/10"
                       >
                         Tải lại
                       </Button>
                     </div>
-                    {loadingLibrary ? (
-                      <p className="text-sm text-gray-500">Đang tải thư viện ảnh...</p>
-                    ) : libraryAssets.length === 0 ? (
-                      <p className="text-sm text-gray-500">Chưa có ảnh nào trong thư viện.</p>
-                    ) : (
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-72 overflow-y-auto">
-                        {libraryAssets.map((asset) => (
-                          <div key={asset.url} className="rounded-xl border border-white/10 overflow-hidden bg-black/20">
-                            <img src={asset.url} alt={asset.name} className="w-full h-24 object-cover" />
-                            <div className="p-2 space-y-2">
-                              <p className="text-[11px] text-gray-400 truncate" title={asset.name}>
-                                {asset.name}
-                              </p>
-                              <div className="grid grid-cols-2 gap-2">
-                                <Button
-                                  type="button"
-                                  onClick={() => applySelectedImage(asset.url, "main")}
-                                  className="bg-[#3B82F6] hover:bg-blue-500 text-white rounded-lg"
-                                >
-                                  Ảnh chính
-                                </Button>
-                                <Button
-                                  type="button"
-                                  onClick={() => applySelectedImage(asset.url, "gallery")}
-                                  className="bg-white/5 border border-white/10 text-white hover:bg-white/10 rounded-lg"
-                                >
-                                  Gallery
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    {renderLibraryGrid("main")}
                   </div>
                 )}
               </div>
@@ -323,31 +363,56 @@ export function ProductModal({ product, onClose, onSave }: ProductModalProps) {
           </div>
 
           <div>
-            <div className="flex items-center justify-between mb-2">
+            <div className="mb-2 flex items-center justify-between">
               <label className="block text-sm font-medium text-gray-300">Ảnh chi tiết sản phẩm</label>
-              <Button
-                type="button"
-                onClick={() => galleryFileInputRef.current?.click()}
-                className="bg-white/5 border border-white/10 text-white hover:bg-white/10 rounded-xl"
-              >
-                <Upload className="w-4 h-4 mr-2" />
-                Upload ảnh chi tiết
-              </Button>
-              <input
-                ref={galleryFileInputRef}
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleGalleryUpload}
-                className="hidden"
-              />
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  onClick={() => setShowGalleryLibrary((prev) => !prev)}
+                  className="rounded-xl border border-white/10 bg-white/5 text-white hover:bg-white/10"
+                >
+                  <Images className="mr-2 h-4 w-4" />
+                  Chọn từ thư viện
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => galleryFileInputRef.current?.click()}
+                  className="rounded-xl border border-white/10 bg-white/5 text-white hover:bg-white/10"
+                >
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload ảnh chi tiết
+                </Button>
+                <input
+                  ref={galleryFileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleGalleryUpload}
+                  className="hidden"
+                />
+              </div>
             </div>
-            {uploadingGallery && <p className="text-xs text-gray-500 mb-2">Đang upload ảnh chi tiết...</p>}
+            {uploadingGallery && <p className="mb-2 text-xs text-gray-500">Đang upload ảnh chi tiết...</p>}
+            {showGalleryLibrary && (
+              <div className="mb-3 space-y-3 rounded-xl border border-white/10 bg-white/5 p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-sm text-gray-300">Chọn ảnh chi tiết từ thư viện `backend/uploads/products`</p>
+                  <Button
+                    type="button"
+                    onClick={() => void loadLibraryAssets()}
+                    className="rounded-xl border border-white/10 bg-white/5 text-white hover:bg-white/10"
+                  >
+                    Tải lại
+                  </Button>
+                </div>
+                {renderLibraryGrid("gallery")}
+              </div>
+            )}
             <div className="grid grid-cols-4 gap-3">
               {formData.images.map((imageUrl: string, index: number) => (
-                <div key={`${imageUrl}-${index}`} className="relative rounded-xl overflow-hidden border border-white/10 bg-white/5">
-                  <img src={imageUrl} alt={`Gallery ${index + 1}`} className="w-full h-24 object-cover" />
-                  <div className="absolute inset-x-0 bottom-0 flex justify-between items-center px-2 py-1 bg-black/60 text-[10px] text-white">
+                <div key={`${imageUrl}-${index}`} className="relative overflow-hidden rounded-xl border border-white/10 bg-white/5">
+                  <img src={imageUrl} alt={`Gallery ${index + 1}`} className="h-24 w-full object-cover" />
+                  <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-black/60 px-2 py-1 text-[10px] text-white">
                     <span>{index === 0 ? "Ảnh đầu" : `Ảnh ${index + 1}`}</span>
                     <button
                       type="button"
@@ -365,7 +430,7 @@ export function ProductModal({ product, onClose, onSave }: ProductModalProps) {
                       }}
                       className="text-red-300 hover:text-red-200"
                     >
-                      <X className="w-3 h-3" />
+                      <X className="h-3 w-3" />
                     </button>
                   </div>
                 </div>
@@ -375,22 +440,22 @@ export function ProductModal({ product, onClose, onSave }: ProductModalProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Tên sản phẩm *</label>
+              <label className="mb-2 block text-sm font-medium text-gray-300">Tên sản phẩm *</label>
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
-                className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#3B82F6]"
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white focus:border-[#3B82F6] focus:outline-none"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Thương hiệu *</label>
+              <label className="mb-2 block text-sm font-medium text-gray-300">Thương hiệu *</label>
               <select
                 value={formData.brand}
                 onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
                 required
-                className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#3B82F6] [&>option]:bg-[#0F1115] [&>option]:text-white"
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white focus:border-[#3B82F6] focus:outline-none [&>option]:bg-[#0F1115] [&>option]:text-white"
               >
                 <option value="">Chọn thương hiệu</option>
                 <option value="Apple">Apple</option>
@@ -404,34 +469,34 @@ export function ProductModal({ product, onClose, onSave }: ProductModalProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Giá hiện tại (VND) *</label>
+              <label className="mb-2 block text-sm font-medium text-gray-300">Giá hiện tại (VND) *</label>
               <input
                 type="number"
                 value={formData.price}
                 onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                 required
-                className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#3B82F6]"
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white focus:border-[#3B82F6] focus:outline-none"
               />
-              <p className="text-xs text-gray-500 mt-1">Nhập trực tiếp số tiền Việt Nam, ví dụ: 18990000</p>
+              <p className="mt-1 text-xs text-gray-500">Nhập trực tiếp số tiền Việt Nam, ví dụ: 18990000</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Giá gốc (VND)</label>
+              <label className="mb-2 block text-sm font-medium text-gray-300">Giá gốc (VND)</label>
               <input
                 type="number"
                 value={formData.originalPrice}
                 onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
-                className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#3B82F6]"
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white focus:border-[#3B82F6] focus:outline-none"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Tình trạng</label>
+              <label className="mb-2 block text-sm font-medium text-gray-300">Tình trạng</label>
               <select
                 value={formData.condition}
                 onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
-                className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#3B82F6] [&>option]:bg-[#0F1115] [&>option]:text-white"
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white focus:border-[#3B82F6] focus:outline-none [&>option]:bg-[#0F1115] [&>option]:text-white"
               >
                 <option value="Excellent">Tuyệt vời</option>
                 <option value="Good">Tốt</option>
@@ -439,93 +504,93 @@ export function ProductModal({ product, onClose, onSave }: ProductModalProps) {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Pin (%)</label>
+              <label className="mb-2 block text-sm font-medium text-gray-300">Pin (%)</label>
               <input
                 type="number"
                 value={formData.batteryHealth}
                 onChange={(e) => setFormData({ ...formData, batteryHealth: e.target.value })}
-                className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#3B82F6]"
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white focus:border-[#3B82F6] focus:outline-none"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">Bảo hành</label>
+              <label className="mb-2 block text-sm font-medium text-gray-300">Bảo hành</label>
               <input
                 type="text"
                 value={formData.warranty}
                 onChange={(e) => setFormData({ ...formData, warranty: e.target.value })}
-                className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#3B82F6]"
+                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white focus:border-[#3B82F6] focus:outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Mô tả</label>
+            <label className="mb-2 block text-sm font-medium text-gray-300">Mô tả</label>
             <textarea
               rows={4}
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#3B82F6] resize-none"
+              className="w-full resize-none rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white focus:border-[#3B82F6] focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Cấu hình</label>
+            <label className="mb-2 block text-sm font-medium text-gray-300">Cấu hình</label>
             <div className="grid grid-cols-2 gap-4">
               <input
                 type="text"
                 placeholder="CPU"
                 value={formData.specs.cpu}
                 onChange={(e) => setFormData({ ...formData, specs: { ...formData.specs, cpu: e.target.value } })}
-                className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#3B82F6]"
+                className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white placeholder-gray-500 focus:border-[#3B82F6] focus:outline-none"
               />
               <input
                 type="text"
                 placeholder="RAM"
                 value={formData.specs.ram}
                 onChange={(e) => setFormData({ ...formData, specs: { ...formData.specs, ram: e.target.value } })}
-                className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#3B82F6]"
+                className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white placeholder-gray-500 focus:border-[#3B82F6] focus:outline-none"
               />
               <input
                 type="text"
                 placeholder="SSD"
                 value={formData.specs.ssd}
                 onChange={(e) => setFormData({ ...formData, specs: { ...formData.specs, ssd: e.target.value } })}
-                className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#3B82F6]"
+                className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white placeholder-gray-500 focus:border-[#3B82F6] focus:outline-none"
               />
               <input
                 type="text"
                 placeholder="GPU"
                 value={formData.specs.gpu}
                 onChange={(e) => setFormData({ ...formData, specs: { ...formData.specs, gpu: e.target.value } })}
-                className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#3B82F6]"
+                className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white placeholder-gray-500 focus:border-[#3B82F6] focus:outline-none"
               />
               <input
                 type="text"
                 placeholder="Màn hình"
                 value={formData.specs.screen}
                 onChange={(e) => setFormData({ ...formData, specs: { ...formData.specs, screen: e.target.value } })}
-                className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#3B82F6]"
+                className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white placeholder-gray-500 focus:border-[#3B82F6] focus:outline-none"
               />
               <input
                 type="text"
                 placeholder="Hệ điều hành"
                 value={formData.specs.os}
                 onChange={(e) => setFormData({ ...formData, specs: { ...formData.specs, os: e.target.value } })}
-                className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#3B82F6]"
+                className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white placeholder-gray-500 focus:border-[#3B82F6] focus:outline-none"
               />
               <input
                 type="text"
                 placeholder="Trọng lượng"
                 value={formData.specs.weight}
                 onChange={(e) => setFormData({ ...formData, specs: { ...formData.specs, weight: e.target.value } })}
-                className="px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#3B82F6]"
+                className="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white placeholder-gray-500 focus:border-[#3B82F6] focus:outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Phụ kiện đi kèm</label>
-            <div className="flex gap-2 mb-2">
+            <label className="mb-2 block text-sm font-medium text-gray-300">Phụ kiện đi kèm</label>
+            <div className="mb-2 flex gap-2">
               <input
                 type="text"
                 value={accessoryInput}
@@ -538,7 +603,7 @@ export function ProductModal({ product, onClose, onSave }: ProductModalProps) {
                   setAccessoryInput("");
                 }}
                 placeholder="Nhập phụ kiện và Enter"
-                className="flex-1 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#3B82F6]"
+                className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white placeholder-gray-500 focus:border-[#3B82F6] focus:outline-none"
               />
               <Button
                 type="button"
@@ -547,7 +612,7 @@ export function ProductModal({ product, onClose, onSave }: ProductModalProps) {
                   setFormData({ ...formData, accessories: [...formData.accessories, accessoryInput.trim()] });
                   setAccessoryInput("");
                 }}
-                className="bg-white/5 border border-white/10 text-white hover:bg-white/10 rounded-xl"
+                className="rounded-xl border border-white/10 bg-white/5 text-white hover:bg-white/10"
               >
                 Thêm
               </Button>
@@ -556,7 +621,7 @@ export function ProductModal({ product, onClose, onSave }: ProductModalProps) {
               {formData.accessories.map((acc: string, idx: number) => (
                 <span
                   key={`${acc}-${idx}`}
-                  className="inline-flex items-center gap-2 px-3 py-1 bg-green-500/10 text-green-400 rounded-lg text-sm border border-green-500/20"
+                  className="inline-flex items-center gap-2 rounded-lg border border-green-500/20 bg-green-500/10 px-3 py-1 text-sm text-green-400"
                 >
                   {acc}
                   <button
@@ -567,9 +632,9 @@ export function ProductModal({ product, onClose, onSave }: ProductModalProps) {
                         accessories: formData.accessories.filter((_: string, i: number) => i !== idx),
                       })
                     }
-                    className="hover:text-red-400 transition-colors"
+                    className="transition-colors hover:text-red-400"
                   >
-                    <X className="w-3 h-3" />
+                    <X className="h-3 w-3" />
                   </button>
                 </span>
               ))}
@@ -582,7 +647,7 @@ export function ProductModal({ product, onClose, onSave }: ProductModalProps) {
                 type="checkbox"
                 checked={formData.featured}
                 onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
-                className="w-4 h-4 rounded border-white/10 bg-white/5 text-[#3B82F6] focus:ring-[#3B82F6]"
+                className="h-4 w-4 rounded border-white/10 bg-white/5 text-[#3B82F6] focus:ring-[#3B82F6]"
               />
               Sản phẩm nổi bật
             </label>
@@ -591,25 +656,25 @@ export function ProductModal({ product, onClose, onSave }: ProductModalProps) {
                 type="checkbox"
                 checked={formData.inStock}
                 onChange={(e) => setFormData({ ...formData, inStock: e.target.checked })}
-                className="w-4 h-4 rounded border-white/10 bg-white/5 text-[#3B82F6] focus:ring-[#3B82F6]"
+                className="h-4 w-4 rounded border-white/10 bg-white/5 text-[#3B82F6] focus:ring-[#3B82F6]"
               />
               Còn hàng
             </label>
           </div>
 
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
+          <div className="flex items-center justify-end gap-3 border-t border-white/10 pt-4">
             <Button
               type="button"
               onClick={onClose}
               variant="outline"
-              className="border-white/10 text-white hover:bg-white/5 rounded-xl"
+              className="rounded-xl border-white/10 text-white hover:bg-white/5"
             >
               Hủy
             </Button>
             <Button
               type="submit"
               disabled={saving}
-              className="bg-[#3B82F6] hover:bg-blue-500 text-white border-0 rounded-xl shadow-lg shadow-blue-500/30"
+              className="rounded-xl border-0 bg-[#3B82F6] text-white shadow-lg shadow-blue-500/30 hover:bg-blue-500"
             >
               {saving ? "Đang lưu..." : product ? "Cập nhật" : "Thêm mới"}
             </Button>

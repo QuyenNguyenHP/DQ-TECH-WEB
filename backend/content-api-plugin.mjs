@@ -79,6 +79,27 @@ function listImageAssets(dirPath, urlPrefix) {
     .sort((a, b) => b.createdAt - a.createdAt);
 }
 
+function resolveAssetPath(target, assetUrl, uploadsUrlPrefix, productUploadsDir, blogUploadsDir) {
+  if (!assetUrl || typeof assetUrl !== "string") {
+    throw new Error("Asset URL is required");
+  }
+
+  const expectedPrefix = `${uploadsUrlPrefix}/${target}/`;
+  if (!assetUrl.startsWith(expectedPrefix)) {
+    throw new Error("Invalid asset URL");
+  }
+
+  const filename = path.basename(assetUrl);
+  const targetDir = target === "blogs" ? blogUploadsDir : productUploadsDir;
+  const filePath = path.resolve(targetDir, filename);
+
+  if (!filePath.startsWith(targetDir)) {
+    throw new Error("Invalid asset path");
+  }
+
+  return filePath;
+}
+
 function ensureStore(root, config) {
   const dataFile = path.resolve(root, config.dataFile);
   const dir = path.dirname(dataFile);
@@ -200,6 +221,21 @@ function createHandlers(root) {
         const targetDir = target === "blogs" ? blogUploadsDir : productUploadsDir;
         const targetUrlPrefix = `${uploadsUrlPrefix}/${target}`;
         sendJson(res, 200, listImageAssets(targetDir, targetUrlPrefix));
+        return;
+      }
+
+      if (pathname === `${apiPrefix}/assets` && req.method === "DELETE") {
+        const target = url.searchParams.get("target") === "blogs" ? "blogs" : "products";
+        const assetUrl = url.searchParams.get("url") || "";
+        const filePath = resolveAssetPath(target, assetUrl, uploadsUrlPrefix, productUploadsDir, blogUploadsDir);
+
+        if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+          sendJson(res, 404, { message: "File not found" });
+          return;
+        }
+
+        fs.unlinkSync(filePath);
+        sendJson(res, 200, { ok: true });
         return;
       }
 
