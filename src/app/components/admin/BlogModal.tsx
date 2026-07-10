@@ -1,16 +1,17 @@
 import { useEffect, useRef, useState } from "react";
-import { X, Upload, Images } from "lucide-react";
+import { X, Upload, Images, Trash2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
-import { fetchUploadedAssets, uploadAsset, type UploadedAsset } from "../../lib/contentApi";
+import { deleteUploadedAsset, fetchUploadedAssets, uploadAsset, type UploadedAsset } from "../../lib/contentApi";
 
 interface BlogModalProps {
   blog?: any;
   onClose: () => void;
   onSave: (blog: any) => Promise<void> | void;
+  onAssetsChanged?: () => Promise<void> | void;
 }
 
-export function BlogModal({ blog, onClose, onSave }: BlogModalProps) {
+export function BlogModal({ blog, onClose, onSave, onAssetsChanged }: BlogModalProps) {
   const [formData, setFormData] = useState({
     id: blog?.id || `${Date.now()}`,
     title: blog?.title || "",
@@ -32,6 +33,7 @@ export function BlogModal({ blog, onClose, onSave }: BlogModalProps) {
   const [libraryAssets, setLibraryAssets] = useState<UploadedAsset[]>([]);
   const [loadingLibrary, setLoadingLibrary] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
+  const [deletingAssetUrl, setDeletingAssetUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const loadLibraryAssets = async () => {
@@ -113,6 +115,27 @@ export function BlogModal({ blog, onClose, onSave }: BlogModalProps) {
     setFormData((prev) => ({ ...prev, image: url }));
     setImagePreview(url);
     setShowLibrary(false);
+  };
+
+  const handleDeleteLibraryAsset = async (asset: UploadedAsset) => {
+    if (!confirm(`Bạn có chắc muốn xóa ảnh "${asset.name}" khỏi thư viện?`)) return;
+
+    try {
+      setDeletingAssetUrl(asset.url);
+      await deleteUploadedAsset("blogs", asset.url);
+      setLibraryAssets((prev) => prev.filter((item) => item.url !== asset.url));
+      if (formData.image === asset.url) {
+        setFormData((prev) => ({ ...prev, image: "" }));
+        setImagePreview("");
+      }
+      await onAssetsChanged?.();
+      toast.success("Đã xóa ảnh khỏi thư viện blog.");
+    } catch (error) {
+      toast.error("Không xóa được ảnh khỏi thư viện blog.");
+      console.error(error);
+    } finally {
+      setDeletingAssetUrl(null);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -212,19 +235,32 @@ export function BlogModal({ blog, onClose, onSave }: BlogModalProps) {
                     ) : (
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-72 overflow-y-auto">
                         {libraryAssets.map((asset) => (
-                          <button
-                            key={asset.url}
-                            type="button"
-                            onClick={() => applySelectedImage(asset.url)}
-                            className="rounded-xl border border-white/10 overflow-hidden bg-black/20 text-left hover:border-[#3B82F6] transition-colors"
-                          >
+                          <div key={asset.url} className="overflow-hidden rounded-xl border border-white/10 bg-black/20">
                             <img src={asset.url} alt={asset.name} className="w-full h-24 object-cover" />
-                            <div className="p-2">
+                            <div className="space-y-2 p-2">
                               <p className="text-[11px] text-gray-400 truncate" title={asset.name}>
                                 {asset.name}
                               </p>
+                              <div className="grid grid-cols-2 gap-2">
+                                <Button
+                                  type="button"
+                                  onClick={() => applySelectedImage(asset.url)}
+                                  className="rounded-lg bg-[#3B82F6] text-white hover:bg-blue-500"
+                                >
+                                  Chọn ảnh
+                                </Button>
+                                <Button
+                                  type="button"
+                                  onClick={() => void handleDeleteLibraryAsset(asset)}
+                                  disabled={deletingAssetUrl === asset.url}
+                                  className="rounded-lg border border-red-500/20 bg-red-500/10 text-red-300 hover:bg-red-500/20"
+                                >
+                                  <Trash2 className="mr-1 h-4 w-4" />
+                                  {deletingAssetUrl === asset.url ? "Đang xóa" : "Xóa"}
+                                </Button>
+                              </div>
                             </div>
-                          </button>
+                          </div>
                         ))}
                       </div>
                     )}

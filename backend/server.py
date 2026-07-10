@@ -147,6 +147,101 @@ def list_image_assets(directory: Path, url_prefix: str):
     return assets
 
 
+def resolve_asset_path(target: str, asset_url: str) -> Path:
+    if not isinstance(asset_url, str) or not asset_url:
+        raise ValueError("Asset URL is required")
+
+    expected_prefix = f'{CONFIG["uploadsUrlPrefix"]}/{target}/'
+    if not asset_url.startswith(expected_prefix):
+        raise ValueError("Invalid asset URL")
+
+    filename = asset_url[len(expected_prefix) :]
+    if not filename or "/" in filename or "\\" in filename:
+        raise ValueError("Invalid asset path")
+
+    target_dir = CONFIG["blogUploadsDir"] if target == "blogs" else CONFIG["productUploadsDir"]
+    file_path = (target_dir / filename).resolve()
+    if file_path.parent != target_dir.resolve():
+        raise ValueError("Invalid asset path")
+
+    return file_path
+
+
+def get_content_image_urls(resource: str, item: dict) -> set:
+    urls = set()
+    image = item.get("image")
+    if isinstance(image, str) and image:
+        urls.add(image)
+
+    if resource == "products":
+        images = item.get("images", [])
+        if isinstance(images, list):
+            urls.update(url for url in images if isinstance(url, str) and url)
+
+    return urls
+
+
+def get_store_image_urls(store: dict) -> set:
+    urls = set()
+    for resource in ("products", "blogs"):
+        for item in store.get(resource, []):
+            urls.update(get_content_image_urls(resource, item))
+    return urls
+
+
+def remove_asset_references(store: dict, asset_url: str) -> int:
+    updated_items = 0
+
+    for product in store.get("products", []):
+        original_image = product.get("image")
+        original_images = product.get("images", [])
+        images = original_images if isinstance(original_images, list) else []
+        next_images = [url for url in images if url != asset_url]
+        next_image = next_images[0] if original_image == asset_url and next_images else original_image
+        if original_image == asset_url and not next_images:
+            next_image = ""
+
+        if next_image != original_image or next_images != images:
+            product["image"] = next_image
+            product["images"] = next_images
+            updated_items += 1
+
+    for blog in store.get("blogs", []):
+        if blog.get("image") == asset_url:
+            blog["image"] = ""
+            updated_items += 1
+
+    return updated_items
+
+
+def get_asset_target(asset_url: str):
+    for target in ("products", "blogs"):
+        if asset_url.startswith(f'{CONFIG["uploadsUrlPrefix"]}/{target}/'):
+            return target
+    return None
+
+
+def delete_orphaned_assets(asset_urls: set, remaining_store: dict) -> list:
+    referenced_urls = get_store_image_urls(remaining_store)
+    deleted_urls = []
+
+    for asset_url in asset_urls - referenced_urls:
+        target = get_asset_target(asset_url)
+        if not target:
+            continue
+
+        try:
+            file_path = resolve_asset_path(target, asset_url)
+        except ValueError:
+            continue
+
+        if file_path.exists() and file_path.is_file():
+            file_path.unlink()
+            deleted_urls.append(asset_url)
+
+    return deleted_urls
+
+
 class ContentApiHandler(BaseHTTPRequestHandler):
     server_version = "DQTechContentAPI/1.0"
 
@@ -201,6 +296,25 @@ class ContentApiHandler(BaseHTTPRequestHandler):
                 self.send_json(200, list_image_assets(target_dir, target_url_prefix))
                 return
 
+            if pathname == f'{CONFIG["apiPrefix"]}/assets' and method == "DELETE":
+                query = parse_qs(parsed.query)
+                target = "blogs" if query.get("target", ["products"])[0] == "blogs" else "products"
+                asset_url = query.get("url", [""])[0]
+                file_path = resolve_asset_path(target, asset_url)
+
+                if not file_path.exists() or not file_path.is_file():
+                    self.send_json(404, {"message": "File not found"})
+                    return
+
+                store = read_store()
+                references_updated = remove_asset_references(store, asset_url)
+                if references_updated:
+                    write_store(store)
+
+                file_path.unlink()
+                self.send_json(200, {"ok": True, "referencesUpdated": references_updated})
+                return
+
             if pathname == f'{CONFIG["apiPrefix"]}/upload' and method == "POST":
                 payload = self.read_json_body()
                 target = "blogs" if payload.get("target") == "blogs" else "products"
@@ -247,13 +361,15 @@ class ContentApiHandler(BaseHTTPRequestHandler):
                 if pathname.startswith(f"{resource_path}/") and method == "DELETE":
                     resource_id = unquote(pathname[len(resource_path) + 1 :])
                     store = read_store()
-                    next_items = [item for item in store[resource] if item.get("id") != resource_id]
-                    if len(next_items) == len(store[resource]):
+                    deleted_item = next((item for item in store[resource] if item.get("id") == resource_id), None)
+                    if deleted_item is None:
                         self.send_json(404, {"message": f"{resource[:-1]} not found"})
                         return
+                    next_items = [item for item in store[resource] if item.get("id") != resource_id]
                     store[resource] = next_items
                     write_store(store)
-                    self.send_json(200, {"ok": True})
+                    deleted_assets = delete_orphaned_assets(get_content_image_urls(resource, deleted_item), store)
+                    self.send_json(200, {"ok": True, "deletedAssets": deleted_assets})
                     return
 
             self.send_json(404, {"message": "Not found"})

@@ -248,6 +248,7 @@ function ProductsManager() {
       {showModal && (
         <ProductModal
           product={editingProduct}
+          onAssetsChanged={loadProducts}
           onClose={() => {
             setShowModal(false);
             setEditingProduct(null);
@@ -391,6 +392,7 @@ function BlogsManager() {
       {showModal && (
         <BlogModal
           blog={editingBlog}
+          onAssetsChanged={loadBlogs}
           onClose={() => {
             setShowModal(false);
             setEditingBlog(null);

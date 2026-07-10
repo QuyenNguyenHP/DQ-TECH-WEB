@@ -9,9 +9,10 @@ interface ProductModalProps {
   product?: any;
   onClose: () => void;
   onSave: (product: any) => Promise<void> | void;
+  onAssetsChanged?: () => Promise<void> | void;
 }
 
-export function ProductModal({ product, onClose, onSave }: ProductModalProps) {
+export function ProductModal({ product, onClose, onSave, onAssetsChanged }: ProductModalProps) {
   const [formData, setFormData] = useState({
     id: product?.id || `laptop-${Date.now()}`,
     name: product?.name || "",
@@ -175,29 +176,55 @@ export function ProductModal({ product, onClose, onSave }: ProductModalProps) {
     setShowGalleryLibrary(false);
   };
 
+  const removeImageFromForm = (url: string) => {
+    setLibraryAssets((prev) => prev.filter((item) => item.url !== url));
+    setFormData((prev) => {
+      const nextImages = prev.images.filter((item: string) => item !== url);
+      const nextMain = prev.image === url ? nextImages[0] || "" : prev.image;
+      if (prev.image === url) {
+        setImagePreview(nextMain);
+      }
+
+      return {
+        ...prev,
+        image: nextMain,
+        images: nextImages,
+      };
+    });
+  };
+
+  const isUploadedProductAsset = (url: string) => url.startsWith("/uploads/products/");
+
   const handleDeleteLibraryAsset = async (asset: UploadedAsset) => {
     if (!confirm(`Bạn có chắc muốn xóa ảnh "${asset.name}" khỏi thư viện?`)) return;
 
     try {
       setDeletingAssetUrl(asset.url);
       await deleteUploadedAsset("products", asset.url);
-      setLibraryAssets((prev) => prev.filter((item) => item.url !== asset.url));
-      setFormData((prev) => {
-        const nextImages = prev.images.filter((item: string) => item !== asset.url);
-        const nextMain = prev.image === asset.url ? nextImages[0] || "" : prev.image;
-        if (prev.image === asset.url) {
-          setImagePreview(nextMain);
-        }
-
-        return {
-          ...prev,
-          image: nextMain,
-          images: nextImages,
-        };
-      });
+      removeImageFromForm(asset.url);
+      await onAssetsChanged?.();
       toast.success("Đã xóa ảnh khỏi thư viện.");
     } catch (error) {
       toast.error("Không xóa được ảnh khỏi thư viện.");
+      console.error(error);
+    } finally {
+      setDeletingAssetUrl(null);
+    }
+  };
+
+  const handleDeleteAlbumImage = async (imageUrl: string) => {
+    if (!confirm("Bạn có chắc muốn xóa ảnh này khỏi album?")) return;
+
+    try {
+      setDeletingAssetUrl(imageUrl);
+      if (isUploadedProductAsset(imageUrl)) {
+        await deleteUploadedAsset("products", imageUrl);
+      }
+      removeImageFromForm(imageUrl);
+      await onAssetsChanged?.();
+      toast.success(isUploadedProductAsset(imageUrl) ? "Đã xóa ảnh khỏi album và máy chủ." : "Đã xóa ảnh khỏi album.");
+    } catch (error) {
+      toast.error("Không xóa được ảnh khỏi album.");
       console.error(error);
     } finally {
       setDeletingAssetUrl(null);
@@ -416,21 +443,12 @@ export function ProductModal({ product, onClose, onSave }: ProductModalProps) {
                     <span>{index === 0 ? "Ảnh đầu" : `Ảnh ${index + 1}`}</span>
                     <button
                       type="button"
-                      onClick={() => {
-                        const nextImages = formData.images.filter((_: string, i: number) => i !== index);
-                        const nextMain = index === 0 ? nextImages[0] || "" : formData.image;
-                        setFormData((prev) => ({
-                          ...prev,
-                          image: nextMain,
-                          images: nextImages,
-                        }));
-                        if (index === 0) {
-                          setImagePreview(nextMain);
-                        }
-                      }}
-                      className="text-red-300 hover:text-red-200"
+                      onClick={() => void handleDeleteAlbumImage(imageUrl)}
+                      disabled={deletingAssetUrl === imageUrl}
+                      aria-label={`Xóa ảnh ${index + 1}`}
+                      className="text-red-300 hover:text-red-200 disabled:cursor-wait disabled:opacity-50"
                     >
-                      <X className="h-3 w-3" />
+                      <Trash2 className="h-3 w-3" />
                     </button>
                   </div>
                 </div>
