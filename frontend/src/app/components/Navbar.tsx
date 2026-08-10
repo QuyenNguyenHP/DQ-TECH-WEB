@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router";
-import { Search, Menu, X, Laptop, ShoppingBag, ChevronDown, Globe, Camera } from "lucide-react";
+import { Search, Menu, X, Laptop, ShoppingBag, ChevronDown, Globe, Camera, LockKeyhole } from "lucide-react";
 import { Button } from "./ui/button";
 import { motion, AnimatePresence } from "motion/react";
 import logoImage from "../../imports/logo.png";
@@ -182,6 +182,17 @@ export function Navbar() {
                 <Search className="w-4.5 h-4.5" />
               </Link>
 
+              <Link to="/admin/login" className="hidden md:block">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-white/15 bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white hover:border-white/25 rounded-lg px-3 transition-all"
+                >
+                  <LockKeyhole className="w-4 h-4 lg:mr-2" />
+                  <span className="hidden lg:inline">Admin</span>
+                </Button>
+              </Link>
+
               <Link to="/contact" className="hidden sm:block">
                 <Button
                   size="sm"
@@ -293,6 +304,13 @@ export function Navbar() {
                 </Link>
 
                 <div className="pt-2 mt-2 border-t border-white/10">
+                  <Link
+                    to="/admin/login"
+                    className="flex items-center justify-center gap-2 w-full px-4 py-3 mb-2 rounded-xl border border-white/10 bg-white/5 text-sm font-medium text-gray-300 hover:bg-white/10 hover:text-white transition-all"
+                  >
+                    <LockKeyhole className="w-4 h-4" />
+                    Trang Admin
+                  </Link>
                   <Link to="/contact" className="block">
                     <Button className="w-full bg-[#3B82F6] hover:bg-blue-500 text-white border-0 rounded-xl shadow-lg shadow-blue-500/25">
                       <ShoppingBag className="w-4 h-4 mr-2" />

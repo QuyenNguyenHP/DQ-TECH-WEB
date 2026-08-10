@@ -1,520 +1,251 @@
-# DQ TECH WEB V2
+# DQ TECH WEB
 
-README này chuẩn hóa lại tài liệu cho dự án `DQ TECH WEB V2`, gồm:
-
-- Frontend build bằng `Vite`
-- Backend nhẹ bằng `Python` để phục vụ content API và upload ảnh
-- Mô hình deploy production trên `Apache2`
-
-## Tổng quan
-
-Thông tin đang dùng:
-
-- Project local: `C:\Users\Quyen PC\Desktop\DQ TECH WEB V2`
-- VPS IP: `31.97.189.234`
-- Domain: `dqtech.cloud`
-- Web server: `Apache2`
-- Frontend: `Vite`
-- Backend content/upload: `Python`
-
-Mô hình triển khai khuyến nghị:
-
-- Frontend build ra thư mục `dist/`
-- Apache serve file tĩnh từ `dist/`
-- Backend Python chạy nội bộ trên `127.0.0.1:8000`
-- Apache reverse proxy cho:
-  - `/api/content`
-  - `/uploads`
-
-Lợi ích:
-
-- Frontend và backend tách rõ trách nhiệm
-- Dễ quản lý bằng `systemd`
-- Upload ảnh không phụ thuộc vào Vite dev server
-
-## Cấu trúc chính
+The production image contains the Vite frontend, Nginx, and the Python content API. On the destination PC or VPS, Apache2 handles `dqtech.cloud` and HTTPS, then proxies traffic to Docker on `127.0.0.1:8081`.
 
 ```text
-DQ TECH WEB V2/
-|-- backend/
-|   |-- apache/
-|   |   `-- dqtech.cloud.conf.example
-|   |-- data/
-|   |-- uploads/
-|   |-- dqtech-content-api.service.example
-|   `-- server.py
-|-- src/
-|-- .env.example
-|-- package.json
-`-- README.md
+Internet -> Apache :80/:443 -> 127.0.0.1:8081 -> Nginx :8080
+                                                   |-> frontend
+                                                   `-> Python API :8000
 ```
 
-## Chạy local
+The Docker host port is `8081`; the container port remains `8080`. Port `8000` is internal and must not be exposed publicly.
 
-### 1. Cài dependencies frontend
-
-```bash
-npm install
-```
-
-### 2. Chạy frontend dev
-
-```bash
-npm run dev
-```
-
-### 3. Chạy backend local
-
-```bash
-npm run dev:api
-```
-
-Hoặc:
-
-```bash
-python backend/server.py
-```
-
-### 4. Build frontend
-
-```bash
-npm run build
-```
-
-## Biến môi trường
-
-### Frontend
-
-File mẫu:
+## Important files
 
 ```text
-.env.example
+frontend/                                  Vite/React application
+backend/                                   Python API, JSON data, uploads
+docker/Dockerfile                          production image
+docker/entrypoint.sh                       starts Python and Nginx
+docker/nginx.conf                          frontend and API routing
+docker/compose.yaml                        deployment on host port 8081
+docker/apache/dqtech.cloud.conf.example    Apache reverse proxy
+.dockerignore
 ```
 
-Nội dung hiện tại:
-
-```env
-VITE_CONTENT_API_BASE=/api/content
-```
-
-Với cấu hình này, frontend gọi API qua cùng domain, phù hợp khi Apache đang reverse proxy backend.
-
-### Backend
-
-Backend `backend/server.py` hỗ trợ các biến môi trường sau:
-
-- `CONTENT_API_HOST`: mặc định `127.0.0.1`
-- `CONTENT_API_PORT`: mặc định `8000`
-- `CONTENT_API_MAX_BODY_MB`: mặc định `20`
-- `CONTENT_API_ALLOW_ORIGIN`: tùy chọn, dùng khi cần CORS
-
-Ví dụ chạy backend ở cổng khác:
+## Local development
 
 ```bash
-CONTENT_API_PORT=8131 python3 backend/server.py
+npm --prefix frontend install
+npm --prefix frontend run dev:api
 ```
 
-## Backend content API
-
-Backend hiện phục vụ:
-
-- `GET /api/content/health`
-- `GET /api/content/bootstrap`
-- `GET /api/content/assets?target=products`
-- `GET /api/content/assets?target=blogs`
-- `POST /api/content/upload`
-- CRUD cho:
-  - `/api/content/products`
-  - `/api/content/blogs`
-
-Backend ghi dữ liệu vào:
-
-- `backend/data/content-store.json`
-- `backend/uploads/products`
-- `backend/uploads/blogs`
-
-Nếu deploy production, các thư mục trên phải có quyền ghi cho user chạy service.
-
-## Chuẩn bị domain
-
-Tạo DNS:
-
-- Bản ghi `A`
-- Host: `@`
-- Value: `31.97.189.234`
-
-Nếu dùng thêm `www`:
-
-- Bản ghi `A`
-- Host: `www`
-- Value: `31.97.189.234`
-
-Kiểm tra:
+In a second terminal:
 
 ```bash
-ping dqtech.cloud
-nslookup dqtech.cloud
+npm --prefix frontend run dev
 ```
 
-## SSH vào VPS
+The frontend uses the same-origin API path `/api/content`; no production domain is compiled into the image.
+
+## Build and test the image
+
+Run from the repository root:
 
 ```bash
-ssh root@31.97.189.234
+docker build --file docker/Dockerfile --tag dqtech-web:latest .
+docker image inspect dqtech-web:latest --format '{{.Os}}/{{.Architecture}}'
 ```
 
-Hoặc:
+Test locally on port `8081`:
 
 ```bash
-ssh your_user@31.97.189.234
+docker run --detach \
+  --name dqtech-web-test \
+  --publish 127.0.0.1:8081:8080 \
+  dqtech-web:latest
+
+curl --fail http://127.0.0.1:8081/api/content/health
+docker rm --force dqtech-web-test
 ```
 
-## Cài gói cần thiết trên VPS
+The image architecture must match the destination. `linux/amd64` is for Intel/AMD 64-bit PCs. For an ARM64 destination, use Buildx:
 
 ```bash
-apt update && apt upgrade -y
-apt install -y apache2 curl unzip rsync python3 python3-venv python3-pip
+docker buildx build \
+  --platform linux/arm64 \
+  --file docker/Dockerfile \
+  --tag dqtech-web:latest \
+  --load .
 ```
 
-Nếu muốn build trực tiếp trên VPS:
+## Export for another PC
 
 ```bash
-curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-apt install -y nodejs
-node -v
-npm -v
+docker save dqtech-web:latest | gzip -9 > dqtech-web-latest-amd64.tar.gz
+sha256sum dqtech-web-latest-amd64.tar.gz > dqtech-web-latest-amd64.tar.gz.sha256
 ```
 
-## Upload source lên VPS
+Copy these files to the destination:
 
-Tạo thư mục source:
+- `dqtech-web-latest-amd64.tar.gz`
+- `dqtech-web-latest-amd64.tar.gz.sha256`
+- `docker/compose.yaml`
+- `docker/apache/dqtech.cloud.conf.example` when Apache is used
+
+Example VPS transfer:
 
 ```bash
-mkdir -p /var/www/dqtech-app
+ssh your_user@YOUR_SERVER_IP 'mkdir -p /opt/dqtech'
+scp dqtech-web-latest-amd64.tar.gz* your_user@YOUR_SERVER_IP:/opt/dqtech/
+scp docker/compose.yaml your_user@YOUR_SERVER_IP:/opt/dqtech/
+scp docker/apache/dqtech.cloud.conf.example your_user@YOUR_SERVER_IP:/opt/dqtech/
 ```
 
-Upload source từ máy local:
+## Deploy on the destination
+
+Install Docker Engine and the Docker Compose plugin. Then verify and load the archive:
 
 ```bash
-scp -r "C:\Users\Quyen PC\Desktop\DQ TECH WEB V2\*" root@31.97.189.234:/var/www/dqtech-app/
+cd /opt/dqtech
+sha256sum --check dqtech-web-latest-amd64.tar.gz.sha256
+docker load --input dqtech-web-latest-amd64.tar.gz
+docker image inspect dqtech-web:latest --format '{{.RepoTags}} {{.Os}}/{{.Architecture}}'
 ```
 
-Hoặc dùng `rsync`:
+Place `compose.yaml` in `/opt/dqtech`, then start the application:
 
 ```bash
-rsync -avz "C:\Users\Quyen PC\Desktop\DQ TECH WEB V2\" root@31.97.189.234:/var/www/dqtech-app/
+docker compose up --detach
+docker compose ps
+curl --fail http://127.0.0.1:8081/api/content/health
 ```
 
-## Deploy frontend
-
-Có 2 cách.
-
-### Cách A: Build ở local
-
-Trên máy local:
+Without Docker Compose:
 
 ```bash
-npm install
-npm run build
+docker run --detach \
+  --name dqtech-web \
+  --publish 127.0.0.1:8081:8080 \
+  --volume dqtech-data:/app/backend/data \
+  --volume dqtech-uploads:/app/backend/uploads \
+  --restart unless-stopped \
+  dqtech-web:latest
 ```
 
-Trên VPS:
+The loopback binding is intentional: only Apache can reach the app. For local testing without Apache, use `--publish 8081:8080` and open `http://localhost:8081`.
+
+## Persistent data
+
+The deployment uses two named volumes:
+
+- `dqtech-data` for `content-store.json`
+- `dqtech-uploads` for uploaded product and blog images
+
+Recreating the container does not delete these volumes. Do not run `docker compose down --volumes` or `docker volume rm dqtech-data dqtech-uploads` unless the data should be permanently deleted.
+
+Back up both volumes:
 
 ```bash
-mkdir -p /var/www/dqtech.cloud
-rsync -avz dist/ root@31.97.189.234:/var/www/dqtech.cloud/
-chown -R www-data:www-data /var/www/dqtech.cloud
-chmod -R 755 /var/www/dqtech.cloud
+mkdir -p /opt/dqtech/backups
+docker run --rm \
+  --volume dqtech-data:/source:ro \
+  --volume /opt/dqtech/backups:/backup \
+  alpine tar czf /backup/dqtech-data.tar.gz -C /source .
+docker run --rm \
+  --volume dqtech-uploads:/source:ro \
+  --volume /opt/dqtech/backups:/backup \
+  alpine tar czf /backup/dqtech-uploads.tar.gz -C /source .
 ```
 
-### Cách B: Build trên VPS
+## Apache2 for dqtech.cloud
+
+Before configuring Apache:
+
+1. Point DNS `A` records for `dqtech.cloud` and optionally `www.dqtech.cloud` to the server IP.
+2. Allow inbound TCP ports `80` and `443`.
+3. Keep Docker port `8081` on `127.0.0.1`; it needs no public firewall rule.
+
+Install Apache and Certbot on Ubuntu/Debian:
 
 ```bash
-cd /var/www/dqtech-app
-npm install
-npm run build
-mkdir -p /var/www/dqtech.cloud
-cp -r dist/* /var/www/dqtech.cloud/
-chown -R www-data:www-data /var/www/dqtech.cloud
-chmod -R 755 /var/www/dqtech.cloud
+sudo apt update
+sudo apt install -y apache2 certbot python3-certbot-apache
+sudo a2enmod proxy proxy_http headers ssl
 ```
 
-## Deploy backend Python
-
-### Chạy thử thủ công
+Install the included site configuration:
 
 ```bash
-cd /var/www/dqtech-app
-python3 backend/server.py
+sudo cp /opt/dqtech/dqtech.cloud.conf.example \
+  /etc/apache2/sites-available/dqtech.cloud.conf
+sudo a2ensite dqtech.cloud.conf
+sudo apache2ctl configtest
+sudo systemctl reload apache2
 ```
 
-### Cấp quyền ghi cho backend
+Confirm HTTP reaches Docker before requesting a certificate:
 
 ```bash
-chown -R www-data:www-data /var/www/dqtech-app/backend/data /var/www/dqtech-app/backend/uploads
-chmod -R 775 /var/www/dqtech-app/backend/data /var/www/dqtech-app/backend/uploads
+curl --fail http://dqtech.cloud/api/content/health
 ```
 
-### Chạy bằng systemd
-
-Repo đã có file mẫu:
-
-```text
-backend/dqtech-content-api.service.example
-```
-
-Copy sang `systemd`:
+Configure HTTPS:
 
 ```bash
-cp /var/www/dqtech.cloud/backend/dqtech-content-api.service.example /etc/systemd/system/dqtech-content-api.service
+sudo certbot --apache --redirect -d dqtech.cloud -d www.dqtech.cloud
+sudo apache2ctl configtest
+sudo systemctl reload apache2
+sudo certbot renew --dry-run
 ```
 
-Kích hoạt service:
+If there is no `www` DNS record, omit `-d www.dqtech.cloud` and remove `ServerAlias www.dqtech.cloud` from the Apache file.
+
+Final checks:
 
 ```bash
-systemctl daemon-reload
-systemctl enable --now dqtech-content-api
-systemctl restart dqtech-content-api
-systemctl status dqtech-content-api
+curl -I https://dqtech.cloud
+curl --fail https://dqtech.cloud/api/content/health
+docker inspect --format '{{.State.Health.Status}}' dqtech-web
+docker logs --tail 100 dqtech-web
 ```
 
-Nếu muốn đổi cổng backend, sửa biến:
+Do not run the old `dqtech-content-api.service` systemd service with this deployment. The backend already runs inside Docker.
 
-```ini
-Environment=CONTENT_API_PORT=8131
-```
+## Update and rollback
 
-## Cấu hình Apache
-
-### Bật các module cần thiết
+Rebuild and export on the build PC. On the destination PC:
 
 ```bash
-a2enmod rewrite proxy proxy_http ssl headers
-systemctl reload apache2
+cd /opt/dqtech
+docker tag dqtech-web:latest dqtech-web:previous
+docker load --input dqtech-web-latest-amd64.tar.gz
+docker compose up --detach --force-recreate
+curl --retry 10 --retry-delay 2 --retry-connrefused --fail \
+  http://127.0.0.1:8081/api/content/health
 ```
 
-### Dùng file VirtualHost mẫu
-
-Repo đã có file:
-
-```text
-backend/apache/dqtech.cloud.conf.example
-```
-
-Copy vào Apache:
+The named volumes remain attached. To roll back:
 
 ```bash
-cp /var/www/dqtech-app/backend/apache/dqtech.cloud.conf.example /etc/apache2/sites-available/dqtech.cloud.conf
+docker compose down
+docker run --detach \
+  --name dqtech-web \
+  --publish 127.0.0.1:8081:8080 \
+  --volume dqtech-data:/app/backend/data \
+  --volume dqtech-uploads:/app/backend/uploads \
+  --restart unless-stopped \
+  dqtech-web:previous
 ```
 
-File này đã gồm:
-
-- Redirect HTTP sang HTTPS
-- Serve frontend từ `/var/www/dqtech.cloud`
-- Proxy `/api/content` về `127.0.0.1:8000`
-- Proxy `/uploads` về `127.0.0.1:8000`
-- Rewrite về `index.html` để hỗ trợ client-side routing
-
-Nếu backend chạy ở cổng `8131`, sửa các dòng proxy trong file Apache:
-
-```apache
-ProxyPass /api/content http://127.0.0.1:8131/api/content retry=0 timeout=60
-ProxyPassReverse /api/content http://127.0.0.1:8131/api/content
-ProxyPass /uploads http://127.0.0.1:8131/uploads retry=0 timeout=60
-ProxyPassReverse /uploads http://127.0.0.1:8131/uploads
-```
-
-### Enable site
+## Operations and troubleshooting
 
 ```bash
-a2ensite dqtech.cloud.conf
-a2dissite 000-default.conf
-apache2ctl configtest
-systemctl reload apache2
-systemctl enable apache2
-systemctl status apache2
+docker compose ps
+docker logs --follow dqtech-web
+docker restart dqtech-web
+docker inspect --format '{{.State.Health.Status}}' dqtech-web
+ss -ltnp | grep 8081
+sudo apache2ctl configtest
+sudo tail -f /var/log/apache2/dqtech.cloud_error.log
 ```
 
-Nếu kết quả:
+Common problems:
 
-```text
-Syntax OK
-```
+- `permission denied ... docker.sock`: add the user to the `docker` group, sign out and in again, or use `sudo`.
+- Apache `503 Service Unavailable`: verify the container and `curl http://127.0.0.1:8081/api/content/health`.
+- HTTP works but HTTPS fails: verify DNS, ports 80/443, and the Certbot result.
+- Upload fails: check disk space, both volumes, container logs, and Apache's error log.
+- Port allocated: check `sudo ss -ltnp | grep :8081`; stop that process or change the host port in both Compose and Apache.
 
-thì cấu hình hợp lệ.
-
-## Bật HTTPS bằng Let's Encrypt
-
-```bash
-apt install -y certbot python3-certbot-apache
-certbot --apache -d dqtech.cloud -d www.dqtech.cloud
-systemctl status certbot.timer
-certbot renew --dry-run
-```
-
-## Mở firewall
-
-Nếu VPS dùng `ufw`:
-
-```bash
-ufw allow OpenSSH
-ufw allow 'Apache Full'
-ufw enable
-ufw status
-```
-
-## Quy trình cập nhật bản mới
-
-### Trường hợp build ở local
-
-```bash
-npm run build
-rsync -avz dist/ root@31.97.189.234:/var/www/dqtech.cloud/
-```
-
-Nếu backend thay đổi, đồng bộ lại thư mục `backend/` và restart service:
-
-```bash
-systemctl restart dqtech-content-api
-systemctl reload apache2
-```
-
-### Trường hợp build trên VPS
-
-```bash
-cd /var/www/dqtech-app
-git pull
-npm install
-npm run build
-cp -r dist/* /var/www/dqtech.cloud/
-chown -R www-data:www-data /var/www/dqtech.cloud
-systemctl restart dqtech-content-api
-systemctl reload apache2
-```
-
-## Kiểm tra nhanh
-
-Kiểm tra Apache:
-
-```bash
-systemctl status apache2
-apache2ctl configtest
-```
-
-Kiểm tra backend:
-
-```bash
-systemctl status dqtech-content-api
-ss -tulpn | grep 8000
-```
-
-Nếu backend chạy cổng `8131`:
-
-```bash
-ss -tulpn | grep 8131
-```
-
-Xem log Apache:
-
-```bash
-tail -f /var/log/apache2/dqtech.cloud_error.log
-tail -f /var/log/apache2/dqtech.cloud_access.log
-```
-
-Xem log backend:
-
-```bash
-journalctl -u dqtech-content-api -f
-```
-
-Kiểm tra file frontend:
-
-```bash
-ls -la /var/www/dqtech.cloud
-```
-
-## Lỗi thường gặp
-
-### Không upload được ảnh
-
-Kiểm tra:
-
-1. Backend Python có đang chạy không
-2. Apache có proxy đúng `/api/content` và `/uploads` không
-3. Thư mục `backend/uploads` có quyền ghi cho `www-data` không
-4. Backend đang chạy cổng `8000` hay `8131`
-5. Đã restart `dqtech-content-api` sau khi sửa service chưa
-
-### `403 Forbidden`
-
-Kiểm tra quyền:
-
-```bash
-chown -R www-data:www-data /var/www/dqtech.cloud
-chmod -R 755 /var/www/dqtech.cloud
-chown -R www-data:www-data /var/www/dqtech-app/backend/data /var/www/dqtech-app/backend/uploads
-chmod -R 775 /var/www/dqtech-app/backend/data /var/www/dqtech-app/backend/uploads
-```
-
-### `404` khi refresh route
-
-Đảm bảo VirtualHost có đoạn:
-
-```apache
-RewriteEngine On
-RewriteCond %{REQUEST_URI} !^/api/content [NC]
-RewriteCond %{REQUEST_URI} !^/uploads [NC]
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^ /index.html [L]
-```
-
-### Domain chưa vào được
-
-Kiểm tra:
-
-1. DNS đã trỏ đúng IP `31.97.189.234`
-2. Port `80` và `443` đã mở
-3. Apache đang chạy
-
-### HTTPS không cấp được
-
-Kiểm tra:
-
-1. Domain đã trỏ đúng IP
-2. Truy cập được `http://dqtech.cloud` trước khi chạy `certbot`
-3. Port `80` và `443` không bị chặn
-
-### Apache proxy sai cổng
-
-Nếu backend chạy `8131` mà Apache vẫn trỏ `8000`, toàn bộ upload và CRUD sẽ lỗi. Kiểm tra lại:
-
-```apache
-ProxyPass /api/content http://127.0.0.1:8131/api/content
-ProxyPass /uploads http://127.0.0.1:8131/uploads
-```
-
-Sau đó:
-
-```bash
-apache2ctl configtest
-systemctl reload apache2
-```
-
-## Cấu trúc deploy khuyến nghị
-
-```text
-/var/www/
-|-- dqtech-app/      # source code, backend Python, file mẫu
-`-- dqtech.cloud/    # file build cuối cùng để Apache serve
-```
-
-## Checklist hoàn tất
-
-- `dqtech.cloud` trỏ về `31.97.189.234`
-- Apache2 đã cài
-- Frontend `dist/` đã deploy vào `/var/www/dqtech.cloud`
-- Backend Python đang chạy bằng `systemd`
-- Apache đang proxy đúng `/api/content` và `/uploads`
-- Thư mục `backend/data` và `backend/uploads` có quyền ghi
-- `https://dqtech.cloud` truy cập được
-- Upload ảnh trong admin hoạt động bình thường
+The backend and Nginx upload limits default to 20 MB. To change the limit, update `CONTENT_API_MAX_BODY_MB` and `client_max_body_size` in `docker/nginx.conf`, then rebuild.

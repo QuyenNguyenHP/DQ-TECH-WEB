@@ -198,6 +198,34 @@
         "T\u00fai \u0111\u1ef1ng",
         "Chu\u1ed9t bluetooth"
       ]
+    },
+    {
+      "id": "laptop-1786370728131",
+      "name": "12312",
+      "brand": "HP",
+      "price": 1234123,
+      "originalPrice": 11123,
+      "condition": "Good",
+      "category": "business",
+      "image": "",
+      "images": [
+        ""
+      ],
+      "specs": {
+        "cpu": "",
+        "ram": "",
+        "ssd": "",
+        "gpu": "",
+        "screen": "",
+        "os": "",
+        "weight": ""
+      },
+      "batteryHealth": 0,
+      "warranty": "3 th\u00e1ng",
+      "description": "",
+      "featured": false,
+      "inStock": true,
+      "accessories": []
     }
   ],
   "blogs": [

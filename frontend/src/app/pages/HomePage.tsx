@@ -50,48 +50,6 @@ const heroSlides = [
     accentColor: "text-[#3B82F6]",
     type: "product-showcase",
   },
-  {
-    id: "website",
-    badge: "Công nghệ hiện đại & tối ưu SEO",
-    title: (
-      <>
-        Thiết Kế
-        <br />
-        <span className="text-purple-400">Website</span>
-        <br />
-        Chuyên Nghiệp
-      </>
-    ),
-    description:
-      "Biến ý tưởng của bạn thành website tuyệt đẹp với công nghệ hiện đại nhất. Từ landing page đơn giản đến thương mại điện tử.",
-    primaryCTA: { label: "Xem Dịch Vụ", to: "/thiet-ke-website" },
-    secondaryCTA: { label: "Tư Vấn Miễn Phí", to: "/contact" },
-    image: "https://images.unsplash.com/photo-1547658719-da2b51169166?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
-    glowColor: "bg-purple-500/20",
-    accentColor: "text-purple-400",
-    type: "service",
-  },
-  {
-    id: "camera",
-    badge: "Bảo vệ tài sản 24/7",
-    title: (
-      <>
-        Camera
-        <br />
-        <span className="text-green-400">Giám Sát</span>
-        <br />
-        An Toàn Tuyệt Đối
-      </>
-    ),
-    description:
-      "Lắp đặt hệ thống camera chuyên nghiệp cho nhà ở và doanh nghiệp. Hình ảnh 4K sắc nét, xem từ xa qua điện thoại mọi lúc mọi nơi.",
-    primaryCTA: { label: "Xem Giải Pháp", to: "/camera-giam-sat" },
-    secondaryCTA: { label: "Khảo Sát Miễn Phí", to: "/contact" },
-    image: "https://images.unsplash.com/photo-1496368077930-c1e31b4e5b44?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
-    glowColor: "bg-green-500/20",
-    accentColor: "text-green-400",
-    type: "service",
-  },
 ];
 
 export function HomePage() {
@@ -113,6 +71,8 @@ export function HomePage() {
   }, []);
 
   useEffect(() => {
+    if (heroSlides.length <= 1) return;
+
     const timer = setInterval(() => {
       setHeroSlideIdx((prev) => (prev + 1) % heroSlides.length);
     }, 5000);
@@ -134,7 +94,7 @@ export function HomePage() {
   };
 
   return (
-    <div className="bg-white dark:bg-[#0F1115]">
+    <div className="flex flex-col bg-white dark:bg-[#0F1115]">
       {/* ── HERO ── */}
       <section className="relative min-h-screen flex items-center overflow-hidden bg-[#0F1115]">
         {/* Background grid */}
@@ -145,20 +105,24 @@ export function HomePage() {
         <div className={`absolute bottom-1/4 left-1/4 w-64 h-64 ${currentHeroSlide.glowColor} rounded-full blur-3xl pointer-events-none transition-all duration-1000`} />
 
         {/* Navigation Arrows */}
-        <button
-          onClick={handlePrevSlide}
-          className="absolute left-2 sm:left-4 lg:left-8 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all"
-          aria-label="Previous slide"
-        >
-          <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
-        </button>
-        <button
-          onClick={handleNextSlide}
-          className="absolute right-2 sm:right-4 lg:right-8 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all"
-          aria-label="Next slide"
-        >
-          <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
-        </button>
+        {heroSlides.length > 1 && (
+          <>
+            <button
+              onClick={handlePrevSlide}
+              className="absolute left-2 sm:left-4 lg:left-8 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all"
+              aria-label="Previous slide"
+            >
+              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+            </button>
+            <button
+              onClick={handleNextSlide}
+              className="absolute right-2 sm:right-4 lg:right-8 top-1/2 -translate-y-1/2 z-20 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-all"
+              aria-label="Next slide"
+            >
+              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+            </button>
+          </>
+        )}
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 sm:pt-24 pb-12 sm:pb-16 grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Text */}
@@ -277,19 +241,21 @@ export function HomePage() {
               </div>
 
               {/* Slide dots */}
-              <div className="flex items-center justify-center gap-2 mt-4">
-                {heroSlides.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => setHeroSlideIdx(i)}
-                    className={`rounded-full transition-all ${
-                      i === heroSlideIdx
-                        ? `w-6 h-2 ${currentHeroSlide.accentColor.replace('text-', 'bg-')}`
-                        : "w-2 h-2 bg-white/20"
-                    }`}
-                  />
-                ))}
-              </div>
+              {heroSlides.length > 1 && (
+                <div className="flex items-center justify-center gap-2 mt-4">
+                  {heroSlides.map((_, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setHeroSlideIdx(i)}
+                      className={`rounded-full transition-all ${
+                        i === heroSlideIdx
+                          ? `w-6 h-2 ${currentHeroSlide.accentColor.replace('text-', 'bg-')}`
+                          : "w-2 h-2 bg-white/20"
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
 
               {/* Floating badge - hidden on mobile */}
               {currentHeroSlide.id === "laptop" && (
@@ -311,7 +277,7 @@ export function HomePage() {
       </section>
 
       {/* ── SERVICES ── */}
-      <section className="py-16 sm:py-20 bg-[#0A0D11]">
+      <section className="order-last py-16 sm:py-20 bg-[#0A0D11]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10 sm:mb-12">
             <motion.div

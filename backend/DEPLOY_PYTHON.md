@@ -129,7 +129,7 @@ If Apache proxies `/api/content` and `/uploads` on the same domain, the default 
 
 ```bash
 cd /var/www/dqtech-app
-npm run build
+npm --prefix frontend run build
 ```
 
-Then deploy `dist/` to your Apache document root.
+Then deploy `frontend/dist/` to your Apache document root.

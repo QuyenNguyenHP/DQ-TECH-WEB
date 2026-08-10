@@ -1,0 +1,17 @@
+services:
+  web:
+    image: dqtech-web:latest
+    container_name: dqtech-web
+    init: true
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8081:8080"
+    volumes:
+      - dqtech-data:/app/backend/data
+      - dqtech-uploads:/app/backend/uploads
+
+volumes:
+  dqtech-data:
+    name: dqtech-data
+  dqtech-uploads:
+    name: dqtech-uploads
