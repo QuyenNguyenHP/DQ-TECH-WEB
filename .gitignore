@@ -2,10 +2,6 @@ node_modules
 *.tar.gz
 *.tar.gz.sha256
 .DS_Store
-.env
-.env.local
-__pycache__/
-*.pyc
 
 # Persistent server data (keep local/server copies out of Git)
 /backend/data/

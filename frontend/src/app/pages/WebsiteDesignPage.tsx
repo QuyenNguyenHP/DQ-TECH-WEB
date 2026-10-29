@@ -96,14 +96,14 @@ const portfolio = [
     type: "Office tools",
     img: stirlingImg,
     tags: ["MIT", "Open Source", "GitHub"],
-    url: "https://pdf.nguyenduyquyen.online/",
+    url: "https://dsing.softether.net/",
   },
   {
     name: "HOME ASSISTANT",
     type: "Smart Home",
     img: homeassistantImg,
     tags: ["Smart Home", "Open Source", "GitHub"],
-    url: "https://home.nguyenduyquyen.online/",
+    url: "https://home.dqtech.cloud/",
   },
   {
     name: "DRUMS",
@@ -117,14 +117,14 @@ const portfolio = [
     type: "Photo management",
     img: ImmichImg,
     tags: ["Immich", "Open Source", "GitHub"],
-    url: "https://photos.nguyenduyquyen.online/",
+    url: "https://photo.dqtech.us/",
   },
   {
     name: "4 Engines Monitoring",
     type: "Monitoring system",
     img: engineImg,
     tags: ["Diesel Engine", "Modbus", "Data collection"],
-    url: "https://ormin.dqcloud.online//",
+    url: "https://dqtech.us//",
   },
   {
     name: "Test Laptop",

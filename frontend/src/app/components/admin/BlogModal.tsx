@@ -1,14 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-import { X, Upload, Images, Trash2, Sparkles } from "lucide-react";
+import { X, Upload, Images, Trash2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
-import {
-  deleteUploadedAsset,
-  fetchUploadedAssets,
-  generateBlogDraft,
-  uploadAsset,
-  type UploadedAsset,
-} from "../../lib/contentApi";
+import { deleteUploadedAsset, fetchUploadedAssets, uploadAsset, type UploadedAsset } from "../../lib/contentApi";
 
 interface BlogModalProps {
   blog?: any;
@@ -34,8 +28,6 @@ export function BlogModal({ blog, onClose, onSave, onAssetsChanged }: BlogModalP
 
   const [imagePreview, setImagePreview] = useState(blog?.image || "");
   const [tagInput, setTagInput] = useState("");
-  const [aiPrompt, setAiPrompt] = useState("");
-  const [generatingAi, setGeneratingAi] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [libraryAssets, setLibraryAssets] = useState<UploadedAsset[]>([]);
@@ -119,33 +111,6 @@ export function BlogModal({ blog, onClose, onSave, onAssetsChanged }: BlogModalP
     }));
   };
 
-  const handleGenerateWithAi = async () => {
-    if (aiPrompt.trim().length < 10) {
-      toast.error("Hãy mô tả chủ đề hoặc yêu cầu ít nhất 10 ký tự.");
-      return;
-    }
-
-    try {
-      setGeneratingAi(true);
-      const draft = await generateBlogDraft(aiPrompt.trim(), formData.category);
-      setFormData((prev) => ({
-        ...prev,
-        title: draft.title,
-        slug: generateSlug(draft.title),
-        excerpt: draft.excerpt,
-        content: draft.content,
-        tags: draft.tags,
-        readTime: draft.readTime,
-      }));
-      toast.success("AI đã tạo bản nháp. Hãy kiểm tra và chỉnh sửa trước khi lưu.");
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Không thể tạo bài viết bằng AI.");
-      console.error(error);
-    } finally {
-      setGeneratingAi(false);
-    }
-  };
-
   const applySelectedImage = (url: string) => {
     setFormData((prev) => ({ ...prev, image: url }));
     setImagePreview(url);
@@ -205,39 +170,6 @@ export function BlogModal({ blog, onClose, onSave, onAssetsChanged }: BlogModalP
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          <section className="rounded-2xl border border-violet-500/30 bg-violet-500/10 p-4">
-            <div className="mb-3 flex items-start gap-3">
-              <div className="rounded-xl bg-violet-500/20 p-2 text-violet-300">
-                <Sparkles className="h-5 w-5" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-white">Tạo nhanh bài viết bằng AI</h3>
-                <p className="mt-1 text-xs text-gray-400">
-                  Mô tả chủ đề, đối tượng đọc và ý chính. AI sẽ điền tiêu đề, mô tả, nội dung Markdown, tags và thời gian đọc.
-                </p>
-              </div>
-            </div>
-            <textarea
-              rows={3}
-              value={aiPrompt}
-              onChange={(event) => setAiPrompt(event.target.value)}
-              placeholder="Ví dụ: Viết bài hướng dẫn chọn laptop cũ cho sinh viên, ngân sách 10–15 triệu, nhấn mạnh CPU, RAM, pin và bảo hành..."
-              className="w-full resize-none rounded-xl border border-white/10 bg-black/20 px-4 py-3 text-white placeholder-gray-500 focus:border-violet-400 focus:outline-none"
-            />
-            <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-xs text-gray-500">Bản nháp AI không tự lưu hoặc tự đăng.</p>
-              <Button
-                type="button"
-                onClick={() => void handleGenerateWithAi()}
-                disabled={generatingAi}
-                className="rounded-xl border-0 bg-violet-600 text-white hover:bg-violet-500 disabled:cursor-wait disabled:opacity-60"
-              >
-                <Sparkles className="mr-2 h-4 w-4" />
-                {generatingAi ? "AI đang viết..." : "Tạo bản nháp bằng AI"}
-              </Button>
-            </div>
-          </section>
-
           <div>
             <label className="block text-sm font-medium text-gray-300 mb-2">Hình ảnh đại diện</label>
             <div className="flex gap-4">

@@ -7,9 +7,7 @@ import time
 from base64 import b64decode
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.error import HTTPError, URLError
 from urllib.parse import parse_qs, unquote, urlparse
-from urllib.request import Request, urlopen
 
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -26,88 +24,6 @@ HOST = os.environ.get("CONTENT_API_HOST", "127.0.0.1")
 PORT = int(os.environ.get("CONTENT_API_PORT", "8000"))
 ALLOW_ORIGIN = os.environ.get("CONTENT_API_ALLOW_ORIGIN", "").strip()
 STORE_LOCK = threading.Lock()
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "").strip()
-OPENAI_MODEL = os.environ.get("OPENAI_MODEL", "gpt-5-mini").strip()
-OPENAI_API_URL = "https://api.openai.com/v1/responses"
-
-
-BLOG_DRAFT_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "title": {"type": "string"},
-        "excerpt": {"type": "string"},
-        "content": {"type": "string"},
-        "tags": {"type": "array", "items": {"type": "string"}},
-        "readTime": {"type": "string"},
-    },
-    "required": ["title", "excerpt", "content", "tags", "readTime"],
-    "additionalProperties": False,
-}
-
-
-def generate_blog_draft(topic: str, category: str):
-    if not OPENAI_API_KEY:
-        raise RuntimeError("OPENAI_API_KEY is not configured on the server")
-
-    clean_topic = (topic or "").strip()
-    if len(clean_topic) < 10:
-        raise ValueError("Topic must contain at least 10 characters")
-    if len(clean_topic) > 3000:
-        raise ValueError("Topic is too long. Limit is 3000 characters")
-
-    payload = {
-        "model": OPENAI_MODEL,
-        "max_output_tokens": 5000,
-        "instructions": (
-            "Bạn là biên tập viên công nghệ của DQ TECH. Viết bài blog tiếng Việt hữu ích, "
-            "chính xác, dễ hiểu, không bịa đặt thông số hoặc cam kết. Nội dung dùng Markdown, "
-            "có tiêu đề phụ, đoạn văn ngắn, danh sách khi phù hợp và kết luận thực tế. "
-            "Không chèn tiêu đề H1 vào content vì title được hiển thị riêng."
-        ),
-        "input": f"Danh mục: {category}\nChủ đề và yêu cầu của admin:\n{clean_topic}",
-        "text": {
-            "format": {
-                "type": "json_schema",
-                "name": "dqtech_blog_draft",
-                "strict": True,
-                "schema": BLOG_DRAFT_SCHEMA,
-            }
-        },
-    }
-    request = Request(
-        OPENAI_API_URL,
-        data=json.dumps(payload).encode("utf-8"),
-        headers={
-            "Authorization": f"Bearer {OPENAI_API_KEY}",
-            "Content-Type": "application/json",
-        },
-        method="POST",
-    )
-
-    try:
-        with urlopen(request, timeout=90) as response:
-            result = json.loads(response.read().decode("utf-8"))
-    except HTTPError as error:
-        detail = error.read().decode("utf-8", errors="replace")
-        raise RuntimeError(f"OpenAI API error ({error.code}): {detail[:500]}") from error
-    except URLError as error:
-        raise RuntimeError(f"Could not connect to OpenAI API: {error.reason}") from error
-
-    output_text = ""
-    for item in result.get("output", []):
-        if item.get("type") != "message":
-            continue
-        for content in item.get("content", []):
-            if content.get("type") == "output_text":
-                output_text += content.get("text", "")
-
-    if not output_text:
-        raise RuntimeError("OpenAI API returned no blog content")
-
-    try:
-        return json.loads(output_text)
-    except json.JSONDecodeError as error:
-        raise RuntimeError("OpenAI API returned invalid structured content") from error
 
 
 def load_config():
@@ -370,12 +286,6 @@ class ContentApiHandler(BaseHTTPRequestHandler):
 
             if pathname == f'{CONFIG["apiPrefix"]}/bootstrap' and method == "GET":
                 self.send_json(200, read_store())
-                return
-
-            if pathname == f'{CONFIG["apiPrefix"]}/ai/blog-draft' and method == "POST":
-                payload = self.read_json_body()
-                draft = generate_blog_draft(payload.get("topic", ""), payload.get("category", "laptop"))
-                self.send_json(200, draft)
                 return
 
             if pathname == f'{CONFIG["apiPrefix"]}/assets' and method == "GET":
