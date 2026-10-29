@@ -104,13 +104,19 @@ function CheckItem({
   onChange: () => void;
 }) {
   return (
-    <label className="flex items-center gap-2.5 cursor-pointer group py-1">
-      <div
-        onClick={onChange}
+    <label className="group flex cursor-pointer items-center gap-2.5 py-1">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={onChange}
+        className="peer sr-only"
+      />
+      <span
+        aria-hidden="true"
         className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-all ${
           checked
             ? "bg-[#3B82F6] border-[#3B82F6]"
-            : "border-gray-300 dark:border-gray-600 group-hover:border-[#3B82F6]"
+            : "border-gray-300 dark:border-gray-600 group-hover:border-[#3B82F6] peer-focus-visible:ring-2 peer-focus-visible:ring-[#3B82F6] peer-focus-visible:ring-offset-2 dark:peer-focus-visible:ring-offset-[#0F1115]"
         }`}
       >
         {checked && (
@@ -122,7 +128,7 @@ function CheckItem({
             />
           </svg>
         )}
-      </div>
+      </span>
       <span className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-[#0F1115] dark:group-hover:text-white transition-colors">
         {label}
       </span>
@@ -173,9 +179,15 @@ export function ProductListingPage() {
     if (selectedCondition.length) list = list.filter((p) => selectedCondition.includes(p.condition));
 
     return [...list].sort((a, b) => {
+      const stockOrder = Number(a.inStock === false) - Number(b.inStock === false);
+      if (stockOrder !== 0) return stockOrder;
+
       if (sortBy === "price-asc") return a.price - b.price;
       if (sortBy === "price-desc") return b.price - a.price;
-      return 0;
+
+      const aUpdatedAt = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+      const bUpdatedAt = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+      return bUpdatedAt - aUpdatedAt;
     });
   }, [query, selectedBrands, selectedRam, selectedSsd, selectedCondition, products, sortBy]);
 

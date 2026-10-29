@@ -45,7 +45,7 @@ const heroSlides = [
       "Mỗi chiếc laptop đều được kiểm tra, phân loại và đo pin trước khi đăng bán. Mua công nghệ cao cấp với giá trung thực — kèm bảo hành.",
     primaryCTA: { label: "Xem Laptop", to: "/laptops" },
     secondaryCTA: { label: "Liên Hệ", to: "/contact" },
-    image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=800&auto=format&fit=crop",
+    image: "/shwrm-4.jpg",
     glowColor: "bg-[#3B82F6]/20",
     accentColor: "text-[#3B82F6]",
     type: "product-showcase",
@@ -227,16 +227,18 @@ export function HomePage() {
 
                 {/* Overlay gradient */}
                 <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
-                  <p className={`${currentHeroSlide.accentColor} text-[10px] sm:text-xs font-semibold uppercase tracking-widest mb-1`}>
-                    {currentHeroSlide.id === "laptop" ? featuredProducts[0]?.brand : currentHeroSlide.id}
-                  </p>
-                  <p className="text-white text-sm sm:text-base font-bold">
-                    {currentHeroSlide.id === "laptop"
-                      ? featuredProducts[0]?.name
-                      : currentHeroSlide.id === "website"
-                      ? "Thiết Kế Website Chuyên Nghiệp"
-                      : "Hệ Thống Camera Giám Sát"}
-                  </p>
+                  {currentHeroSlide.id !== "laptop" && (
+                    <>
+                      <p className={`${currentHeroSlide.accentColor} text-[10px] sm:text-xs font-semibold uppercase tracking-widest mb-1`}>
+                        {currentHeroSlide.id}
+                      </p>
+                      <p className="text-white text-sm sm:text-base font-bold">
+                        {currentHeroSlide.id === "website"
+                          ? "Thiết Kế Website Chuyên Nghiệp"
+                          : "Hệ Thống Camera Giám Sát"}
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
 

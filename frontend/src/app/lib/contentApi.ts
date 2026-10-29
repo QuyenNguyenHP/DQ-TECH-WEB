@@ -14,7 +14,15 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
   if (!response.ok) {
     const detail = await response.text();
-    throw new Error(detail || `Request failed: ${response.status}`);
+    try {
+      const payload = JSON.parse(detail) as { detail?: string; message?: string };
+      throw new Error(payload.detail || payload.message || `Request failed: ${response.status}`);
+    } catch (error) {
+      if (error instanceof SyntaxError) {
+        throw new Error(detail || `Request failed: ${response.status}`);
+      }
+      throw error;
+    }
   }
 
   return response.json() as Promise<T>;
@@ -35,6 +43,21 @@ export function fetchProducts() {
 
 export function fetchBlogs() {
   return request<BlogPost[]>("/blogs");
+}
+
+export interface AiBlogDraft {
+  title: string;
+  excerpt: string;
+  content: string;
+  tags: string[];
+  readTime: string;
+}
+
+export function generateBlogDraft(topic: string, category: string) {
+  return request<AiBlogDraft>("/ai/blog-draft", {
+    method: "POST",
+    body: JSON.stringify({ topic, category }),
+  });
 }
 
 export interface UploadedAsset {

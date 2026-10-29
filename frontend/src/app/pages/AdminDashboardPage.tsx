@@ -104,6 +104,7 @@ export function AdminDashboardPage() {
 
 function ProductsManager() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [stockFilter, setStockFilter] = useState<"all" | "in-stock" | "sold">("all");
   const [products, setProducts] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
@@ -160,11 +161,19 @@ function ProductsManager() {
     }
   };
 
-  const filteredProducts = products.filter(
-    (p) =>
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.brand.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const normalizedQuery = searchQuery.trim().toLocaleLowerCase("vi");
+  const filteredProducts = products.filter((p) => {
+    const matchesStock =
+      stockFilter === "all" ||
+      (stockFilter === "in-stock" && p.inStock !== false) ||
+      (stockFilter === "sold" && p.inStock === false);
+    const searchableText = [p.name, p.brand, p.customerName, p.customerPhone, p.sellerName]
+      .filter(Boolean)
+      .join(" ")
+      .toLocaleLowerCase("vi");
+
+    return matchesStock && searchableText.includes(normalizedQuery);
+  });
 
   return (
     <div>
@@ -185,15 +194,27 @@ function ProductsManager() {
         </Button>
       </div>
 
-      <div className="relative mb-6">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-        <input
-          type="text"
-          placeholder="Tìm kiếm laptop..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20"
-        />
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Tìm theo laptop, khách hàng, SĐT hoặc người bán..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20"
+          />
+        </div>
+        <select
+          value={stockFilter}
+          onChange={(e) => setStockFilter(e.target.value as "all" | "in-stock" | "sold")}
+          className="rounded-xl border border-white/10 bg-[#171A20] px-4 py-3 text-white focus:border-[#3B82F6] focus:outline-none"
+          aria-label="Lọc trạng thái bán hàng"
+        >
+          <option value="all">Tất cả trạng thái</option>
+          <option value="in-stock">Còn hàng</option>
+          <option value="sold">Đã bán</option>
+        </select>
       </div>
 
       <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
@@ -208,6 +229,8 @@ function ProductsManager() {
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Thương hiệu</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Giá</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Tình trạng</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Bán hàng</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Khách hàng / Người bán</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-gray-400 uppercase">Thao tác</th>
                 </tr>
               </thead>
@@ -226,6 +249,31 @@ function ProductsManager() {
                       <span className="px-2 py-1 bg-green-500/10 text-green-400 text-xs font-medium rounded-lg border border-green-500/20">
                         {product.condition}
                       </span>
+                    </td>
+                    <td className="px-4 py-4">
+                      <span
+                        className={`inline-flex whitespace-nowrap rounded-lg border px-2 py-1 text-xs font-medium ${
+                          product.inStock !== false
+                            ? "border-green-500/20 bg-green-500/10 text-green-400"
+                            : "border-red-500/20 bg-red-500/10 text-red-400"
+                        }`}
+                      >
+                        {product.inStock !== false ? "Còn hàng" : "Đã bán"}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4 text-sm">
+                      {product.inStock !== false ? (
+                        <span className="text-gray-500">—</span>
+                      ) : (
+                        <div className="min-w-44 space-y-1">
+                          <p className="font-medium text-white">{product.customerName}</p>
+                          <p className="text-gray-400">{product.customerPhone}</p>
+                          <p className="text-xs text-gray-500">
+                            Bán bởi {product.sellerName}
+                            {product.soldAt ? ` · ${new Date(`${product.soldAt}T00:00:00`).toLocaleDateString("vi-VN")}` : ""}
+                          </p>
+                        </div>
+                      )}
                     </td>
                     <td className="px-4 py-4">
                       <div className="flex items-center justify-end gap-2">

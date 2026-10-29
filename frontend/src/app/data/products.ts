@@ -24,6 +24,11 @@ export interface Product {
   accessories: string[];
   description: string;
   inStock: boolean;
+  customerName?: string;
+  customerPhone?: string;
+  sellerName?: string;
+  soldAt?: string;
+  updatedAt?: string;
   featured?: boolean;
 }
 

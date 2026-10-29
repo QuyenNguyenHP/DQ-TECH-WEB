@@ -20,6 +20,8 @@ Environment variables:
 - `CONTENT_API_PORT` default: `8000`
 - `CONTENT_API_MAX_BODY_MB` default: `20`
 - `CONTENT_API_ALLOW_ORIGIN` optional: CORS origin when not using reverse proxy
+- `OPENAI_API_KEY` enables AI-assisted blog drafting in Admin (keep this server-side only)
+- `OPENAI_MODEL` optional, default: `gpt-5-mini`
 
 ### Run on a different port
 

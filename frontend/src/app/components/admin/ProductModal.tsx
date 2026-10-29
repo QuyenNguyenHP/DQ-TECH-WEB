@@ -37,6 +37,10 @@ export function ProductModal({ product, onClose, onSave, onAssetsChanged }: Prod
     description: product?.description || "",
     featured: product?.featured || false,
     inStock: product?.inStock ?? true,
+    customerName: product?.customerName || "",
+    customerPhone: product?.customerPhone || "",
+    sellerName: product?.sellerName || "",
+    soldAt: product?.soldAt || "",
     accessories: product?.accessories || [],
   });
 
@@ -286,6 +290,17 @@ export function ProductModal({ product, onClose, onSave, onAssetsChanged }: Prod
       return;
     }
 
+    if (
+      !formData.inStock &&
+      (!formData.customerName.trim() ||
+        !formData.customerPhone.trim() ||
+        !formData.sellerName.trim() ||
+        !formData.soldAt)
+    ) {
+      toast.error("Vui lòng nhập đầy đủ thông tin khách hàng, người bán và ngày bán.");
+      return;
+    }
+
     const normalizedImage = formData.image.trim();
     const normalizedImages = [
       normalizedImage,
@@ -300,6 +315,11 @@ export function ProductModal({ product, onClose, onSave, onAssetsChanged }: Prod
       batteryHealth: parseInt(formData.batteryHealth || "0", 10),
       image: normalizedImage,
       images: normalizedImages.length ? normalizedImages : [normalizedImage],
+      customerName: formData.inStock ? "" : formData.customerName.trim(),
+      customerPhone: formData.inStock ? "" : formData.customerPhone.trim(),
+      sellerName: formData.inStock ? "" : formData.sellerName.trim(),
+      soldAt: formData.inStock ? "" : formData.soldAt,
+      updatedAt: new Date().toISOString(),
     };
 
     try {
@@ -659,7 +679,7 @@ export function ProductModal({ product, onClose, onSave, onAssetsChanged }: Prod
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <label className="flex items-center gap-2 text-sm text-gray-300">
               <input
                 type="checkbox"
@@ -679,6 +699,57 @@ export function ProductModal({ product, onClose, onSave, onAssetsChanged }: Prod
               Còn hàng
             </label>
           </div>
+
+          {!formData.inStock && (
+            <div className="space-y-4 rounded-xl border border-red-500/20 bg-red-500/5 p-4">
+              <div>
+                <h3 className="font-semibold text-white">Thông tin bán hàng</h3>
+                <p className="mt-1 text-xs text-gray-400">Bắt buộc nhập khi sản phẩm đã bán.</p>
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-300">Tên khách hàng *</label>
+                  <input
+                    type="text"
+                    value={formData.customerName}
+                    onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
+                    required={!formData.inStock}
+                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white focus:border-[#3B82F6] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-300">Số điện thoại khách hàng *</label>
+                  <input
+                    type="tel"
+                    value={formData.customerPhone}
+                    onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
+                    required={!formData.inStock}
+                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white focus:border-[#3B82F6] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-300">Người bán *</label>
+                  <input
+                    type="text"
+                    value={formData.sellerName}
+                    onChange={(e) => setFormData({ ...formData, sellerName: e.target.value })}
+                    required={!formData.inStock}
+                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white focus:border-[#3B82F6] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-300">Ngày bán *</label>
+                  <input
+                    type="date"
+                    value={formData.soldAt}
+                    onChange={(e) => setFormData({ ...formData, soldAt: e.target.value })}
+                    required={!formData.inStock}
+                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white focus:border-[#3B82F6] focus:outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="flex items-center justify-end gap-3 border-t border-white/10 pt-4">
             <Button
