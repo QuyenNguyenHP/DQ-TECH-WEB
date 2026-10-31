@@ -10,6 +10,11 @@ WorkingDirectory=/home/dq/DQ-TECH-WEB
 Environment=CONTENT_API_HOST=127.0.0.1
 Environment=CONTENT_API_PORT=8000
 Environment=CONTENT_API_MAX_BODY_MB=20
+# Generate a long secret with: openssl rand -hex 32
+# This key is for trusted automation agents only; never place it in frontend code.
+Environment=CONTENT_API_AGENT_KEY=replace-with-a-long-random-secret
+# Keep false so agent-created content requires review in Admin Dashboard.
+Environment=CONTENT_API_AGENT_CAN_PUBLISH=false
 ExecStart=/usr/bin/python3 /home/dq/DQ-TECH-WEB/backend/server.py
 Restart=always
 RestartSec=3

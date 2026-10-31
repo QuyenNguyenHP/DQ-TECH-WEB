@@ -33,8 +33,16 @@ export function fetchProducts() {
   return request<Product[]>("/products");
 }
 
+export function fetchAdminProducts() {
+  return request<Product[]>("/products?includeDrafts=true");
+}
+
 export function fetchBlogs() {
   return request<BlogPost[]>("/blogs");
+}
+
+export function fetchAdminBlogs() {
+  return request<BlogPost[]>("/blogs?includeDrafts=true");
 }
 
 export interface UploadedAsset {

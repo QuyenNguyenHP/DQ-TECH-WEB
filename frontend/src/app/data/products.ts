@@ -30,6 +30,7 @@ export interface Product {
   soldAt?: string;
   updatedAt?: string;
   featured?: boolean;
+  status?: "draft" | "published";
 }
 
 const LAPTOP_1 = "https://images.unsplash.com/photo-1583852703665-b76f45b3ee3e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=800";

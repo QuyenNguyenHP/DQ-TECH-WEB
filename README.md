@@ -133,6 +133,8 @@ WorkingDirectory=/home/dq/DQ-TECH-WEB
 Environment=CONTENT_API_HOST=127.0.0.1
 Environment=CONTENT_API_PORT=8000
 Environment=CONTENT_API_MAX_BODY_MB=20
+Environment=CONTENT_API_AGENT_KEY=replace-with-output-of-openssl-rand-hex-32
+Environment=CONTENT_API_AGENT_CAN_PUBLISH=false
 ExecStart=/usr/bin/python3 /home/dq/DQ-TECH-WEB/backend/server.py
 Restart=always
 RestartSec=3
@@ -192,8 +194,11 @@ Enter the following configuration and save the file:
     RewriteEngine On
     RewriteCond %{REQUEST_URI} !^/api/content [NC]
     RewriteCond %{REQUEST_URI} !^/uploads [NC]
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
+    # In a VirtualHost rewrite context REQUEST_FILENAME can still be the URL
+    # path. Test the document-root path explicitly so existing Vite assets
+    # are served instead of being rewritten to index.html.
+    RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} !-f
+    RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} !-d
     RewriteRule ^ /index.html [L]
 
     ErrorLog ${APACHE_LOG_DIR}/dqtech.cloud_error.log

@@ -10,6 +10,7 @@ export interface BlogPost {
   readTime: string;
   image: string;
   tags: string[];
+  status?: "draft" | "published";
 }
 
 export const blogPosts: BlogPost[] = [

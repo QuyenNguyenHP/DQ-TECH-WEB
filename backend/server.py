@@ -1,4 +1,5 @@
 import json
+import hmac
 import mimetypes
 import os
 import re
@@ -23,6 +24,8 @@ BODY_LIMIT_BYTES = int(float(os.environ.get("CONTENT_API_MAX_BODY_MB", "20")) * 
 HOST = os.environ.get("CONTENT_API_HOST", "127.0.0.1")
 PORT = int(os.environ.get("CONTENT_API_PORT", "8000"))
 ALLOW_ORIGIN = os.environ.get("CONTENT_API_ALLOW_ORIGIN", "").strip()
+AGENT_API_KEY = os.environ.get("CONTENT_API_AGENT_KEY", "").strip()
+AGENT_CAN_PUBLISH = os.environ.get("CONTENT_API_AGENT_CAN_PUBLISH", "false").lower() == "true"
 STORE_LOCK = threading.Lock()
 
 
@@ -73,6 +76,31 @@ def ensure_upload_dirs():
 def read_store():
     with STORE_LOCK:
         return json.loads(CONFIG["dataFile"].read_text(encoding="utf-8"))
+
+
+def is_published(item: dict) -> bool:
+    # Existing content predates workflow states and stays visible after upgrade.
+    return item.get("status", "published") == "published"
+
+
+def public_store(store: dict) -> dict:
+    return {
+        "products": [item for item in store["products"] if is_published(item)],
+        "blogs": [item for item in store["blogs"] if is_published(item)],
+    }
+
+
+def validate_agent_item(resource: str, payload: dict) -> None:
+    required = ("id", "name", "brand", "price", "image", "specs") if resource == "products" else (
+        "id", "title", "slug", "excerpt", "content", "category", "author", "date", "readTime", "image", "tags"
+    )
+    missing = [field for field in required if not payload.get(field)]
+    if missing:
+        raise ValueError(f"Missing required field(s): {', '.join(missing)}")
+    if resource == "products" and not isinstance(payload.get("specs"), dict):
+        raise ValueError("Product specs must be an object")
+    if resource == "blogs" and not isinstance(payload.get("tags"), list):
+        raise ValueError("Blog tags must be an array")
 
 
 def write_store(store):
@@ -268,6 +296,47 @@ class ContentApiHandler(BaseHTTPRequestHandler):
     def do_DELETE(self):
         self.handle_request("DELETE")
 
+    def is_agent_authorized(self) -> bool:
+        if not AGENT_API_KEY:
+            return False
+        authorization = self.headers.get("Authorization", "")
+        return hmac.compare_digest(authorization, f"Bearer {AGENT_API_KEY}")
+
+    def require_agent_authorization(self) -> bool:
+        if self.is_agent_authorized():
+            return True
+        self.send_json(401, {"message": "Unauthorized agent request"})
+        return False
+
+    def create_agent_item(self, resource: str):
+        if not self.require_agent_authorization():
+            return
+        payload = self.read_json_body()
+        validate_agent_item(resource, payload)
+        store = read_store()
+        if any(item.get("id") == payload["id"] for item in store[resource]):
+            raise ValueError(f"A {resource[:-1]} with this id already exists")
+        if resource == "blogs" and any(item.get("slug") == payload["slug"] for item in store[resource]):
+            raise ValueError("A blog with this slug already exists")
+        requested_status = payload.get("status", "draft")
+        payload["status"] = "published" if AGENT_CAN_PUBLISH and requested_status == "published" else "draft"
+        payload["updatedAt"] = payload.get("updatedAt") or time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        store[resource].append(payload)
+        write_store(store)
+        self.send_json(201, payload)
+
+    def upload_agent_asset(self):
+        if not self.require_agent_authorization():
+            return
+        payload = self.read_json_body()
+        target = "blogs" if payload.get("target") == "blogs" else "products"
+        target_dir = CONFIG["blogUploadsDir"] if target == "blogs" else CONFIG["productUploadsDir"]
+        filename_base = normalize_upload_basename(payload.get("filename", ""), f"{target}-{self.timestamp_ms()}")
+        raw_bytes, extension = data_url_to_bytes(payload.get("dataUrl", ""))
+        final_name = f"{self.timestamp_ms()}-{filename_base}{extension}"
+        (target_dir / final_name).write_bytes(raw_bytes)
+        self.send_json(201, {"url": f'{CONFIG["uploadsUrlPrefix"]}/{target}/{final_name}'})
+
     def handle_request(self, method: str):
         parsed = urlparse(self.path)
         pathname = parsed.path
@@ -285,8 +354,17 @@ class ContentApiHandler(BaseHTTPRequestHandler):
                 return
 
             if pathname == f'{CONFIG["apiPrefix"]}/bootstrap' and method == "GET":
-                self.send_json(200, read_store())
+                self.send_json(200, public_store(read_store()))
                 return
+
+            if pathname == f'{CONFIG["apiPrefix"]}/agent/upload' and method == "POST":
+                self.upload_agent_asset()
+                return
+
+            for resource in ("products", "blogs"):
+                if pathname == f'{CONFIG["apiPrefix"]}/agent/{resource}' and method == "POST":
+                    self.create_agent_item(resource)
+                    return
 
             if pathname == f'{CONFIG["apiPrefix"]}/assets' and method == "GET":
                 query = parse_qs(parsed.query)
@@ -334,7 +412,8 @@ class ContentApiHandler(BaseHTTPRequestHandler):
                 resource_path = f'{CONFIG["apiPrefix"]}/{resource}'
                 if pathname == resource_path and method == "GET":
                     store = read_store()
-                    self.send_json(200, store[resource])
+                    include_drafts = parse_qs(parsed.query).get("includeDrafts", ["false"])[0].lower() == "true"
+                    self.send_json(200, store[resource] if include_drafts else [item for item in store[resource] if is_published(item)])
                     return
 
                 if pathname == resource_path and method == "POST":

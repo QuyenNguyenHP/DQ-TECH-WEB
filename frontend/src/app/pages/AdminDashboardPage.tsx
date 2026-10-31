@@ -8,8 +8,8 @@ import { toast } from "sonner";
 import { ProductModal } from "../components/admin/ProductModal";
 import { BlogModal } from "../components/admin/BlogModal";
 import {
-  fetchProducts,
-  fetchBlogs,
+  fetchAdminProducts,
+  fetchAdminBlogs,
   createProduct,
   updateProduct,
   deleteProduct,
@@ -113,7 +113,7 @@ function ProductsManager() {
   const loadProducts = async () => {
     try {
       setLoading(true);
-      setProducts(await fetchProducts());
+      setProducts(await fetchAdminProducts());
     } catch (error) {
       toast.error("Không tải được danh sách laptop.");
       console.error(error);
@@ -146,6 +146,17 @@ function ProductsManager() {
   const handleEdit = (product: any) => {
     setEditingProduct(product);
     setShowModal(true);
+  };
+
+  const handleTogglePublish = async (product: any) => {
+    try {
+      await updateProduct({ ...product, status: product.status === "draft" ? "published" : "draft" });
+      await loadProducts();
+      toast.success(product.status === "draft" ? "Đã xuất bản laptop." : "Đã chuyển laptop về bản nháp.");
+    } catch (error) {
+      toast.error("Không cập nhật được trạng thái xuất bản.");
+      console.error(error);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -229,6 +240,7 @@ function ProductsManager() {
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Thương hiệu</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Giá</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Tình trạng</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Hiển thị</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Bán hàng</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400 uppercase">Khách hàng / Người bán</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-gray-400 uppercase">Thao tác</th>
@@ -242,6 +254,18 @@ function ProductsManager() {
                         <img src={product.image} alt={product.name} className="w-12 h-12 rounded-lg object-cover bg-white/5" />
                         <span className="text-white font-medium">{product.name}</span>
                       </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <button
+                        onClick={() => void handleTogglePublish(product)}
+                        className={`rounded-lg border px-2 py-1 text-xs font-medium ${
+                          product.status === "draft"
+                            ? "border-amber-500/20 bg-amber-500/10 text-amber-300"
+                            : "border-blue-500/20 bg-blue-500/10 text-blue-300"
+                        }`}
+                      >
+                        {product.status === "draft" ? "Nháp · Xuất bản" : "Đang hiển thị"}
+                      </button>
                     </td>
                     <td className="px-4 py-4 text-gray-400">{product.brand}</td>
                     <td className="px-4 py-4 text-white font-semibold">{formatCatalogPriceVnd(product.price)}</td>
@@ -318,7 +342,7 @@ function BlogsManager() {
   const loadBlogs = async () => {
     try {
       setLoading(true);
-      setBlogs(await fetchBlogs());
+      setBlogs(await fetchAdminBlogs());
     } catch (error) {
       toast.error("Không tải được danh sách bài viết.");
       console.error(error);
@@ -351,6 +375,17 @@ function BlogsManager() {
   const handleEdit = (blog: any) => {
     setEditingBlog(blog);
     setShowModal(true);
+  };
+
+  const handleTogglePublish = async (blog: any) => {
+    try {
+      await updateBlog({ ...blog, status: blog.status === "draft" ? "published" : "draft" });
+      await loadBlogs();
+      toast.success(blog.status === "draft" ? "Đã xuất bản bài viết." : "Đã chuyển bài viết về bản nháp.");
+    } catch (error) {
+      toast.error("Không cập nhật được trạng thái xuất bản.");
+      console.error(error);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -421,7 +456,19 @@ function BlogsManager() {
                 <p className="text-gray-400 text-sm mb-4 line-clamp-2">{blog.excerpt}</p>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-500">{new Date(blog.date).toLocaleDateString("vi-VN")}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-500">{new Date(blog.date).toLocaleDateString("vi-VN")}</span>
+                    <button
+                      onClick={() => void handleTogglePublish(blog)}
+                      className={`rounded-lg border px-2 py-1 text-xs font-medium ${
+                        blog.status === "draft"
+                          ? "border-amber-500/20 bg-amber-500/10 text-amber-300"
+                          : "border-blue-500/20 bg-blue-500/10 text-blue-300"
+                      }`}
+                    >
+                      {blog.status === "draft" ? "Nháp · Xuất bản" : "Đang hiển thị"}
+                    </button>
+                  </div>
                   <div className="flex items-center gap-2">
                     <button onClick={() => handleEdit(blog)} className="p-2 text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors">
                       <Edit className="w-4 h-4" />

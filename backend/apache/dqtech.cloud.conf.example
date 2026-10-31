@@ -21,8 +21,11 @@
     RewriteEngine On
     RewriteCond %{REQUEST_URI} !^/api/content [NC]
     RewriteCond %{REQUEST_URI} !^/uploads [NC]
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
+    # In a VirtualHost rewrite context REQUEST_FILENAME can still be the URL
+    # path. Test the document-root path explicitly so existing Vite assets
+    # are served instead of being rewritten to index.html.
+    RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} !-f
+    RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} !-d
     RewriteRule ^ /index.html [L]
 
     ErrorLog ${APACHE_LOG_DIR}/dqtech.cloud_error.log
