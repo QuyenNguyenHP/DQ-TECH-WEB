@@ -51,7 +51,7 @@ The frontend uses same-origin paths `/api/content` and `/uploads`.
 These instructions assume:
 
 - Ubuntu or Debian
-- the repository is at `/var/www/dqtech-app`
+- the repository is at `~/DQ-TECH-WEB` for Linux user `dq`
 - DNS `A` records for `dqtech.cloud` and `www.dqtech.cloud` point to the server
 - inbound TCP ports 80 and 443 are open
 
@@ -77,29 +77,34 @@ npm --version
 ## Build the frontend
 
 ```bash
-cd /var/www/dqtech-app
+cd ~/DQ-TECH-WEB
 npm --prefix frontend ci
 npm --prefix frontend run build
 ```
 
 Apache serves the generated files directly from
-`/var/www/dqtech-app/frontend/dist`.
+`/home/dq/DQ-TECH-WEB/frontend/dist`. Apache configuration cannot expand `~`,
+so it uses the equivalent absolute path.
+
+Allow Apache to traverse the home directory and read the built frontend:
+
+```bash
+chmod o+x /home/dq
+chmod o+x ~/DQ-TECH-WEB ~/DQ-TECH-WEB/frontend
+chmod -R a+rX ~/DQ-TECH-WEB/frontend/dist
+```
 
 ## Prepare persistent backend data
 
 ```bash
-sudo mkdir -p \
-  /var/www/dqtech-app/backend/data \
-  /var/www/dqtech-app/backend/uploads/products \
-  /var/www/dqtech-app/backend/uploads/blogs
+mkdir -p \
+  ~/DQ-TECH-WEB/backend/data \
+  ~/DQ-TECH-WEB/backend/uploads/products \
+  ~/DQ-TECH-WEB/backend/uploads/blogs
 
-sudo chown -R www-data:www-data \
-  /var/www/dqtech-app/backend/data \
-  /var/www/dqtech-app/backend/uploads
-
-sudo chmod -R 775 \
-  /var/www/dqtech-app/backend/data \
-  /var/www/dqtech-app/backend/uploads
+sudo chown -R dq:dq \
+  ~/DQ-TECH-WEB/backend/data \
+  ~/DQ-TECH-WEB/backend/uploads
 ```
 
 Do not replace or delete `backend/data` or `backend/uploads` during an update.
@@ -109,7 +114,7 @@ They contain the live website content and uploaded images.
 
 ```bash
 sudo cp \
-  /var/www/dqtech-app/backend/dqtech-content-api.service.example \
+  ~/DQ-TECH-WEB/backend/dqtech-content-api.service.example \
   /etc/systemd/system/dqtech-content-api.service
 
 sudo systemctl daemon-reload
@@ -132,7 +137,7 @@ Install the included HTTP virtual host:
 
 ```bash
 sudo cp \
-  /var/www/dqtech-app/backend/apache/dqtech.cloud.conf.example \
+  ~/DQ-TECH-WEB/backend/apache/dqtech.cloud.conf.example \
   /etc/apache2/sites-available/dqtech.cloud.conf
 
 sudo a2dissite 000-default.conf
@@ -183,15 +188,15 @@ Do not open port 8000. It is an internal backend port.
 Back up live content before an important update:
 
 ```bash
-sudo mkdir -p /var/backups/dqtech
-sudo tar -czf /var/backups/dqtech/content-$(date +%F-%H%M%S).tar.gz \
-  -C /var/www/dqtech-app/backend data uploads
+mkdir -p ~/dqtech-backups
+tar -czf ~/dqtech-backups/content-$(date +%F-%H%M%S).tar.gz \
+  -C ~/DQ-TECH-WEB/backend data uploads
 ```
 
 Pull and deploy the updated application:
 
 ```bash
-cd /var/www/dqtech-app
+cd ~/DQ-TECH-WEB
 git pull --ff-only
 npm --prefix frontend ci
 npm --prefix frontend run build

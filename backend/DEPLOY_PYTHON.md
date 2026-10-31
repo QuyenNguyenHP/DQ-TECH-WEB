@@ -12,15 +12,14 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now dqtech-content-api
 ```
 
-The service expects the repository at `/var/www/dqtech-app`. If it is stored
-elsewhere, update both `WorkingDirectory` and `ExecStart` in the unit first.
+The service expects the repository at `/home/dq/DQ-TECH-WEB` and runs as user
+`dq`. Systemd does not expand `~`, so the unit uses the absolute path.
 
 Writable directories:
 
 ```bash
 sudo mkdir -p backend/data backend/uploads/products backend/uploads/blogs
-sudo chown -R www-data:www-data backend/data backend/uploads
-sudo chmod -R 775 backend/data backend/uploads
+sudo chown -R dq:dq backend/data backend/uploads
 ```
 
 Check the service and API:

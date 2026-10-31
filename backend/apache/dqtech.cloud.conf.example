@@ -2,9 +2,9 @@
     ServerName dqtech.cloud
     ServerAlias www.dqtech.cloud
 
-    DocumentRoot /var/www/dqtech-app/frontend/dist
+    DocumentRoot /home/dq/DQ-TECH-WEB/frontend/dist
 
-    <Directory /var/www/dqtech-app/frontend/dist>
+    <Directory /home/dq/DQ-TECH-WEB/frontend/dist>
         Options -Indexes +FollowSymLinks
         AllowOverride None
         Require all granted
