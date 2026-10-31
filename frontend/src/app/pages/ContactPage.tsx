@@ -16,8 +16,8 @@ const faqs = [
     a: "Có! Tất cả laptop đều có bảo hành 1–3 tháng cho lỗi phần cứng. Tình trạng Tuyệt Vời được 3 tháng, Tốt được 3 tháng, Khá được 1 tháng. Chúng tôi xử lý sửa chữa hoặc đổi máy miễn phí.",
   },
   {
-    q: "Các bạn kiểm tra sức khỏe pin như thế nào?",
-    a: "Chúng tôi dùng công cụ chẩn đoán pin chuyên nghiệp để đo dung lượng sạc đầy hiện tại so với dung lượng thiết kế ban đầu. Tỉ lệ phần trăm được ghi rõ trên từng trang sản phẩm.",
+    q: "Các bạn kiểm tra thời lượng pin như thế nào?",
+    a: "Chúng tôi kiểm tra thời gian sử dụng thực tế và ghi rõ khoảng thời lượng pin, ví dụ 3–4 giờ, trên từng trang sản phẩm.",
   },
   {
     q: "Tôi có thể nâng cấp RAM hoặc SSD không?",

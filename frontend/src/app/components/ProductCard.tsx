@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { Battery, ShieldCheck, ArrowRight, Tag } from "lucide-react";
+import { Battery, ShieldCheck, ArrowRight } from "lucide-react";
 import { Button } from "./ui/button";
 import type { Product } from "../data/products";
 import { formatCatalogPriceVnd } from "../lib/currency";
@@ -16,19 +16,11 @@ const conditionLabel: Record<string, string> = {
   Fair: "Khá",
 };
 
-const batteryColor = (health: number) => {
-  if (health >= 90) return "text-green-500";
-  if (health >= 80) return "text-blue-500";
-  return "text-amber-500";
-};
-
 interface ProductCardProps {
   product: Product;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const discount = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
-
   return (
     <Link
       to={`/laptops/${product.id}`}
@@ -46,12 +38,6 @@ export function ProductCard({ product }: ProductCardProps) {
           >
             {conditionLabel[product.condition]}
           </span>
-          {discount > 0 && (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-500/10 text-red-500 border border-red-500/20">
-              <Tag className="w-3 h-3" />
-              -{discount}%
-            </span>
-          )}
         </div>
         {!product.inStock && (
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
@@ -81,16 +67,15 @@ export function ProductCard({ product }: ProductCardProps) {
 
         <div className="flex items-center mb-4">
           <div className="flex items-center gap-1.5">
-            <Battery className={`w-3.5 h-3.5 ${batteryColor(product.batteryHealth)}`} />
-            <span className={`text-xs font-medium ${batteryColor(product.batteryHealth)}`}>Pin {product.batteryHealth}%</span>
+            <Battery className="w-3.5 h-3.5 text-blue-500" />
+            <span className="text-xs font-medium text-blue-500">Pin {product.batteryLife || "Chưa cập nhật"}</span>
           </div>
         </div>
 
         <div className="flex items-end justify-between">
           <div>
-            <div className="flex items-baseline gap-2">
+            <div className="flex items-baseline">
               <span className="text-xl font-bold text-[#0F1115] dark:text-white">{formatCatalogPriceVnd(product.price)}</span>
-              <span className="text-sm text-gray-400 line-through">{formatCatalogPriceVnd(product.originalPrice)}</span>
             </div>
             <div className="flex items-center gap-1 mt-0.5">
               <ShieldCheck className="w-3 h-3 text-green-500" />

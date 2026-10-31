@@ -5,9 +5,8 @@ export interface Product {
   name: string;
   brand: string;
   price: number;
-  originalPrice: number;
   condition: Condition;
-  batteryHealth: number;
+  batteryLife: string;
   image: string;
   images: string[];
   specs: {
@@ -48,9 +47,8 @@ export const products: Product[] = [
     name: "MacBook Air M2 13\"",
     brand: "Apple",
     price: 899,
-    originalPrice: 1299,
     condition: "Excellent",
-    batteryHealth: 92,
+    batteryLife: "8-10 giờ",
     image: LAPTOP_6,
     images: [LAPTOP_6, LAPTOP_7, LAPTOP_3],
     specs: {
@@ -74,9 +72,8 @@ export const products: Product[] = [
     name: "Dell XPS 15 9520",
     brand: "Dell",
     price: 750,
-    originalPrice: 1199,
     condition: "Good",
-    batteryHealth: 85,
+    batteryLife: "4-5 giờ",
     image: LAPTOP_1,
     images: [LAPTOP_1, LAPTOP_5, LAPTOP_8],
     specs: {
@@ -100,9 +97,8 @@ export const products: Product[] = [
     name: "ASUS ROG Zephyrus G14",
     brand: "ASUS",
     price: 1099,
-    originalPrice: 1599,
     condition: "Good",
-    batteryHealth: 88,
+    batteryLife: "3-4 giờ",
     image: LAPTOP_4,
     images: [LAPTOP_4, LAPTOP_2, LAPTOP_1],
     specs: {
@@ -126,9 +122,8 @@ export const products: Product[] = [
     name: "ThinkPad X1 Carbon Gen 10",
     brand: "Lenovo",
     price: 650,
-    originalPrice: 1099,
     condition: "Excellent",
-    batteryHealth: 91,
+    batteryLife: "6-8 giờ",
     image: LAPTOP_5,
     images: [LAPTOP_5, LAPTOP_8, LAPTOP_7],
     specs: {
@@ -152,9 +147,8 @@ export const products: Product[] = [
     name: "HP Spectre x360 14\"",
     brand: "HP",
     price: 599,
-    originalPrice: 999,
     condition: "Good",
-    batteryHealth: 82,
+    batteryLife: "4-6 giờ",
     image: LAPTOP_8,
     images: [LAPTOP_8, LAPTOP_6, LAPTOP_3],
     specs: {
@@ -177,9 +171,8 @@ export const products: Product[] = [
     name: "Lenovo IdeaPad 5 Pro",
     brand: "Lenovo",
     price: 399,
-    originalPrice: 699,
     condition: "Fair",
-    batteryHealth: 74,
+    batteryLife: "2-3 giờ",
     image: LAPTOP_2,
     images: [LAPTOP_2, LAPTOP_5, LAPTOP_1],
     specs: {
@@ -202,9 +195,8 @@ export const products: Product[] = [
     name: "Framework Laptop 13",
     brand: "Framework",
     price: 849,
-    originalPrice: 1049,
     condition: "Excellent",
-    batteryHealth: 96,
+    batteryLife: "6-7 giờ",
     image: LAPTOP_3,
     images: [LAPTOP_3, LAPTOP_8, LAPTOP_6],
     specs: {
@@ -227,9 +219,8 @@ export const products: Product[] = [
     name: "MSI GS66 Stealth 15\"",
     brand: "MSI",
     price: 950,
-    originalPrice: 1499,
     condition: "Good",
-    batteryHealth: 80,
+    batteryLife: "3-4 giờ",
     image: LAPTOP_7,
     images: [LAPTOP_7, LAPTOP_4, LAPTOP_2],
     specs: {

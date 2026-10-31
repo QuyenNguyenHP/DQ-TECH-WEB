@@ -18,7 +18,6 @@ export function ProductModal({ product, onClose, onSave, onAssetsChanged }: Prod
     name: product?.name || "",
     brand: product?.brand || "",
     price: String(product?.price != null ? normalizeCatalogPriceVnd(product.price) : ""),
-    originalPrice: String(product?.originalPrice != null ? normalizeCatalogPriceVnd(product.originalPrice) : ""),
     condition: product?.condition || "Good",
     category: product?.category || "business",
     image: product?.image || "",
@@ -32,7 +31,7 @@ export function ProductModal({ product, onClose, onSave, onAssetsChanged }: Prod
       os: product?.specs?.os || "",
       weight: product?.specs?.weight || "",
     },
-    batteryHealth: String(product?.batteryHealth ?? ""),
+    batteryLife: product?.batteryLife || "",
     warranty: product?.warranty || "3 tháng",
     description: product?.description || "",
     featured: product?.featured || false,
@@ -311,8 +310,7 @@ export function ProductModal({ product, onClose, onSave, onAssetsChanged }: Prod
       ...formData,
       category: formData.category || "business",
       price: parseFloat(formData.price),
-      originalPrice: parseFloat(formData.originalPrice || formData.price),
-      batteryHealth: parseInt(formData.batteryHealth || "0", 10),
+      batteryLife: formData.batteryLife.trim(),
       image: normalizedImage,
       images: normalizedImages.length ? normalizedImages : [normalizedImage],
       customerName: formData.inStock ? "" : formData.customerName.trim(),
@@ -505,7 +503,7 @@ export function ProductModal({ product, onClose, onSave, onAssetsChanged }: Prod
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div>
             <div>
               <label className="mb-2 block text-sm font-medium text-gray-300">Giá hiện tại (VND) *</label>
               <input
@@ -516,15 +514,6 @@ export function ProductModal({ product, onClose, onSave, onAssetsChanged }: Prod
                 className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white focus:border-[#3B82F6] focus:outline-none"
               />
               <p className="mt-1 text-xs text-gray-500">Nhập trực tiếp số tiền Việt Nam, ví dụ: 18990000</p>
-            </div>
-            <div>
-              <label className="mb-2 block text-sm font-medium text-gray-300">Giá gốc (VND)</label>
-              <input
-                type="number"
-                value={formData.originalPrice}
-                onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
-                className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white focus:border-[#3B82F6] focus:outline-none"
-              />
             </div>
           </div>
 
@@ -542,11 +531,12 @@ export function ProductModal({ product, onClose, onSave, onAssetsChanged }: Prod
               </select>
             </div>
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-300">Pin (%)</label>
+              <label className="mb-2 block text-sm font-medium text-gray-300">Thời lượng pin</label>
               <input
-                type="number"
-                value={formData.batteryHealth}
-                onChange={(e) => setFormData({ ...formData, batteryHealth: e.target.value })}
+                type="text"
+                value={formData.batteryLife}
+                onChange={(e) => setFormData({ ...formData, batteryLife: e.target.value })}
+                placeholder="Ví dụ: 3-4 giờ"
                 className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white focus:border-[#3B82F6] focus:outline-none"
               />
             </div>

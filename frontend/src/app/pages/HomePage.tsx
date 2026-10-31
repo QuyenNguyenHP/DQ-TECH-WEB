@@ -13,7 +13,7 @@ import { testimonials } from "../data/products";
 import { fetchContentBootstrap } from "../lib/contentApi";
 
 const trustBadges = [
-  { icon: Battery, label: "Kiểm Tra Pin", desc: "Đo sức khỏe pin từng máy" },
+  { icon: Battery, label: "Kiểm Tra Pin", desc: "Ghi rõ thời lượng pin từng máy" },
   { icon: Cpu, label: "Kiểm Tra Phần Cứng", desc: "Chạy chẩn đoán đầy đủ mỗi máy" },
   { icon: ShieldCheck, label: "Bảo Hành Đi Kèm", desc: "Tối đa 3 tháng bảo hành" },
   { icon: Wrench, label: "Có Thể Nâng Cấp", desc: "Hỗ trợ mở rộng RAM & SSD" },
@@ -313,7 +313,7 @@ export function HomePage() {
                 Hơn 100 mẫu laptop đã qua kiểm định kỹ lưỡng — MacBook, ThinkPad, Dell XPS và nhiều hơn. Kèm bảo hành, pin đo sẵn, giao hàng tận nơi.
               </p>
               <ul className="space-y-2 mb-8">
-                {["Kiểm tra toàn bộ phần cứng", "Đo sức khỏe pin", "Bảo hành 1–3 tháng"].map((item) => (
+                {["Kiểm tra toàn bộ phần cứng", "Ghi rõ thời lượng pin", "Bảo hành 1–3 tháng"].map((item) => (
                   <li key={item} className="flex items-center gap-2 text-sm text-gray-400">
                     <CheckCircle2 className="w-4 h-4 text-[#3B82F6] flex-shrink-0" />
                     {item}

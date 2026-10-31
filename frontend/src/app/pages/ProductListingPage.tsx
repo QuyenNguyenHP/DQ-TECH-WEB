@@ -29,8 +29,8 @@ const whyUs = [
   },
   {
     icon: Battery,
-    title: "Cam kết sức khỏe pin",
-    desc: "Pin được kiểm tra trước khi đăng bán để bạn dễ đánh giá.",
+    title: "Thời lượng pin rõ ràng",
+    desc: "Thời gian sử dụng pin được kiểm tra và ghi rõ theo từng máy.",
   },
   {
     icon: ShieldCheck,
@@ -431,9 +431,6 @@ export function ProductListingPage() {
                             <div className="text-right flex-shrink-0">
                               <p className="text-lg font-bold text-[#0F1115] dark:text-white">
                                 {formatCatalogPriceVnd(product.price)}
-                              </p>
-                              <p className="text-sm text-gray-400 line-through">
-                                {formatCatalogPriceVnd(product.originalPrice)}
                               </p>
                             </div>
                           </div>

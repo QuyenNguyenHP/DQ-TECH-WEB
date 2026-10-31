@@ -30,11 +30,6 @@ const conditionConfig = {
   Fair: { label: "Khá", color: "text-amber-600 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/20", stars: 3 },
 };
 
-const batteryColor = (h: number) =>
-  h >= 90 ? "text-green-500" : h >= 80 ? "text-blue-500" : "text-amber-500";
-const batteryBg = (h: number) =>
-  h >= 90 ? "bg-green-500" : h >= 80 ? "bg-blue-500" : "bg-amber-500";
-
 export function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -95,10 +90,8 @@ export function ProductDetailPage() {
     { icon: Zap, label: "Card Đồ Họa", value: product.specs.gpu },
     { icon: Weight, label: "Trọng Lượng", value: product.specs.weight },
     { icon: Monitor, label: "Hệ Điều Hành", value: product.specs.os },
-    { icon: Battery, label: "Pin", value: `${product.batteryHealth}% sức khỏe`, valueClassName: batteryColor(product.batteryHealth) },
+    { icon: Battery, label: "Pin", value: product.batteryLife || "Chưa cập nhật", valueClassName: "text-blue-500" },
   ];
-
-  const discount = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
 
   return (
     <div className="min-h-screen bg-white dark:bg-[#0F1115] pt-20">
@@ -210,43 +203,24 @@ export function ProductDetailPage() {
                 {product.name}
               </h1>
 
-              <div className="flex items-baseline gap-3 mb-5">
+              <div className="flex items-baseline mb-5">
                 <span className="text-4xl font-black text-[#0F1115] dark:text-white">
                   {formatCatalogPriceVnd(product.price)}
                 </span>
-                <span className="text-xl text-gray-400 line-through">
-                  {formatCatalogPriceVnd(product.originalPrice)}
-                </span>
-                <span className="px-2.5 py-1 rounded-full bg-red-50 dark:bg-red-500/10 text-red-500 text-sm font-bold border border-red-200 dark:border-red-500/20">
-                  -{discount}% OFF
-                </span>
               </div>
 
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-6">{product.description}</p>
+              <p className="whitespace-pre-line text-gray-600 dark:text-gray-400 leading-relaxed mb-6">{product.description}</p>
 
               <div className="p-4 rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 mb-5">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <Battery className={`w-4 h-4 ${batteryColor(product.batteryHealth)}`} />
-                    <span className="text-sm font-semibold text-[#0F1115] dark:text-white">Sức Khỏe Pin</span>
+                    <Battery className="w-4 h-4 text-blue-500" />
+                    <span className="text-sm font-semibold text-[#0F1115] dark:text-white">Thời lượng pin</span>
                   </div>
-                  <span className={`text-sm font-bold ${batteryColor(product.batteryHealth)}`}>
-                    {product.batteryHealth}%
+                  <span className="text-sm font-bold text-blue-500">
+                    {product.batteryLife || "Chưa cập nhật"}
                   </span>
                 </div>
-                <div className="w-full h-2 bg-gray-200 dark:bg-white/10 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all ${batteryBg(product.batteryHealth)}`}
-                    style={{ width: `${product.batteryHealth}%` }}
-                  />
-                </div>
-                <p className="text-xs text-gray-500 mt-1.5">
-                  {product.batteryHealth >= 90
-                    ? "Tuyệt vời - thời lượng pin như mới"
-                    : product.batteryHealth >= 80
-                      ? "Tốt - sử dụng hàng ngày bình thường, không vấn đề"
-                      : "Khá - có thể cần sạc thường xuyên hơn"}
-                </p>
               </div>
 
               <div className="flex items-center gap-3 p-4 rounded-2xl bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 mb-6">
