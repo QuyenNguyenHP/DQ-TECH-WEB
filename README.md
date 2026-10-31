@@ -112,11 +112,38 @@ They contain the live website content and uploaded images.
 
 ## Install the backend service
 
-```bash
-sudo cp \
-  ~/DQ-TECH-WEB/backend/dqtech-content-api.service.example \
-  /etc/systemd/system/dqtech-content-api.service
+Create the systemd unit directly:
 
+```bash
+sudo nano /etc/systemd/system/dqtech-content-api.service
+```
+
+Enter the following configuration and save the file:
+
+```ini
+[Unit]
+Description=DQ TECH Content API
+After=network.target
+
+[Service]
+Type=simple
+User=dq
+Group=dq
+WorkingDirectory=/home/dq/DQ-TECH-WEB
+Environment=CONTENT_API_HOST=127.0.0.1
+Environment=CONTENT_API_PORT=8000
+Environment=CONTENT_API_MAX_BODY_MB=20
+ExecStart=/usr/bin/python3 /home/dq/DQ-TECH-WEB/backend/server.py
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Load and start the service:
+
+```bash
 sudo systemctl daemon-reload
 sudo systemctl enable --now dqtech-content-api
 sudo systemctl status dqtech-content-api
@@ -133,13 +160,50 @@ The listener should be `127.0.0.1:8000`, not `0.0.0.0:8000`.
 
 ## Configure Apache for dqtech.cloud
 
-Install the included HTTP virtual host:
+Create the Apache virtual host directly:
 
 ```bash
-sudo cp \
-  ~/DQ-TECH-WEB/backend/apache/dqtech.cloud.conf.example \
-  /etc/apache2/sites-available/dqtech.cloud.conf
+sudo nano /etc/apache2/sites-available/dqtech.cloud.conf
+```
 
+Enter the following configuration and save the file:
+
+```apache
+<VirtualHost *:80>
+    ServerName dqtech.cloud
+    ServerAlias www.dqtech.cloud
+
+    DocumentRoot /home/dq/DQ-TECH-WEB/frontend/dist
+
+    <Directory /home/dq/DQ-TECH-WEB/frontend/dist>
+        Options -Indexes +FollowSymLinks
+        AllowOverride None
+        Require all granted
+    </Directory>
+
+    ProxyPreserveHost On
+
+    ProxyPass /api/content http://127.0.0.1:8000/api/content retry=0 timeout=60
+    ProxyPassReverse /api/content http://127.0.0.1:8000/api/content
+
+    ProxyPass /uploads http://127.0.0.1:8000/uploads retry=0 timeout=60
+    ProxyPassReverse /uploads http://127.0.0.1:8000/uploads
+
+    RewriteEngine On
+    RewriteCond %{REQUEST_URI} !^/api/content [NC]
+    RewriteCond %{REQUEST_URI} !^/uploads [NC]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ /index.html [L]
+
+    ErrorLog ${APACHE_LOG_DIR}/dqtech.cloud_error.log
+    CustomLog ${APACHE_LOG_DIR}/dqtech.cloud_access.log combined
+</VirtualHost>
+```
+
+Enable and validate the site:
+
+```bash
 sudo a2dissite 000-default.conf
 sudo a2ensite dqtech.cloud.conf
 sudo apache2ctl configtest
