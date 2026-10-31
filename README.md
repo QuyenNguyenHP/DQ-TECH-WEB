@@ -1,186 +1,154 @@
 # DQ TECH WEB
 
-The production image contains the Vite frontend, Nginx, and the Python content API. On the destination PC or VPS, Apache2 handles `dqtech.cloud` and HTTPS, then proxies traffic to Docker on `127.0.0.1:8081`.
+Production uses Apache2 and a standalone Python service.
 
 ```text
-Internet -> Apache :80/:443 -> 127.0.0.1:8081 -> Nginx :8080
-                                                   |-> frontend
-                                                   `-> Python API :8000
+Internet -> Apache2 :80/:443
+              |-> frontend/dist
+              |-> /api/content -> Python :8000
+              `-> /uploads     -> Python :8000
 ```
 
-The Docker host port is `8081`; the container port remains `8080`. Port `8000` is internal and must not be exposed publicly.
+Apache serves the Vite frontend, terminates HTTPS for `dqtech.cloud`, and
+proxies API and upload requests to the Python backend. The backend listens only
+on `127.0.0.1:8000` and must not be exposed publicly.
 
-## Important files
+## Repository layout
 
 ```text
-frontend/                                  Vite/React application
-backend/                                   Python API, JSON data, uploads
-docker/Dockerfile                          production image
-docker/entrypoint.sh                       starts Python and Nginx
-docker/nginx.conf                          frontend and API routing
-docker/compose.yaml                        deployment on host port 8081
-docker/apache/dqtech.cloud.conf.example    Apache reverse proxy
-.dockerignore
+frontend/                                      Vite/React application
+backend/server.py                              Python content API
+backend/dqtech-content-api.service.example     systemd unit
+backend/apache/dqtech.cloud.conf.example       Apache virtual host
+backend/data/                                  persistent JSON data (not in Git)
+backend/uploads/                               persistent uploads (not in Git)
 ```
 
 ## Local development
 
+Install dependencies:
+
 ```bash
 npm --prefix frontend install
+```
+
+Start the backend:
+
+```bash
 npm --prefix frontend run dev:api
 ```
 
-In a second terminal:
+In another terminal, start Vite:
 
 ```bash
 npm --prefix frontend run dev
 ```
 
-The frontend uses the same-origin API path `/api/content`; no production domain is compiled into the image.
+The frontend uses same-origin paths `/api/content` and `/uploads`.
 
-## Build and test the image
+## Production prerequisites
 
-Run from the repository root:
+These instructions assume:
 
-```bash
-docker build --file docker/Dockerfile --tag dqtech-web:latest .
-docker image inspect dqtech-web:latest --format '{{.Os}}/{{.Architecture}}'
-```
+- Ubuntu or Debian
+- the repository is at `/var/www/dqtech-app`
+- DNS `A` records for `dqtech.cloud` and `www.dqtech.cloud` point to the server
+- inbound TCP ports 80 and 443 are open
 
-Test locally on port `8081`:
+If `www.dqtech.cloud` is not configured in DNS, remove its `ServerAlias` from
+the Apache file and omit it from the Certbot command.
 
-```bash
-docker run --detach \
-  --name dqtech-web-test \
-  --publish 127.0.0.1:8081:8080 \
-  dqtech-web:latest
-
-curl --fail http://127.0.0.1:8081/api/content/health
-docker rm --force dqtech-web-test
-```
-
-The image architecture must match the destination. `linux/amd64` is for Intel/AMD 64-bit PCs. For an ARM64 destination, use Buildx:
-
-```bash
-docker buildx build \
-  --platform linux/arm64 \
-  --file docker/Dockerfile \
-  --tag dqtech-web:latest \
-  --load .
-```
-
-## Export for another PC
-
-```bash
-docker save dqtech-web:latest | gzip -9 > dqtech-web-latest-amd64.tar.gz
-sha256sum dqtech-web-latest-amd64.tar.gz > dqtech-web-latest-amd64.tar.gz.sha256
-```
-
-Copy these files to the destination:
-
-- `dqtech-web-latest-amd64.tar.gz`
-- `dqtech-web-latest-amd64.tar.gz.sha256`
-- `docker/compose.yaml`
-- `docker/apache/dqtech.cloud.conf.example` when Apache is used
-
-Example VPS transfer:
-
-```bash
-ssh your_user@YOUR_SERVER_IP 'mkdir -p /opt/dqtech'
-scp dqtech-web-latest-amd64.tar.gz* your_user@YOUR_SERVER_IP:/opt/dqtech/
-scp docker/compose.yaml your_user@YOUR_SERVER_IP:/opt/dqtech/
-scp docker/apache/dqtech.cloud.conf.example your_user@YOUR_SERVER_IP:/opt/dqtech/
-```
-
-## Deploy on the destination
-
-Install Docker Engine and the Docker Compose plugin. Then verify and load the archive:
-
-```bash
-cd /opt/dqtech
-sha256sum --check dqtech-web-latest-amd64.tar.gz.sha256
-docker load --input dqtech-web-latest-amd64.tar.gz
-docker image inspect dqtech-web:latest --format '{{.RepoTags}} {{.Os}}/{{.Architecture}}'
-```
-
-Place `compose.yaml` in `/opt/dqtech`, then start the application:
-
-```bash
-docker compose up --detach
-docker compose ps
-curl --fail http://127.0.0.1:8081/api/content/health
-```
-
-Without Docker Compose:
-
-```bash
-docker run --detach \
-  --name dqtech-web \
-  --publish 127.0.0.1:8081:8080 \
-  --volume dqtech-data:/app/backend/data \
-  --volume dqtech-uploads:/app/backend/uploads \
-  --restart unless-stopped \
-  dqtech-web:latest
-```
-
-The loopback binding is intentional: only Apache can reach the app. For local testing without Apache, use `--publish 8081:8080` and open `http://localhost:8081`.
-
-## Persistent data
-
-The deployment uses two named volumes:
-
-- `dqtech-data` for `content-store.json`
-- `dqtech-uploads` for uploaded product and blog images
-
-Recreating the container does not delete these volumes. Do not run `docker compose down --volumes` or `docker volume rm dqtech-data dqtech-uploads` unless the data should be permanently deleted.
-
-Back up both volumes:
-
-```bash
-mkdir -p /opt/dqtech/backups
-docker run --rm \
-  --volume dqtech-data:/source:ro \
-  --volume /opt/dqtech/backups:/backup \
-  alpine tar czf /backup/dqtech-data.tar.gz -C /source .
-docker run --rm \
-  --volume dqtech-uploads:/source:ro \
-  --volume /opt/dqtech/backups:/backup \
-  alpine tar czf /backup/dqtech-uploads.tar.gz -C /source .
-```
-
-## Apache2 for dqtech.cloud
-
-Before configuring Apache:
-
-1. Point DNS `A` records for `dqtech.cloud` and optionally `www.dqtech.cloud` to the server IP.
-2. Allow inbound TCP ports `80` and `443`.
-3. Keep Docker port `8081` on `127.0.0.1`; it needs no public firewall rule.
-
-Install Apache and Certbot on Ubuntu/Debian:
+Install Apache, Python, and Certbot:
 
 ```bash
 sudo apt update
-sudo apt install -y apache2 certbot python3-certbot-apache
-sudo a2enmod proxy proxy_http headers ssl
+sudo apt install -y apache2 certbot python3-certbot-apache python3
+sudo a2enmod proxy proxy_http rewrite headers ssl
 ```
 
-Install the included site configuration:
+Install Node.js 22 and npm using your preferred Node.js installation method,
+then verify them before building:
 
 ```bash
-sudo cp /opt/dqtech/dqtech.cloud.conf.example \
+node --version
+npm --version
+```
+
+## Build the frontend
+
+```bash
+cd /var/www/dqtech-app
+npm --prefix frontend ci
+npm --prefix frontend run build
+```
+
+Apache serves the generated files directly from
+`/var/www/dqtech-app/frontend/dist`.
+
+## Prepare persistent backend data
+
+```bash
+sudo mkdir -p \
+  /var/www/dqtech-app/backend/data \
+  /var/www/dqtech-app/backend/uploads/products \
+  /var/www/dqtech-app/backend/uploads/blogs
+
+sudo chown -R www-data:www-data \
+  /var/www/dqtech-app/backend/data \
+  /var/www/dqtech-app/backend/uploads
+
+sudo chmod -R 775 \
+  /var/www/dqtech-app/backend/data \
+  /var/www/dqtech-app/backend/uploads
+```
+
+Do not replace or delete `backend/data` or `backend/uploads` during an update.
+They contain the live website content and uploaded images.
+
+## Install the backend service
+
+```bash
+sudo cp \
+  /var/www/dqtech-app/backend/dqtech-content-api.service.example \
+  /etc/systemd/system/dqtech-content-api.service
+
+sudo systemctl daemon-reload
+sudo systemctl enable --now dqtech-content-api
+sudo systemctl status dqtech-content-api
+```
+
+Verify the backend before configuring Apache:
+
+```bash
+curl --fail http://127.0.0.1:8000/api/content/health
+sudo ss -ltnp | grep :8000
+```
+
+The listener should be `127.0.0.1:8000`, not `0.0.0.0:8000`.
+
+## Configure Apache for dqtech.cloud
+
+Install the included HTTP virtual host:
+
+```bash
+sudo cp \
+  /var/www/dqtech-app/backend/apache/dqtech.cloud.conf.example \
   /etc/apache2/sites-available/dqtech.cloud.conf
+
+sudo a2dissite 000-default.conf
 sudo a2ensite dqtech.cloud.conf
 sudo apache2ctl configtest
 sudo systemctl reload apache2
 ```
 
-Confirm HTTP reaches Docker before requesting a certificate:
+Test HTTP before requesting a certificate:
 
 ```bash
 curl --fail http://dqtech.cloud/api/content/health
+curl -I http://dqtech.cloud
 ```
 
-Configure HTTPS:
+Enable HTTPS and automatic HTTP-to-HTTPS redirection:
 
 ```bash
 sudo certbot --apache --redirect -d dqtech.cloud -d www.dqtech.cloud
@@ -189,63 +157,82 @@ sudo systemctl reload apache2
 sudo certbot renew --dry-run
 ```
 
-If there is no `www` DNS record, omit `-d www.dqtech.cloud` and remove `ServerAlias www.dqtech.cloud` from the Apache file.
-
 Final checks:
 
 ```bash
 curl -I https://dqtech.cloud
 curl --fail https://dqtech.cloud/api/content/health
-docker inspect --format '{{.State.Health.Status}}' dqtech-web
-docker logs --tail 100 dqtech-web
+sudo systemctl status dqtech-content-api apache2
 ```
 
-Do not run the old `dqtech-content-api.service` systemd service with this deployment. The backend already runs inside Docker.
+## Firewall
 
-## Update and rollback
-
-Rebuild and export on the build PC. On the destination PC:
+With UFW, expose only SSH, HTTP, and HTTPS:
 
 ```bash
-cd /opt/dqtech
-docker tag dqtech-web:latest dqtech-web:previous
-docker load --input dqtech-web-latest-amd64.tar.gz
-docker compose up --detach --force-recreate
-curl --retry 10 --retry-delay 2 --retry-connrefused --fail \
-  http://127.0.0.1:8081/api/content/health
+sudo ufw allow OpenSSH
+sudo ufw allow 'Apache Full'
+sudo ufw enable
+sudo ufw status
 ```
 
-The named volumes remain attached. To roll back:
+Do not open port 8000. It is an internal backend port.
+
+## Updating the website
+
+Back up live content before an important update:
 
 ```bash
-docker compose down
-docker run --detach \
-  --name dqtech-web \
-  --publish 127.0.0.1:8081:8080 \
-  --volume dqtech-data:/app/backend/data \
-  --volume dqtech-uploads:/app/backend/uploads \
-  --restart unless-stopped \
-  dqtech-web:previous
+sudo mkdir -p /var/backups/dqtech
+sudo tar -czf /var/backups/dqtech/content-$(date +%F-%H%M%S).tar.gz \
+  -C /var/www/dqtech-app/backend data uploads
+```
+
+Pull and deploy the updated application:
+
+```bash
+cd /var/www/dqtech-app
+git pull --ff-only
+npm --prefix frontend ci
+npm --prefix frontend run build
+sudo systemctl restart dqtech-content-api
+```
+
+Apache reads the new `frontend/dist` files immediately, so an Apache reload is
+not needed for ordinary frontend changes. Run a configuration test and reload
+Apache only when its virtual-host configuration changes:
+
+```bash
+sudo apache2ctl configtest
+sudo systemctl reload apache2
+```
+
+Verify the deployment:
+
+```bash
+curl --fail http://127.0.0.1:8000/api/content/health
+curl --fail https://dqtech.cloud/api/content/health
+sudo journalctl -u dqtech-content-api -n 100 --no-pager
 ```
 
 ## Operations and troubleshooting
 
 ```bash
-docker compose ps
-docker logs --follow dqtech-web
-docker restart dqtech-web
-docker inspect --format '{{.State.Health.Status}}' dqtech-web
-ss -ltnp | grep 8081
-sudo apache2ctl configtest
+sudo systemctl status dqtech-content-api apache2
+sudo journalctl -u dqtech-content-api -f
 sudo tail -f /var/log/apache2/dqtech.cloud_error.log
+sudo apache2ctl configtest
+sudo ss -ltnp | grep -E ':(80|443|8000)'
 ```
 
 Common problems:
 
-- `permission denied ... docker.sock`: add the user to the `docker` group, sign out and in again, or use `sudo`.
-- Apache `503 Service Unavailable`: verify the container and `curl http://127.0.0.1:8081/api/content/health`.
-- HTTP works but HTTPS fails: verify DNS, ports 80/443, and the Certbot result.
-- Upload fails: check disk space, both volumes, container logs, and Apache's error log.
-- Port allocated: check `sudo ss -ltnp | grep :8081`; stop that process or change the host port in both Compose and Apache.
+- Apache `503`: check `dqtech-content-api` and test port 8000 directly.
+- HTTPS issuance fails: confirm DNS points to this server and ports 80/443 are open.
+- Upload fails: check ownership of `backend/data` and `backend/uploads`, disk
+  space, the 20 MB backend limit, and Apache logs.
+- Frontend route returns 404: confirm `mod_rewrite` is enabled and the included
+  SPA fallback rules are installed.
 
-The backend and Nginx upload limits default to 20 MB. To change the limit, update `CONTENT_API_MAX_BODY_MB` and `client_max_body_size` in `docker/nginx.conf`, then rebuild.
+To change the backend port, update `CONTENT_API_PORT` in the systemd unit and
+all Apache `ProxyPass` targets, then reload systemd and Apache.
