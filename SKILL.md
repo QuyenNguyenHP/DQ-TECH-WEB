@@ -19,6 +19,12 @@ the current deployment procedure before changing production configuration.
 - The backend runs as `dqtech-content-api.service` under Linux user `dq`.
 - The production repository is `/home/dq/DQ-TECH-WEB`.
 - Docker, Nginx, and Cloudflare Tunnel are not part of this deployment.
+- Blog posts are Markdown rendered by `react-markdown` with `remark-gfm`
+  (tables, strikethrough) in `BlogPostPage.tsx`, styled by the
+  `@tailwindcss/typography` plugin (`@plugin` in `src/styles/tailwind.css`).
+  Removing either makes blog posts lose spacing, bullets, and tables.
+- Laptop battery is the free-text `batteryLife` field ("3-4 giờ"); the API
+  stores agent payloads as sent.
 
 ## Preserve live data
 

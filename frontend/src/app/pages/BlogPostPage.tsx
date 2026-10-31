@@ -3,6 +3,7 @@ import { useParams, Link, Navigate } from "react-router";
 import { motion } from "motion/react";
 import { Calendar, Clock, Tag, ArrowLeft, Share2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { Button } from "../components/ui/button";
 import { toast } from "sonner";
 import { fetchBlogs } from "../lib/contentApi";
@@ -157,17 +158,47 @@ export function BlogPostPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="prose prose-invert prose-lg max-w-none
-              prose-headings:text-white prose-headings:font-bold
-              prose-h2:text-2xl prose-h2:mb-4 prose-h2:mt-8
-              prose-h3:text-xl prose-h3:mb-3 prose-h3:mt-6
-              prose-p:text-gray-300 prose-p:leading-relaxed prose-p:mb-4
+            className="prose prose-invert prose-base sm:prose-lg max-w-none
+              prose-headings:text-white prose-headings:font-bold prose-headings:scroll-mt-24
+              prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-5 prose-h2:pb-3 prose-h2:border-b prose-h2:border-white/10
+              prose-h3:text-xl prose-h3:mt-8 prose-h3:mb-3
+              prose-p:text-gray-300 prose-p:leading-relaxed
+              prose-a:text-[#3B82F6] prose-a:font-medium prose-a:no-underline hover:prose-a:underline
               prose-strong:text-white prose-strong:font-semibold
-              prose-ul:text-gray-300 prose-ul:list-disc prose-ul:pl-6
-              prose-li:mb-2
-              prose-code:text-[#3B82F6] prose-code:bg-white/5 prose-code:px-2 prose-code:py-1 prose-code:rounded"
+              prose-ul:text-gray-300 prose-ol:text-gray-300 prose-li:my-1.5 prose-li:marker:text-[#3B82F6]
+              prose-blockquote:border-l-[#3B82F6] prose-blockquote:bg-white/5 prose-blockquote:rounded-r-xl
+              prose-blockquote:py-1 prose-blockquote:not-italic prose-blockquote:text-gray-300
+              prose-hr:border-white/10 prose-img:rounded-xl
+              prose-pre:bg-[#0A0D11] prose-pre:border prose-pre:border-white/10 prose-pre:rounded-xl prose-pre:text-sm
+              prose-code:before:content-none prose-code:after:content-none
+              [&_:not(pre)>code]:text-[#60A5FA] [&_:not(pre)>code]:bg-white/5 [&_:not(pre)>code]:px-1.5
+              [&_:not(pre)>code]:py-0.5 [&_:not(pre)>code]:rounded-md [&_:not(pre)>code]:font-normal
+              prose-th:bg-white/5 prose-th:text-white prose-th:px-4 prose-th:py-3
+              prose-td:px-4 prose-td:py-3 prose-td:text-gray-300 prose-tr:border-white/10"
           >
-            <ReactMarkdown>{post.content}</ReactMarkdown>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                // Wide tables scroll sideways on phones instead of breaking the layout.
+                table: ({ node, ...props }) => (
+                  <div className="my-8 overflow-x-auto rounded-xl border border-white/10">
+                    <table {...props} className="!my-0 w-full" />
+                  </div>
+                ),
+                a: ({ node, href, ...props }) => {
+                  const external = href?.startsWith("http");
+                  return (
+                    <a
+                      href={href}
+                      {...props}
+                      {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                    />
+                  );
+                },
+              }}
+            >
+              {post.content}
+            </ReactMarkdown>
           </motion.article>
 
           {/* CTA */}
