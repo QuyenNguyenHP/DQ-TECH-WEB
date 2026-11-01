@@ -80,6 +80,14 @@ export function HomePage() {
   }, []);
 
   const featuredProducts = products.filter((p) => p.featured);
+  const latestBlogPosts = [...blogPosts]
+    .sort((a, b) => {
+      const dateA = Date.parse(a.date) || 0;
+      const dateB = Date.parse(b.date) || 0;
+
+      return dateB - dateA;
+    })
+    .slice(0, 8);
   const perPage = 3;
   const maxCarousel = Math.max(0, Math.ceil(products.length / perPage) - 1);
 
@@ -497,7 +505,7 @@ export function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
-            {blogPosts.slice(0, 4).map((post, index) => (
+            {latestBlogPosts.map((post, index) => (
               <motion.article
                 key={post.id}
                 initial={{ opacity: 0, y: 20 }}
