@@ -5,7 +5,7 @@ import {
   Battery, ShieldCheck, Cpu, Wrench,
   Star, ArrowRight, ChevronLeft, ChevronRight,
   CheckCircle2, Zap, HeartHandshake, Award,
-  Laptop, Globe, Bot, Calendar, Clock, Tag,
+  Laptop, Bot, Calendar, Clock, Tag,
 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { ProductCard } from "../components/ProductCard";
@@ -41,7 +41,7 @@ const heroSlides = [
     ),
     description:
       "Ngoài cung cấp laptop cũ cao cấp đã kiểm định, DQ TECH còn tư vấn và triển khai giải pháp AI, tự động hóa quy trình cho doanh nghiệp nhỏ và kinh doanh cá nhân — giúp tinh gọn quy trình, tăng hiệu quả và giảm chi phí.",
-    primaryCTA: { label: "Tư Vấn Giải Pháp AI", to: "/contact" },
+    primaryCTA: { label: "Tìm Hiểu Giải Pháp AI", to: "/giai-phap-ai" },
     secondaryCTA: { label: "Xem Laptop", to: "/laptops" },
     image: "/shwrm-4.jpg",
     glowColor: "bg-[#3B82F6]/20",
@@ -285,7 +285,7 @@ export function HomePage() {
       </section>
 
       {/* ── SERVICES ── */}
-      <section className="order-last py-16 sm:py-20 bg-[#0A0D11]">
+      <section className="py-16 sm:py-20 bg-[#0A0D11]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10 sm:mb-12">
             <motion.div
@@ -295,14 +295,14 @@ export function HomePage() {
               transition={{ duration: 0.5 }}
             >
               <p className="text-xs sm:text-sm text-[#3B82F6] font-semibold uppercase tracking-widest mb-2 sm:mb-3">Dịch Vụ Của Chúng Tôi</p>
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl text-white mb-3 sm:mb-4">Giải Pháp Công Nghệ Toàn Diện</h2>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl text-white mb-3 sm:mb-4">Laptop Chất Lượng & Ứng Dụng AI Cho Kinh Doanh</h2>
               <p className="text-sm sm:text-base text-gray-400 max-w-2xl mx-auto px-4">
                 Không chỉ laptop — DQ TECH đồng hành cùng doanh nghiệp nhỏ và người kinh doanh cá nhân ứng dụng AI, tự động hóa quy trình để làm ít hơn mà hiệu quả hơn
               </p>
             </motion.div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 sm:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6">
             {/* Laptop */}
             <motion.div
               initial={{ opacity: 0, y: 24 }}
@@ -333,43 +333,12 @@ export function HomePage() {
               </Link>
             </motion.div>
 
-            {/* Website Design */}
+            {/* AI & Automation */}
             <motion.div
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-8 hover:border-purple-500/40 hover:bg-purple-500/5 transition-all"
-            >
-              <div className="w-14 h-14 rounded-2xl bg-purple-500/10 flex items-center justify-center mb-6 group-hover:bg-purple-500/20 transition-all">
-                <Globe className="w-7 h-7 text-purple-400" />
-              </div>
-              <h3 className="text-white mb-3">Thiết Kế Website</h3>
-              <p className="text-sm text-gray-400 leading-relaxed mb-6">
-                Website đẹp, chuẩn SEO, tốc độ cao — xây dựng bằng công nghệ hiện đại nhất. Từ landing page đơn giản đến hệ thống e-commerce phức tạp.
-              </p>
-              <ul className="space-y-2 mb-8">
-                {["Responsive trên mọi thiết bị", "Tối ưu tốc độ & SEO", "Hỗ trợ sau bàn giao"].map((item) => (
-                  <li key={item} className="flex items-center gap-2 text-sm text-gray-400">
-                    <CheckCircle2 className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <Link to="/thiet-ke-website">
-                <span className="inline-flex items-center gap-1.5 text-sm text-purple-400 group-hover:gap-2.5 transition-all">
-                  Tìm Hiểu Thêm <ArrowRight className="w-4 h-4" />
-                </span>
-              </Link>
-            </motion.div>
-
-            {/* AI & Automation */}
-            <motion.div
-              id="ai"
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.2 }}
               className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-8 hover:border-green-500/40 hover:bg-green-500/5 transition-all"
             >
               <div className="w-14 h-14 rounded-2xl bg-green-500/10 flex items-center justify-center mb-6 group-hover:bg-green-500/20 transition-all">
@@ -377,19 +346,19 @@ export function HomePage() {
               </div>
               <h3 className="text-white mb-3">Giải Pháp AI & Tự Động Hóa</h3>
               <p className="text-sm text-gray-400 leading-relaxed mb-6">
-                Tư vấn và triển khai AI, tự động hóa quy trình cho doanh nghiệp nhỏ và kinh doanh cá nhân: chăm sóc khách hàng, xử lý đơn hàng, báo cáo, nội dung… Tinh gọn quy trình, tăng hiệu quả, giảm chi phí.
+                DQ TECH tư vấn và triển khai ứng dụng AI, tự động hóa quy trình cho doanh nghiệp nhỏ và kinh doanh cá nhân: chatbot chăm sóc khách hàng, xử lý đơn hàng, báo cáo tự động, nội dung marketing… Để máy làm việc lặp lại, bạn tập trung vào việc kinh doanh.
               </p>
               <ul className="space-y-2 mb-8">
-                {["Khảo sát quy trình & tư vấn miễn phí", "Triển khai theo nhu cầu, chi phí hợp lý", "Hướng dẫn sử dụng & hỗ trợ lâu dài"].map((item) => (
+                {["Tinh gọn quy trình làm việc", "Tăng hiệu quả, giảm sai sót", "Giảm chi phí vận hành"].map((item) => (
                   <li key={item} className="flex items-center gap-2 text-sm text-gray-400">
                     <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0" />
                     {item}
                   </li>
                 ))}
               </ul>
-              <Link to="/contact">
+              <Link to="/giai-phap-ai">
                 <span className="inline-flex items-center gap-1.5 text-sm text-green-400 group-hover:gap-2.5 transition-all">
-                  Nhận Tư Vấn <ArrowRight className="w-4 h-4" />
+                  Tìm Hiểu Giải Pháp AI <ArrowRight className="w-4 h-4" />
                 </span>
               </Link>
             </motion.div>
@@ -496,7 +465,7 @@ export function HomePage() {
               </h2>
             </div>
             <Link
-              to="/"
+              to="/blog"
               className="hidden sm:flex items-center gap-2 text-sm text-[#3B82F6] hover:gap-3 transition-all"
             >
               Xem Tất Cả <ArrowRight className="w-4 h-4" />
@@ -568,7 +537,7 @@ export function HomePage() {
           </div>
 
           <div className="text-center mt-8 sm:hidden">
-            <Link to="/">
+            <Link to="/blog">
               <Button
                 variant="outline"
                 className="border-gray-200 dark:border-white/10 text-[#0F1115] dark:text-white hover:border-[#3B82F6] hover:text-[#3B82F6] px-8 rounded-xl"

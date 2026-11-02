@@ -66,12 +66,12 @@ export function BlogPage() {
               Công Nghệ, AI & Tự Động Hóa Cho Kinh Doanh
             </h1>
             <p className="text-gray-400 max-w-2xl mx-auto">
-              Ngoài cung cấp laptop cũ cao cấp, DQ TECH còn tư vấn và triển khai giải pháp AI, tự động hóa quy trình
-              cho doanh nghiệp nhỏ và kinh doanh cá nhân — tinh gọn quy trình, tăng hiệu quả, giảm chi phí.
+              Chia sẻ kinh nghiệm chọn laptop, ứng dụng AI và tự động hóa quy trình để kinh doanh hiệu quả hơn,
+              tiết kiệm chi phí hơn.
             </p>
             <div className="flex flex-wrap gap-3 justify-center mt-6">
               <Link
-                to="/contact"
+                to="/giai-phap-ai"
                 className="px-5 py-2.5 rounded-xl bg-[#3B82F6] hover:bg-blue-500 text-white text-sm font-medium shadow-lg shadow-blue-500/25 transition-all"
               >
                 Tư Vấn Giải Pháp AI

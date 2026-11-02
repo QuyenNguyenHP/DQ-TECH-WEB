@@ -25,21 +25,24 @@ frontend/            Vite 6 + React 18 + TypeScript + Tailwind CSS 4 (dark theme
 backend/server.py    Python content API (stdlib HTTP server), JSON storage
 backend/data/        Live content JSON (not in Git, never delete)
 backend/uploads/     Uploaded images (not in Git, never delete)
+deploy/update.sh     Safe production update script (backup + pull + build)
 SKILL.md             Maintenance/deploy notes for the production server
 README.md            Full production deployment procedure
 ```
 
 ## Routes
 
-- `/` - Blog list (homepage), newest post first
+Navbar: Trang Chủ · Dịch Vụ · Blog · Liên Hệ (flat links, no dropdown).
+
+- `/` - Homepage: hero, laptop + AI services intro, featured laptops, latest posts
+- `/giai-phap-ai` - "Dịch Vụ": AI consulting and process automation page
+- `/blog` - Blog list, newest post first
 - `/blog/:slug` - Blog post, with social share buttons
-- `/blog` - redirects to `/`
-- `/gioi-thieu` - About / services overview (former homepage)
 - `/laptops`, `/laptops/:id` - Laptop catalogue
-- `/thiet-ke-website` - Website design service
 - `/contact` - Contact
+- `/thiet-ke-website` - Website design page, kept but not linked from nav/footer
 - `/admin/login`, `/admin/dashboard` - Admin (no Navbar/Footer)
-- `/camera-giam-sat` - removed; redirects to `/`
+- `/gioi-thieu`, `/camera-giam-sat` - removed; redirect to `/`
 
 ## Commands
 
@@ -71,5 +74,14 @@ checking the page in the browser.
 
 Production runs on Apache2 serving `frontend/dist`, with `/api/content` and
 `/uploads` proxied to the Python service (`dqtech-content-api.service`). See
-`README.md` and `SKILL.md`. Never overwrite `backend/data` or
-`backend/uploads` on the server.
+`README.md` and `SKILL.md`. Update the server with `deploy/update.sh` (backs
+up content, pulls, builds, restarts, checks counts).
+
+Content safety rules:
+
+- Never overwrite, delete or move `backend/data` or `backend/uploads`, and
+  never suggest `git clean -x`/`-fdx` on the server.
+- Changes to the stored data shape in `backend/server.py` must stay backward
+  compatible with existing `content-store.json` (old posts and products must
+  still load). Keep existing blog slugs and product ids working as URLs.
+- Keep old blog categories readable even if they are hidden from the UI.

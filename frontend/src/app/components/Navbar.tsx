@@ -1,43 +1,20 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router";
-import { Search, Menu, X, Laptop, ShoppingBag, ChevronDown, Globe, Bot, LockKeyhole } from "lucide-react";
+import { Search, Menu, X, ShoppingBag, LockKeyhole } from "lucide-react";
 import { Button } from "./ui/button";
 import { motion, AnimatePresence } from "motion/react";
 import logoImage from "../../imports/logo.png";
 
-const services = [
-  {
-    to: "/laptops",
-    icon: Laptop,
-    label: "Laptop Cũ Cao Cấp",
-    desc: "Đã kiểm tra, bảo hành đi kèm",
-    color: "text-[#3B82F6]",
-    bg: "bg-[#3B82F6]/10",
-  },
-  {
-    to: "/thiet-ke-website",
-    icon: Globe,
-    label: "Thiết Kế Website",
-    desc: "Giao diện đẹp, chuẩn SEO, tốc độ cao",
-    color: "text-purple-400",
-    bg: "bg-purple-500/10",
-  },
-  {
-    to: "/gioi-thieu#ai",
-    icon: Bot,
-    label: "Giải Pháp AI & Tự Động Hóa",
-    desc: "Tinh gọn quy trình, giảm chi phí",
-    color: "text-green-400",
-    bg: "bg-green-500/10",
-  },
+const navLinks = [
+  { to: "/", label: "Trang Chủ", isActive: (path: string) => path === "/" },
+  { to: "/giai-phap-ai", label: "Dịch Vụ", isActive: (path: string) => path.startsWith("/giai-phap-ai") },
+  { to: "/blog", label: "Blog", isActive: (path: string) => path.startsWith("/blog") },
+  { to: "/contact", label: "Liên Hệ", isActive: (path: string) => path === "/contact" },
 ];
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [servicesOpen, setServicesOpen] = useState(false);
-  const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
 
   useEffect(() => {
@@ -48,22 +25,7 @@ export function Navbar() {
 
   useEffect(() => {
     setMobileOpen(false);
-    setServicesOpen(false);
   }, [location.pathname]);
-
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setServicesOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
-
-  const isServicesActive = ["/laptops", "/thiet-ke-website"].some((p) =>
-    location.pathname.startsWith(p)
-  );
 
   return (
     <>
@@ -91,85 +53,19 @@ export function Navbar() {
 
             {/* Desktop nav */}
             <nav className="hidden md:flex items-center gap-1">
-              <Link
-                to="/"
-                className={`px-4 py-2 rounded-lg text-sm transition-all ${
-                  location.pathname === "/" || location.pathname.startsWith("/blog")
-                    ? "text-[#3B82F6] bg-blue-500/10 font-semibold"
-                    : "text-gray-400 hover:text-white hover:bg-white/5"
-                }`}
-              >
-                Trang Chủ
-              </Link>
-
-              {/* Services dropdown */}
-              <div ref={dropdownRef} className="relative">
-                <button
-                  onClick={() => setServicesOpen(!servicesOpen)}
-                  className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm transition-all ${
-                    isServicesActive
+              {navLinks.map((link) => (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  className={`px-4 py-2 rounded-lg text-sm transition-all ${
+                    link.isActive(location.pathname)
                       ? "text-[#3B82F6] bg-blue-500/10 font-semibold"
                       : "text-gray-400 hover:text-white hover:bg-white/5"
                   }`}
                 >
-                  Dịch Vụ
-                  <ChevronDown
-                    className={`w-3.5 h-3.5 transition-transform ${servicesOpen ? "rotate-180" : ""}`}
-                  />
-                </button>
-
-                <AnimatePresence>
-                  {servicesOpen && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 8, scale: 0.97 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: 8, scale: 0.97 }}
-                      transition={{ duration: 0.15 }}
-                      className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-72 bg-[#0F1115]/98 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl shadow-black/50 p-2 z-50"
-                    >
-                      {services.map((svc) => (
-                        <Link
-                          key={svc.to}
-                          to={svc.to}
-                          className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-all group"
-                        >
-                          <div className={`w-9 h-9 rounded-xl ${svc.bg} flex items-center justify-center flex-shrink-0`}>
-                            <svc.icon className={`w-4.5 h-4.5 ${svc.color}`} />
-                          </div>
-                          <div>
-                            <p className={`text-sm font-semibold text-white group-hover:${svc.color} transition-colors`}>
-                              {svc.label}
-                            </p>
-                            <p className="text-xs text-gray-500">{svc.desc}</p>
-                          </div>
-                        </Link>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              <Link
-                to="/gioi-thieu"
-                className={`px-4 py-2 rounded-lg text-sm transition-all ${
-                  location.pathname === "/gioi-thieu"
-                    ? "text-[#3B82F6] bg-blue-500/10 font-semibold"
-                    : "text-gray-400 hover:text-white hover:bg-white/5"
-                }`}
-              >
-                Giới Thiệu
-              </Link>
-
-              <Link
-                to="/contact"
-                className={`px-4 py-2 rounded-lg text-sm transition-all ${
-                  location.pathname === "/contact"
-                    ? "text-[#3B82F6] bg-blue-500/10 font-semibold"
-                    : "text-gray-400 hover:text-white hover:bg-white/5"
-                }`}
-              >
-                Liên Hệ
-              </Link>
+                  {link.label}
+                </Link>
+              ))}
             </nav>
 
             {/* Actions */}
@@ -232,76 +128,19 @@ export function Navbar() {
               className="fixed top-16 left-0 right-0 z-40 md:hidden bg-[#0F1115] border-b border-white/10 p-4"
             >
               <nav className="flex flex-col gap-1">
-                <Link
-                  to="/"
-                  className={`px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                    location.pathname === "/" || location.pathname.startsWith("/blog")
-                      ? "text-[#3B82F6] bg-blue-500/10"
-                      : "text-gray-300 hover:bg-white/5"
-                  }`}
-                >
-                  Trang Chủ
-                </Link>
-
-                {/* Mobile services accordion */}
-                <div>
-                  <button
-                    onClick={() => setMobileServicesOpen(!mobileServicesOpen)}
-                    className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                      isServicesActive ? "text-[#3B82F6] bg-blue-500/10" : "text-gray-300 hover:bg-white/5"
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.to}
+                    to={link.to}
+                    className={`px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                      link.isActive(location.pathname)
+                        ? "text-[#3B82F6] bg-blue-500/10"
+                        : "text-gray-300 hover:bg-white/5"
                     }`}
                   >
-                    <span>Dịch Vụ</span>
-                    <ChevronDown
-                      className={`w-4 h-4 transition-transform ${mobileServicesOpen ? "rotate-180" : ""}`}
-                    />
-                  </button>
-                  <AnimatePresence>
-                    {mobileServicesOpen && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="overflow-hidden pl-2"
-                      >
-                        {services.map((svc) => (
-                          <Link
-                            key={svc.to}
-                            to={svc.to}
-                            className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-all mt-1"
-                          >
-                            <div className={`w-8 h-8 rounded-lg ${svc.bg} flex items-center justify-center flex-shrink-0`}>
-                              <svc.icon className={`w-4 h-4 ${svc.color}`} />
-                            </div>
-                            <span className="text-sm text-gray-300">{svc.label}</span>
-                          </Link>
-                        ))}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-
-                <Link
-                  to="/gioi-thieu"
-                  className={`px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                    location.pathname === "/gioi-thieu"
-                      ? "text-[#3B82F6] bg-blue-500/10"
-                      : "text-gray-300 hover:bg-white/5"
-                  }`}
-                >
-                  Giới Thiệu
-                </Link>
-
-                <Link
-                  to="/contact"
-                  className={`px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                    location.pathname === "/contact"
-                      ? "text-[#3B82F6] bg-blue-500/10"
-                      : "text-gray-300 hover:bg-white/5"
-                  }`}
-                >
-                  Liên Hệ
-                </Link>
+                    {link.label}
+                  </Link>
+                ))}
 
                 <div className="pt-2 mt-2 border-t border-white/10">
                   <Link

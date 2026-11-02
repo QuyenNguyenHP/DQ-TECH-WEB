@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { Laptop, MapPin, Phone, Mail, Facebook, MessageCircle, Globe, Bot } from "lucide-react";
+import { Laptop, MapPin, Phone, Mail, Facebook, MessageCircle, Bot } from "lucide-react";
 import logoImage from "../../imports/logo.png";
 
 export function Footer() {
@@ -54,8 +54,8 @@ export function Footer() {
             <ul className="space-y-3">
               {[
                 { label: "Trang Chủ", to: "/" },
-                { label: "Giới Thiệu", to: "/gioi-thieu" },
                 { label: "Xem Laptop", to: "/laptops" },
+                { label: "Blog & Tin Tức", to: "/blog" },
                 { label: "Liên Hệ", to: "/contact" },
                 { label: "Chính Sách Bảo Hành", to: "/contact" },
                 { label: "Câu Hỏi Thường Gặp", to: "/contact" },
@@ -83,13 +83,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/thiet-ke-website" className="flex items-center gap-2 text-sm hover:text-white transition-colors">
-                  <Globe className="w-3.5 h-3.5 text-purple-400" />
-                  Thiết Kế Website
-                </Link>
-              </li>
-              <li>
-                <Link to="/gioi-thieu#ai" className="flex items-center gap-2 text-sm hover:text-white transition-colors">
+                <Link to="/giai-phap-ai" className="flex items-center gap-2 text-sm hover:text-white transition-colors">
                   <Bot className="w-3.5 h-3.5 text-green-400" />
                   Giải Pháp AI & Tự Động Hóa
                 </Link>

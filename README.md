@@ -254,18 +254,43 @@ Do not open port 8000. It is an internal backend port.
 
 ## Updating the website
 
-Back up live content before an important update:
+Live content (blog posts, products, uploaded images) lives in `backend/data/`
+and `backend/uploads/`. Both are ignored by Git, so pulling new code never
+changes them. Use the update script, which also backs them up first:
 
 ```bash
-mkdir -p ~/dqtech-backups
-tar -czf ~/dqtech-backups/content-$(date +%F-%H%M%S).tar.gz \
-  -C ~/DQ-TECH-WEB/backend data uploads
+bash ~/DQ-TECH-WEB/deploy/update.sh
 ```
 
-Pull and deploy the updated application:
+The script:
+
+1. counts products and blog posts,
+2. backs up `backend/data` and `backend/uploads` to `~/dqtech-backups/`
+   (keeps the newest 20),
+3. discards local changes to build output only (`frontend/dist`),
+4. stops if any other tracked file was edited on the server,
+5. runs `git pull --ff-only`, `npm ci`, `npm run build`,
+6. restarts `dqtech-content-api` and checks the health endpoint,
+7. checks that the product and blog counts did not drop.
+
+Never run `git clean -x`, `git clean -fdx`, or delete the repository folder to
+"start fresh": that removes `backend/data` and `backend/uploads`.
+`git reset --hard` and `git stash` do not touch these ignored folders.
+
+To restore a backup:
+
+```bash
+sudo systemctl stop dqtech-content-api
+tar -xzf ~/dqtech-backups/content-YYYY-MM-DD-HHMMSS.tar.gz -C ~/DQ-TECH-WEB/backend
+sudo systemctl start dqtech-content-api
+```
+
+Manual equivalent of the script:
 
 ```bash
 cd ~/DQ-TECH-WEB
+tar -czf ~/dqtech-backups/content-$(date +%F-%H%M%S).tar.gz -C backend data uploads
+git checkout -- frontend/dist && git clean -fd -- frontend/dist
 git pull --ff-only
 npm --prefix frontend ci
 npm --prefix frontend run build

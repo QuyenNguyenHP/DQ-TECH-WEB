@@ -23,7 +23,7 @@ export function BlogPostPage() {
   const post = posts.find((p) => p.slug === slug);
 
   if (!loading && !post) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/blog" replace />;
   }
 
   if (loading) {
@@ -58,7 +58,7 @@ export function BlogPostPage() {
 
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link
-            to="/"
+            to="/blog"
             className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-6"
           >
             <ArrowLeft className="w-4 h-4" />

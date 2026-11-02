@@ -9,6 +9,7 @@ import { ProductDetailPage } from "./pages/ProductDetailPage";
 import { ContactPage } from "./pages/ContactPage";
 import { WebsiteDesignPage } from "./pages/WebsiteDesignPage";
 import { BlogPage } from "./pages/BlogPage";
+import { AiSolutionsPage } from "./pages/AiSolutionsPage";
 import { BlogPostPage } from "./pages/BlogPostPage";
 import { AdminLoginPage } from "./pages/AdminLoginPage";
 import { AdminDashboardPage } from "./pages/AdminDashboardPage";
@@ -51,13 +52,14 @@ function Layout() {
       <Navbar />
       <main className="flex-1">
         <Routes>
-          <Route path="/" element={<BlogPage />} />
-          <Route path="/gioi-thieu" element={<HomePage />} />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/giai-phap-ai" element={<AiSolutionsPage />} />
+          <Route path="/gioi-thieu" element={<Navigate to="/" replace />} />
           <Route path="/laptops" element={<ProductListingPage />} />
           <Route path="/laptops/:id" element={<ProductDetailPage />} />
           <Route path="/thiet-ke-website" element={<WebsiteDesignPage />} />
           <Route path="/camera-giam-sat" element={<Navigate to="/" replace />} />
-          <Route path="/blog" element={<Navigate to="/" replace />} />
+          <Route path="/blog" element={<BlogPage />} />
           <Route path="/blog/:slug" element={<BlogPostPage />} />
           <Route path="/contact" element={<ContactPage />} />
         </Routes>
