@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router";
-import { Search, Menu, X, Laptop, ShoppingBag, ChevronDown, Globe, Camera, LockKeyhole } from "lucide-react";
+import { Search, Menu, X, Laptop, ShoppingBag, ChevronDown, Globe, Bot, LockKeyhole } from "lucide-react";
 import { Button } from "./ui/button";
 import { motion, AnimatePresence } from "motion/react";
 import logoImage from "../../imports/logo.png";
@@ -23,10 +23,10 @@ const services = [
     bg: "bg-purple-500/10",
   },
   {
-    to: "/camera-giam-sat",
-    icon: Camera,
-    label: "Camera Giám Sát",
-    desc: "Lắp đặt chuyên nghiệp, tư vấn miễn phí",
+    to: "/gioi-thieu#ai",
+    icon: Bot,
+    label: "Giải Pháp AI & Tự Động Hóa",
+    desc: "Tinh gọn quy trình, giảm chi phí",
     color: "text-green-400",
     bg: "bg-green-500/10",
   },
@@ -61,7 +61,7 @@ export function Navbar() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const isServicesActive = ["/laptops", "/thiet-ke-website", "/camera-giam-sat"].some((p) =>
+  const isServicesActive = ["/laptops", "/thiet-ke-website"].some((p) =>
     location.pathname.startsWith(p)
   );
 
@@ -94,7 +94,7 @@ export function Navbar() {
               <Link
                 to="/"
                 className={`px-4 py-2 rounded-lg text-sm transition-all ${
-                  location.pathname === "/"
+                  location.pathname === "/" || location.pathname.startsWith("/blog")
                     ? "text-[#3B82F6] bg-blue-500/10 font-semibold"
                     : "text-gray-400 hover:text-white hover:bg-white/5"
                 }`}
@@ -150,14 +150,14 @@ export function Navbar() {
               </div>
 
               <Link
-                to="/blog"
+                to="/gioi-thieu"
                 className={`px-4 py-2 rounded-lg text-sm transition-all ${
-                  location.pathname.startsWith("/blog")
+                  location.pathname === "/gioi-thieu"
                     ? "text-[#3B82F6] bg-blue-500/10 font-semibold"
                     : "text-gray-400 hover:text-white hover:bg-white/5"
                 }`}
               >
-                Blog
+                Giới Thiệu
               </Link>
 
               <Link
@@ -235,7 +235,7 @@ export function Navbar() {
                 <Link
                   to="/"
                   className={`px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                    location.pathname === "/"
+                    location.pathname === "/" || location.pathname.startsWith("/blog")
                       ? "text-[#3B82F6] bg-blue-500/10"
                       : "text-gray-300 hover:bg-white/5"
                   }`}
@@ -282,14 +282,14 @@ export function Navbar() {
                 </div>
 
                 <Link
-                  to="/blog"
+                  to="/gioi-thieu"
                   className={`px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-                    location.pathname.startsWith("/blog")
+                    location.pathname === "/gioi-thieu"
                       ? "text-[#3B82F6] bg-blue-500/10"
                       : "text-gray-300 hover:bg-white/5"
                   }`}
                 >
-                  Blog
+                  Giới Thiệu
                 </Link>
 
                 <Link

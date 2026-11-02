@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { Laptop, MapPin, Phone, Mail, Facebook, MessageCircle, Globe, Camera } from "lucide-react";
+import { Laptop, MapPin, Phone, Mail, Facebook, MessageCircle, Globe, Bot } from "lucide-react";
 import logoImage from "../../imports/logo.png";
 
 export function Footer() {
@@ -21,7 +21,7 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-sm leading-relaxed mb-6">
-              Laptop cũ cao cấp — kiểm tra kỹ lưỡng, có chứng nhận và sẵn sàng sử dụng. Chúng tôi tin rằng công nghệ tuyệt vời phải dành cho tất cả mọi người.
+              Không chỉ cung cấp laptop cũ cao cấp đã kiểm định, DQ TECH còn tư vấn và triển khai giải pháp AI, tự động hóa quy trình cho doanh nghiệp nhỏ và kinh doanh cá nhân — giúp tinh gọn quy trình, tăng hiệu quả và giảm chi phí.
             </p>
             <div className="flex items-center gap-3">
               <a
@@ -54,8 +54,8 @@ export function Footer() {
             <ul className="space-y-3">
               {[
                 { label: "Trang Chủ", to: "/" },
+                { label: "Giới Thiệu", to: "/gioi-thieu" },
                 { label: "Xem Laptop", to: "/laptops" },
-                { label: "Blog & Tin Tức", to: "/blog" },
                 { label: "Liên Hệ", to: "/contact" },
                 { label: "Chính Sách Bảo Hành", to: "/contact" },
                 { label: "Câu Hỏi Thường Gặp", to: "/contact" },
@@ -89,9 +89,9 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/camera-giam-sat" className="flex items-center gap-2 text-sm hover:text-white transition-colors">
-                  <Camera className="w-3.5 h-3.5 text-green-400" />
-                  Camera Giám Sát
+                <Link to="/gioi-thieu#ai" className="flex items-center gap-2 text-sm hover:text-white transition-colors">
+                  <Bot className="w-3.5 h-3.5 text-green-400" />
+                  Giải Pháp AI & Tự Động Hóa
                 </Link>
               </li>
             </ul>

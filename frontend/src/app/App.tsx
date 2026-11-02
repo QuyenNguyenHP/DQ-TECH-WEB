@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, useLocation } from "react-router";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router";
 import { useEffect } from "react";
 import { Toaster } from "./components/ui/sonner";
 import { Navbar } from "./components/Navbar";
@@ -8,17 +8,23 @@ import { ProductListingPage } from "./pages/ProductListingPage";
 import { ProductDetailPage } from "./pages/ProductDetailPage";
 import { ContactPage } from "./pages/ContactPage";
 import { WebsiteDesignPage } from "./pages/WebsiteDesignPage";
-import { CameraPage } from "./pages/CameraPage";
 import { BlogPage } from "./pages/BlogPage";
 import { BlogPostPage } from "./pages/BlogPostPage";
 import { AdminLoginPage } from "./pages/AdminLoginPage";
 import { AdminDashboardPage } from "./pages/AdminDashboardPage";
 
 function ScrollToTop() {
-  const { pathname } = useLocation();
+  const { pathname, hash } = useLocation();
   useEffect(() => {
+    if (hash) {
+      // Wait for the new page to render, then jump to the anchor.
+      const timer = setTimeout(() => {
+        document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [pathname]);
+  }, [pathname, hash]);
   return null;
 }
 
@@ -45,12 +51,13 @@ function Layout() {
       <Navbar />
       <main className="flex-1">
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<BlogPage />} />
+          <Route path="/gioi-thieu" element={<HomePage />} />
           <Route path="/laptops" element={<ProductListingPage />} />
           <Route path="/laptops/:id" element={<ProductDetailPage />} />
           <Route path="/thiet-ke-website" element={<WebsiteDesignPage />} />
-          <Route path="/camera-giam-sat" element={<CameraPage />} />
-          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/camera-giam-sat" element={<Navigate to="/" replace />} />
+          <Route path="/blog" element={<Navigate to="/" replace />} />
           <Route path="/blog/:slug" element={<BlogPostPage />} />
           <Route path="/contact" element={<ContactPage />} />
         </Routes>

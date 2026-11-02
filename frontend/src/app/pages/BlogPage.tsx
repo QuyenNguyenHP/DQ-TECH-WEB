@@ -12,7 +12,10 @@ export function BlogPage() {
 
   useEffect(() => {
     fetchBlogs()
-      .then((items) => setBlogPosts(items))
+      // Newest posts first; posts without a valid date go last.
+      .then((items) =>
+        setBlogPosts([...items].sort((a, b) => (Date.parse(b.date) || 0) - (Date.parse(a.date) || 0)))
+      )
       .catch((error) => console.error("Failed to load blogs", error))
       .finally(() => setIsLoading(false));
   }, []);
@@ -57,14 +60,29 @@ export function BlogPage() {
             className="text-center"
           >
             <p className="text-[#3B82F6] font-semibold text-sm uppercase tracking-widest mb-3">
-              Blog & Tin Tức
+              DQ TECH Blog
             </p>
             <h1 className="text-4xl lg:text-5xl font-bold text-white mb-4">
-              Chia Sẻ Kiến Thức Công Nghệ
+              Công Nghệ, AI & Tự Động Hóa Cho Kinh Doanh
             </h1>
             <p className="text-gray-400 max-w-2xl mx-auto">
-              Khám phá các bài viết hữu ích về laptop, thiết kế website, camera giám sát và nhiều mẹo công nghệ khác
+              Ngoài cung cấp laptop cũ cao cấp, DQ TECH còn tư vấn và triển khai giải pháp AI, tự động hóa quy trình
+              cho doanh nghiệp nhỏ và kinh doanh cá nhân — tinh gọn quy trình, tăng hiệu quả, giảm chi phí.
             </p>
+            <div className="flex flex-wrap gap-3 justify-center mt-6">
+              <Link
+                to="/contact"
+                className="px-5 py-2.5 rounded-xl bg-[#3B82F6] hover:bg-blue-500 text-white text-sm font-medium shadow-lg shadow-blue-500/25 transition-all"
+              >
+                Tư Vấn Giải Pháp AI
+              </Link>
+              <Link
+                to="/laptops"
+                className="px-5 py-2.5 rounded-xl border border-white/20 text-white text-sm hover:bg-white/10 transition-all"
+              >
+                Xem Laptop
+              </Link>
+            </div>
           </motion.div>
         </div>
       </section>

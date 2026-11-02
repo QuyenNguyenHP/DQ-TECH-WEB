@@ -5,7 +5,7 @@ import {
   Battery, ShieldCheck, Cpu, Wrench,
   Star, ArrowRight, ChevronLeft, ChevronRight,
   CheckCircle2, Zap, HeartHandshake, Award,
-  Laptop, Globe, Camera, Calendar, Clock, Tag,
+  Laptop, Globe, Bot, Calendar, Clock, Tag,
 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { ProductCard } from "../components/ProductCard";
@@ -32,19 +32,17 @@ const heroSlides = [
     badge: "Được tin dùng bởi 500+ khách hàng",
     title: (
       <>
-        Laptop Cũ
+        Laptop Cao Cấp
         <br />
-        <span className="text-[#3B82F6]">Cao Cấp</span>
+        <span className="text-[#3B82F6]">& Giải Pháp AI</span>
         <br />
-        Đã Kiểm Tra,
-        <br />
-        <span className="text-gray-400">Sẵn Sàng Dùng</span>
+        <span className="text-gray-400">Cho Doanh Nghiệp Nhỏ</span>
       </>
     ),
     description:
-      "Mỗi chiếc laptop đều được kiểm tra, phân loại và đo pin trước khi đăng bán. Mua công nghệ cao cấp với giá trung thực — kèm bảo hành.",
-    primaryCTA: { label: "Xem Laptop", to: "/laptops" },
-    secondaryCTA: { label: "Liên Hệ", to: "/contact" },
+      "Ngoài cung cấp laptop cũ cao cấp đã kiểm định, DQ TECH còn tư vấn và triển khai giải pháp AI, tự động hóa quy trình cho doanh nghiệp nhỏ và kinh doanh cá nhân — giúp tinh gọn quy trình, tăng hiệu quả và giảm chi phí.",
+    primaryCTA: { label: "Tư Vấn Giải Pháp AI", to: "/contact" },
+    secondaryCTA: { label: "Xem Laptop", to: "/laptops" },
     image: "/shwrm-4.jpg",
     glowColor: "bg-[#3B82F6]/20",
     accentColor: "text-[#3B82F6]",
@@ -200,7 +198,7 @@ export function HomePage() {
             >
               {[
                 { num: "500+", label: "Khách Hàng" },
-                { num: heroSlideIdx === 0 ? "100+" : "3", label: heroSlideIdx === 0 ? "Laptop" : "Dịch Vụ" },
+                { num: "3", label: "Mảng Dịch Vụ" },
                 { num: "4.9★", label: "Đánh Giá" },
               ].map((stat) => (
                 <div key={stat.label} className="text-center">
@@ -299,7 +297,7 @@ export function HomePage() {
               <p className="text-xs sm:text-sm text-[#3B82F6] font-semibold uppercase tracking-widest mb-2 sm:mb-3">Dịch Vụ Của Chúng Tôi</p>
               <h2 className="text-2xl sm:text-3xl lg:text-4xl text-white mb-3 sm:mb-4">Giải Pháp Công Nghệ Toàn Diện</h2>
               <p className="text-sm sm:text-base text-gray-400 max-w-2xl mx-auto px-4">
-                Không chỉ laptop — chúng tôi còn cung cấp dịch vụ thiết kế website và lắp đặt camera giám sát chuyên nghiệp
+                Không chỉ laptop — DQ TECH đồng hành cùng doanh nghiệp nhỏ và người kinh doanh cá nhân ứng dụng AI, tự động hóa quy trình để làm ít hơn mà hiệu quả hơn
               </p>
             </motion.div>
           </div>
@@ -365,8 +363,9 @@ export function HomePage() {
               </Link>
             </motion.div>
 
-            {/* Camera */}
+            {/* AI & Automation */}
             <motion.div
+              id="ai"
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -374,23 +373,23 @@ export function HomePage() {
               className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-8 hover:border-green-500/40 hover:bg-green-500/5 transition-all"
             >
               <div className="w-14 h-14 rounded-2xl bg-green-500/10 flex items-center justify-center mb-6 group-hover:bg-green-500/20 transition-all">
-                <Camera className="w-7 h-7 text-green-400" />
+                <Bot className="w-7 h-7 text-green-400" />
               </div>
-              <h3 className="text-white mb-3">Camera Giám Sát</h3>
+              <h3 className="text-white mb-3">Giải Pháp AI & Tự Động Hóa</h3>
               <p className="text-sm text-gray-400 leading-relaxed mb-6">
-                Lắp đặt hệ thống camera chuyên nghiệp cho nhà ở, cửa hàng và doanh nghiệp. Hình ảnh 4K sắc nét, xem từ xa qua điện thoại 24/7.
+                Tư vấn và triển khai AI, tự động hóa quy trình cho doanh nghiệp nhỏ và kinh doanh cá nhân: chăm sóc khách hàng, xử lý đơn hàng, báo cáo, nội dung… Tinh gọn quy trình, tăng hiệu quả, giảm chi phí.
               </p>
               <ul className="space-y-2 mb-8">
-                {["Khảo sát & tư vấn miễn phí", "Lắp đặt hoàn thiện trong ngày", "Bảo hành thiết bị 2 năm"].map((item) => (
+                {["Khảo sát quy trình & tư vấn miễn phí", "Triển khai theo nhu cầu, chi phí hợp lý", "Hướng dẫn sử dụng & hỗ trợ lâu dài"].map((item) => (
                   <li key={item} className="flex items-center gap-2 text-sm text-gray-400">
                     <CheckCircle2 className="w-4 h-4 text-green-400 flex-shrink-0" />
                     {item}
                   </li>
                 ))}
               </ul>
-              <Link to="/camera-giam-sat">
+              <Link to="/contact">
                 <span className="inline-flex items-center gap-1.5 text-sm text-green-400 group-hover:gap-2.5 transition-all">
-                  Tìm Hiểu Thêm <ArrowRight className="w-4 h-4" />
+                  Nhận Tư Vấn <ArrowRight className="w-4 h-4" />
                 </span>
               </Link>
             </motion.div>
@@ -497,7 +496,7 @@ export function HomePage() {
               </h2>
             </div>
             <Link
-              to="/blog"
+              to="/"
               className="hidden sm:flex items-center gap-2 text-sm text-[#3B82F6] hover:gap-3 transition-all"
             >
               Xem Tất Cả <ArrowRight className="w-4 h-4" />
@@ -569,7 +568,7 @@ export function HomePage() {
           </div>
 
           <div className="text-center mt-8 sm:hidden">
-            <Link to="/blog">
+            <Link to="/">
               <Button
                 variant="outline"
                 className="border-gray-200 dark:border-white/10 text-[#0F1115] dark:text-white hover:border-[#3B82F6] hover:text-[#3B82F6] px-8 rounded-xl"

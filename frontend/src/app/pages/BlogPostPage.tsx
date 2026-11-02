@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, Navigate } from "react-router";
 import { motion } from "motion/react";
-import { Calendar, Clock, Tag, ArrowLeft, Share2 } from "lucide-react";
+import { Calendar, Clock, Tag, ArrowLeft } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Button } from "../components/ui/button";
-import { toast } from "sonner";
+import { ShareButtons } from "../components/ShareButtons";
 import { fetchBlogs } from "../lib/contentApi";
 
 export function BlogPostPage() {
@@ -23,7 +23,7 @@ export function BlogPostPage() {
   const post = posts.find((p) => p.slug === slug);
 
   if (!loading && !post) {
-    return <Navigate to="/blog" replace />;
+    return <Navigate to="/" replace />;
   }
 
   if (loading) {
@@ -39,6 +39,7 @@ export function BlogPostPage() {
 
   const relatedPosts = posts
     .filter((p) => p.category === post.category && p.id !== post.id)
+    .sort((a, b) => (Date.parse(b.date) || 0) - (Date.parse(a.date) || 0))
     .slice(0, 3);
 
   const categoryColors: Record<string, string> = {
@@ -46,22 +47,6 @@ export function BlogPostPage() {
     website: "text-purple-400 bg-purple-500/10 border-purple-500/20",
     camera: "text-green-400 bg-green-500/10 border-green-500/20",
     "tech-tips": "text-amber-400 bg-amber-500/10 border-amber-500/20",
-  };
-
-  const handleShare = () => {
-    const url = window.location.href;
-    if (navigator.share) {
-      navigator
-        .share({
-          title: post.title,
-          text: post.excerpt,
-          url: url,
-        })
-        .catch(() => {});
-    } else {
-      navigator.clipboard.writeText(url);
-      toast.success("Đã sao chép link bài viết!");
-    }
   };
 
   return (
@@ -73,7 +58,7 @@ export function BlogPostPage() {
 
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link
-            to="/blog"
+            to="/"
             className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-6"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -125,14 +110,7 @@ export function BlogPostPage() {
               ))}
             </div>
 
-            <Button
-              onClick={handleShare}
-              variant="outline"
-              className="border-white/20 text-white hover:bg-white/10 rounded-xl"
-            >
-              <Share2 className="w-4 h-4 mr-2" />
-              Chia sẻ
-            </Button>
+            <ShareButtons title={post.title} text={post.excerpt} />
           </motion.div>
         </div>
       </section>
@@ -201,6 +179,10 @@ export function BlogPostPage() {
             </ReactMarkdown>
           </motion.article>
 
+          <div className="mt-10 pt-6 border-t border-white/10">
+            <ShareButtons title={post.title} text={post.excerpt} />
+          </div>
+
           {/* CTA */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -210,7 +192,7 @@ export function BlogPostPage() {
           >
             <h3 className="text-xl font-bold text-white mb-2">Cần Tư Vấn Thêm?</h3>
             <p className="text-gray-400 mb-4">
-              Liên hệ DQ TECH để được hỗ trợ chi tiết hơn về laptop, website hoặc camera giám sát
+              Liên hệ DQ TECH để được hỗ trợ chi tiết hơn về laptop, website hoặc giải pháp AI & tự động hóa quy trình
             </p>
             <Link to="/contact">
               <Button className="bg-[#3B82F6] hover:bg-blue-500 text-white border-0 rounded-xl shadow-lg shadow-blue-500/30">
