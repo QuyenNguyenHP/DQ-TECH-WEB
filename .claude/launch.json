@@ -4,13 +4,27 @@
     {
       "name": "api",
       "runtimeExecutable": "python",
-      "runtimeArgs": ["backend/server.py"],
-      "port": 8000
+      "runtimeArgs": [
+        "backend/server.py"
+      ],
+      "port": 8000,
+      "env": {
+        "CONTENT_API_ADMIN_PASSWORD": "local-dev-d133fef89d42",
+        "CONTENT_API_COOKIE_SECURE": "false"
+      }
     },
     {
       "name": "web",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["--prefix", "frontend", "run", "dev", "--", "--port", "5173"],
+      "runtimeArgs": [
+        "--prefix",
+        "frontend",
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "5173"
+      ],
       "port": 5173
     }
   ]

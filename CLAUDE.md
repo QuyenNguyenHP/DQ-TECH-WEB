@@ -90,3 +90,13 @@ Content safety rules:
   compatible with existing `content-store.json` (old posts and products must
   still load). Keep existing blog slugs and product ids working as URLs.
 - Keep old blog categories readable even if they are hidden from the UI.
+
+Admin security:
+
+- Admin login is checked by `backend/server.py` (`/admin/login`, `/admin/logout`,
+  `/admin/session`) against `CONTENT_API_ADMIN_PASSWORD_HASH`; the session is
+  an HttpOnly cookie. Never put credentials in frontend code.
+- Every write, upload, asset and `includeDrafts` route must call
+  `require_admin()`. Agent routes use the separate `CONTENT_API_AGENT_KEY`.
+- Local dev: `.claude/launch.json` sets a throwaway plain
+  `CONTENT_API_ADMIN_PASSWORD` and `CONTENT_API_COOKIE_SECURE=false`.

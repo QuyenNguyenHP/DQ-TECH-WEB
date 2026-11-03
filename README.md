@@ -135,6 +135,8 @@ Environment=CONTENT_API_PORT=8000
 Environment=CONTENT_API_MAX_BODY_MB=20
 Environment=CONTENT_API_AGENT_KEY=replace-with-output-of-openssl-rand-hex-32
 Environment=CONTENT_API_AGENT_CAN_PUBLISH=false
+Environment=CONTENT_API_ADMIN_USERNAME=admin
+Environment=CONTENT_API_ADMIN_PASSWORD_HASH=replace-with-output-of-hash-password
 ExecStart=/usr/bin/python3 /home/dq/DQ-TECH-WEB/backend/server.py
 Restart=always
 RestartSec=3
@@ -159,6 +161,46 @@ sudo ss -ltnp | grep :8000
 ```
 
 The listener should be `127.0.0.1:8000`, not `0.0.0.0:8000`.
+
+## Admin login
+
+The admin password is checked by the Python backend, never in frontend code.
+Every create, update, delete, upload and draft request requires an admin
+session (an HttpOnly cookie). Without a configured password, admin login is
+disabled and all of those requests are refused.
+
+Create a password hash on the server (at least 12 characters):
+
+```bash
+python3 ~/DQ-TECH-WEB/backend/server.py hash-password
+```
+
+Copy the printed line (it starts with `pbkdf2_sha256$`) into the systemd unit:
+
+```bash
+sudo nano /etc/systemd/system/dqtech-content-api.service
+```
+
+```ini
+Environment=CONTENT_API_ADMIN_USERNAME=admin
+Environment=CONTENT_API_ADMIN_PASSWORD_HASH=pbkdf2_sha256$600000$...$...
+```
+
+Apply it:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart dqtech-content-api
+```
+
+Notes:
+
+- Sessions last 12 hours (`CONTENT_API_SESSION_HOURS`). Restarting the
+  service logs the admin out.
+- After 5 wrong passwords from one IP, login is blocked for 15 minutes.
+- To change the password, generate a new hash and repeat the steps above.
+- For local development only, `CONTENT_API_ADMIN_PASSWORD` (plain text) and
+  `CONTENT_API_COOKIE_SECURE=false` may be used instead.
 
 ## Configure Apache for dqtech.cloud
 

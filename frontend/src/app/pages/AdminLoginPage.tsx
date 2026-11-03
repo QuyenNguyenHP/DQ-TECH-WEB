@@ -13,19 +13,25 @@ export function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    setTimeout(() => {
-      if (login(username, password)) {
-        toast.success("Đăng nhập thành công!");
-        navigate("/admin/dashboard");
-      } else {
-        toast.error("Sai tên đăng nhập hoặc mật khẩu!");
-      }
-      setLoading(false);
-    }, 500);
+    const result = await login(username, password);
+    setLoading(false);
+
+    if (result === "ok") {
+      toast.success("Đăng nhập thành công!");
+      navigate("/admin/dashboard");
+    } else if (result === "invalid") {
+      toast.error("Sai tên đăng nhập hoặc mật khẩu!");
+    } else if (result === "locked") {
+      toast.error("Đăng nhập sai quá nhiều lần. Vui lòng thử lại sau 15 phút.");
+    } else if (result === "not-configured") {
+      toast.error("Server chưa cấu hình mật khẩu admin.");
+    } else {
+      toast.error("Không kết nối được server. Vui lòng thử lại.");
+    }
   };
 
   return (

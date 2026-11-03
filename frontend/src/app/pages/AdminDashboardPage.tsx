@@ -24,17 +24,28 @@ export function AdminDashboardPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"products" | "blogs">("products");
 
+  const [authChecked, setAuthChecked] = useState(false);
+
   useEffect(() => {
-    if (!isAuthenticated()) {
-      navigate("/admin/login");
-    }
+    isAuthenticated().then((ok) => {
+      if (ok) setAuthChecked(true);
+      else navigate("/admin/login", { replace: true });
+    });
   }, [navigate]);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     toast.success("Đã đăng xuất!");
     navigate("/admin/login");
   };
+
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-[#0F1115] flex items-center justify-center text-gray-400">
+        Đang kiểm tra đăng nhập...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0F1115]">
@@ -402,7 +413,10 @@ function BlogsManager() {
     }
   };
 
-  const filteredBlogs = blogs.filter((blog) => blog.title.toLowerCase().includes(searchQuery.toLowerCase()));
+  // Newest post first (same order as the public blog page); undated posts go last.
+  const filteredBlogs = blogs
+    .filter((blog) => blog.title.toLowerCase().includes(searchQuery.toLowerCase()))
+    .sort((a, b) => (Date.parse(b.date) || 0) - (Date.parse(a.date) || 0));
 
   return (
     <div>

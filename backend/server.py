@@ -1,11 +1,15 @@
+import hashlib
 import json
 import hmac
 import mimetypes
 import os
 import re
+import secrets
+import sys
 import threading
 import time
 from base64 import b64decode
+from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, unquote, urlparse
@@ -27,6 +31,97 @@ ALLOW_ORIGIN = os.environ.get("CONTENT_API_ALLOW_ORIGIN", "").strip()
 AGENT_API_KEY = os.environ.get("CONTENT_API_AGENT_KEY", "").strip()
 AGENT_CAN_PUBLISH = os.environ.get("CONTENT_API_AGENT_CAN_PUBLISH", "false").lower() == "true"
 STORE_LOCK = threading.Lock()
+
+# Admin login. Set CONTENT_API_ADMIN_PASSWORD_HASH (create one with
+# `python3 backend/server.py hash-password`). CONTENT_API_ADMIN_PASSWORD (plain)
+# is accepted for local development. With neither set, admin login is disabled.
+ADMIN_USERNAME = os.environ.get("CONTENT_API_ADMIN_USERNAME", "admin").strip() or "admin"
+ADMIN_PASSWORD_HASH = os.environ.get("CONTENT_API_ADMIN_PASSWORD_HASH", "").strip()
+ADMIN_PASSWORD_PLAIN = os.environ.get("CONTENT_API_ADMIN_PASSWORD", "")
+SESSION_COOKIE = "dq_admin_session"
+SESSION_TTL_SECONDS = int(float(os.environ.get("CONTENT_API_SESSION_HOURS", "12")) * 3600)
+COOKIE_SECURE = os.environ.get("CONTENT_API_COOKIE_SECURE", "true").lower() != "false"
+LOGIN_MAX_FAILURES = 5
+LOGIN_WINDOW_SECONDS = 15 * 60
+PBKDF2_ITERATIONS = 600_000
+
+SESSIONS: dict = {}  # session token -> expiry timestamp (in memory; a restart logs admins out)
+LOGIN_FAILURES: dict = {}  # client ip -> recent failure timestamps
+AUTH_LOCK = threading.Lock()
+
+
+def hash_password(password: str, iterations: int = PBKDF2_ITERATIONS) -> str:
+    salt = secrets.token_hex(16)
+    digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), bytes.fromhex(salt), iterations).hex()
+    return f"pbkdf2_sha256${iterations}${salt}${digest}"
+
+
+def verify_admin_password(password: str) -> bool:
+    if ADMIN_PASSWORD_HASH:
+        try:
+            algorithm, iterations, salt, expected = ADMIN_PASSWORD_HASH.split("$")
+            if algorithm != "pbkdf2_sha256":
+                return False
+            digest = hashlib.pbkdf2_hmac(
+                "sha256", password.encode("utf-8"), bytes.fromhex(salt), int(iterations)
+            ).hex()
+        except ValueError:
+            print("CONTENT_API_ADMIN_PASSWORD_HASH is malformed; admin login disabled.", file=sys.stderr)
+            return False
+        return hmac.compare_digest(digest, expected)
+    if ADMIN_PASSWORD_PLAIN:
+        return hmac.compare_digest(password.encode("utf-8"), ADMIN_PASSWORD_PLAIN.encode("utf-8"))
+    return False
+
+
+def admin_login_configured() -> bool:
+    return bool(ADMIN_PASSWORD_HASH or ADMIN_PASSWORD_PLAIN)
+
+
+def create_session() -> str:
+    token = secrets.token_urlsafe(32)
+    now = time.time()
+    with AUTH_LOCK:
+        for expired in [t for t, exp in SESSIONS.items() if exp < now]:
+            del SESSIONS[expired]
+        SESSIONS[token] = now + SESSION_TTL_SECONDS
+    return token
+
+
+def session_valid(token: str) -> bool:
+    if not token:
+        return False
+    with AUTH_LOCK:
+        expiry = SESSIONS.get(token)
+        if expiry is None:
+            return False
+        if expiry < time.time():
+            del SESSIONS[token]
+            return False
+        return True
+
+
+def end_session(token: str) -> None:
+    with AUTH_LOCK:
+        SESSIONS.pop(token, None)
+
+
+def too_many_failures(ip: str) -> bool:
+    cutoff = time.time() - LOGIN_WINDOW_SECONDS
+    with AUTH_LOCK:
+        recent = [t for t in LOGIN_FAILURES.get(ip, []) if t > cutoff]
+        LOGIN_FAILURES[ip] = recent
+        return len(recent) >= LOGIN_MAX_FAILURES
+
+
+def record_failure(ip: str) -> None:
+    with AUTH_LOCK:
+        LOGIN_FAILURES.setdefault(ip, []).append(time.time())
+
+
+def clear_failures(ip: str) -> None:
+    with AUTH_LOCK:
+        LOGIN_FAILURES.pop(ip, None)
 
 
 def load_config():
@@ -302,6 +397,74 @@ class ContentApiHandler(BaseHTTPRequestHandler):
         authorization = self.headers.get("Authorization", "")
         return hmac.compare_digest(authorization, f"Bearer {AGENT_API_KEY}")
 
+    def client_ip(self) -> str:
+        ip = self.client_address[0]
+        # Behind Apache the direct peer is loopback; use the forwarded client address.
+        if ip in ("127.0.0.1", "::1"):
+            forwarded = self.headers.get("X-Forwarded-For", "")
+            if forwarded:
+                return forwarded.split(",")[0].strip()
+        return ip
+
+    def session_token(self) -> str:
+        cookie = SimpleCookie()
+        try:
+            cookie.load(self.headers.get("Cookie", ""))
+        except Exception:
+            return ""
+        morsel = cookie.get(SESSION_COOKIE)
+        return morsel.value if morsel else ""
+
+    def is_admin(self) -> bool:
+        return session_valid(self.session_token())
+
+    def require_admin(self) -> bool:
+        if self.is_admin():
+            return True
+        self.send_json(401, {"message": "Unauthorized"})
+        return False
+
+    def session_cookie_header(self, token: str, max_age: int) -> str:
+        parts = [
+            f"{SESSION_COOKIE}={token}",
+            f'Path={CONFIG["apiPrefix"]}',
+            f"Max-Age={max_age}",
+            "HttpOnly",
+            "SameSite=Strict",
+        ]
+        if COOKIE_SECURE:
+            parts.append("Secure")
+        return "; ".join(parts)
+
+    def admin_login(self):
+        ip = self.client_ip()
+        if not admin_login_configured():
+            self.send_json(503, {"message": "Admin login is not configured on the server"})
+            return
+        if too_many_failures(ip):
+            self.send_json(429, {"message": "Too many failed attempts. Try again later."})
+            return
+        payload = self.read_json_body()
+        username = str(payload.get("username", ""))
+        password = str(payload.get("password", ""))
+        username_ok = hmac.compare_digest(username.encode("utf-8"), ADMIN_USERNAME.encode("utf-8"))
+        password_ok = verify_admin_password(password)
+        if not (username_ok and password_ok):
+            record_failure(ip)
+            self.send_json(401, {"message": "Invalid username or password"})
+            return
+        clear_failures(ip)
+        token = create_session()
+        self.send_json(
+            200,
+            {"ok": True},
+            extra_headers={"Set-Cookie": self.session_cookie_header(token, SESSION_TTL_SECONDS)},
+        )
+
+    def admin_logout(self):
+        end_session(self.session_token())
+        self.send_json(200, {"ok": True}, extra_headers={"Set-Cookie": self.session_cookie_header("", 0)})
+
     def require_agent_authorization(self) -> bool:
         if self.is_agent_authorized():
             return True
@@ -357,6 +520,18 @@ class ContentApiHandler(BaseHTTPRequestHandler):
                 self.send_json(200, public_store(read_store()))
                 return
 
+            if pathname == f'{CONFIG["apiPrefix"]}/admin/login' and method == "POST":
+                self.admin_login()
+                return
+
+            if pathname == f'{CONFIG["apiPrefix"]}/admin/logout' and method == "POST":
+                self.admin_logout()
+                return
+
+            if pathname == f'{CONFIG["apiPrefix"]}/admin/session' and method == "GET":
+                self.send_json(200, {"authenticated": self.is_admin()})
+                return
+
             if pathname == f'{CONFIG["apiPrefix"]}/agent/upload' and method == "POST":
                 self.upload_agent_asset()
                 return
@@ -367,6 +542,8 @@ class ContentApiHandler(BaseHTTPRequestHandler):
                     return
 
             if pathname == f'{CONFIG["apiPrefix"]}/assets' and method == "GET":
+                if not self.require_admin():
+                    return
                 query = parse_qs(parsed.query)
                 target = "blogs" if query.get("target", ["products"])[0] == "blogs" else "products"
                 target_dir = CONFIG["blogUploadsDir"] if target == "blogs" else CONFIG["productUploadsDir"]
@@ -375,6 +552,8 @@ class ContentApiHandler(BaseHTTPRequestHandler):
                 return
 
             if pathname == f'{CONFIG["apiPrefix"]}/assets' and method == "DELETE":
+                if not self.require_admin():
+                    return
                 query = parse_qs(parsed.query)
                 target = "blogs" if query.get("target", ["products"])[0] == "blogs" else "products"
                 asset_url = query.get("url", [""])[0]
@@ -394,6 +573,8 @@ class ContentApiHandler(BaseHTTPRequestHandler):
                 return
 
             if pathname == f'{CONFIG["apiPrefix"]}/upload' and method == "POST":
+                if not self.require_admin():
+                    return
                 payload = self.read_json_body()
                 target = "blogs" if payload.get("target") == "blogs" else "products"
                 target_dir = CONFIG["blogUploadsDir"] if target == "blogs" else CONFIG["productUploadsDir"]
@@ -413,10 +594,14 @@ class ContentApiHandler(BaseHTTPRequestHandler):
                 if pathname == resource_path and method == "GET":
                     store = read_store()
                     include_drafts = parse_qs(parsed.query).get("includeDrafts", ["false"])[0].lower() == "true"
+                    if include_drafts and not self.require_admin():
+                        return
                     self.send_json(200, store[resource] if include_drafts else [item for item in store[resource] if is_published(item)])
                     return
 
                 if pathname == resource_path and method == "POST":
+                    if not self.require_admin():
+                        return
                     payload = self.read_json_body()
                     store = read_store()
                     store[resource].append(payload)
@@ -425,6 +610,8 @@ class ContentApiHandler(BaseHTTPRequestHandler):
                     return
 
                 if pathname.startswith(f"{resource_path}/") and method == "PUT":
+                    if not self.require_admin():
+                        return
                     resource_id = unquote(pathname[len(resource_path) + 1 :])
                     payload = self.read_json_body()
                     store = read_store()
@@ -438,6 +625,8 @@ class ContentApiHandler(BaseHTTPRequestHandler):
                     return
 
                 if pathname.startswith(f"{resource_path}/") and method == "DELETE":
+                    if not self.require_admin():
+                        return
                     resource_id = unquote(pathname[len(resource_path) + 1 :])
                     store = read_store()
                     deleted_item = next((item for item in store[resource] if item.get("id") == resource_id), None)
@@ -505,11 +694,14 @@ class ContentApiHandler(BaseHTTPRequestHandler):
         except json.JSONDecodeError as error:
             raise ValueError("Invalid JSON body") from error
 
-    def send_json(self, status_code: int, payload):
+    def send_json(self, status_code: int, payload, extra_headers=None):
         raw = json.dumps(payload).encode("utf-8")
         self.send_response(status_code)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(raw)))
+        self.send_header("Cache-Control", "no-store")
+        for name, value in (extra_headers or {}).items():
+            self.send_header(name, value)
         self.end_headers()
         self.wfile.write(raw)
 
@@ -522,10 +714,25 @@ class ContentApiHandler(BaseHTTPRequestHandler):
 
 
 def main():
+    if len(sys.argv) > 1 and sys.argv[1] == "hash-password":
+        import getpass
+
+        password = getpass.getpass("Mat khau admin moi: ")
+        if len(password) < 12:
+            print("Mat khau can it nhat 12 ky tu.", file=sys.stderr)
+            sys.exit(1)
+        if password != getpass.getpass("Nhap lai: "):
+            print("Hai lan nhap khong khop.", file=sys.stderr)
+            sys.exit(1)
+        print(hash_password(password))
+        return
+
     ensure_store()
     ensure_upload_dirs()
     server = ThreadingHTTPServer((HOST, PORT), ContentApiHandler)
     print(f"Content API listening on http://{HOST}:{PORT}")
+    if not admin_login_configured():
+        print("Admin login disabled: set CONTENT_API_ADMIN_PASSWORD_HASH to enable it.", file=sys.stderr)
     server.serve_forever()
 
 

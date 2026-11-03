@@ -12,6 +12,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     ...init,
   });
 
+  if (response.status === 401 && window.location.pathname.startsWith("/admin")) {
+    // Admin session expired or missing: send the user back to the login page.
+    window.location.assign("/admin/login");
+    throw new Error("Phiên đăng nhập đã hết hạn");
+  }
+
   if (!response.ok) {
     const detail = await response.text();
     throw new Error(detail || `Request failed: ${response.status}`);

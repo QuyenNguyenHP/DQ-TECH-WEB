@@ -15,6 +15,11 @@ Environment=CONTENT_API_MAX_BODY_MB=20
 Environment=CONTENT_API_AGENT_KEY=replace-with-a-long-random-secret
 # Keep false so agent-created content requires review in Admin Dashboard.
 Environment=CONTENT_API_AGENT_CAN_PUBLISH=false
+# Admin dashboard login. Create the hash with:
+#   python3 /home/dq/DQ-TECH-WEB/backend/server.py hash-password
+# Without it, admin login is disabled and content cannot be edited.
+Environment=CONTENT_API_ADMIN_USERNAME=admin
+Environment=CONTENT_API_ADMIN_PASSWORD_HASH=replace-with-output-of-hash-password
 ExecStart=/usr/bin/python3 /home/dq/DQ-TECH-WEB/backend/server.py
 Restart=always
 RestartSec=3
