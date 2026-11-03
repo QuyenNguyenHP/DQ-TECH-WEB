@@ -4,7 +4,7 @@ export interface BlogPost {
   slug: string;
   excerpt: string;
   content: string;
-  category: "laptop" | "website" | "camera" | "tech-tips";
+  category: "tech-tips" | "robotic" | "ai" | "laptop" | "website" | "camera";
   author: string;
   date: string;
   readTime: string;
@@ -247,29 +247,5 @@ Tất cả laptop tại LaptopHub.vn đều được đo battery health bằng p
     readTime: "5 phút đọc",
     image: "https://images.unsplash.com/photo-1601134991665-a020399422e3?w=800&auto=format&fit=crop",
     tags: ["Pin laptop", "Mẹo tech", "Kiểm tra laptop"],
-  },
-];
-
-export const blogCategories = [
-  { id: "all", label: "Tất Cả", count: blogPosts.length },
-  {
-    id: "laptop",
-    label: "Laptop",
-    count: blogPosts.filter((p) => p.category === "laptop").length,
-  },
-  {
-    id: "website",
-    label: "Website",
-    count: blogPosts.filter((p) => p.category === "website").length,
-  },
-  {
-    id: "camera",
-    label: "Camera",
-    count: blogPosts.filter((p) => p.category === "camera").length,
-  },
-  {
-    id: "tech-tips",
-    label: "Mẹo Tech",
-    count: blogPosts.filter((p) => p.category === "tech-tips").length,
   },
 ];

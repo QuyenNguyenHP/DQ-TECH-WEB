@@ -7,6 +7,7 @@ import remarkGfm from "remark-gfm";
 import { Button } from "../components/ui/button";
 import { ShareButtons } from "../components/ShareButtons";
 import { fetchBlogs } from "../lib/contentApi";
+import { getBlogCategory } from "../lib/blogCategories";
 
 export function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -30,24 +31,10 @@ export function BlogPostPage() {
     return <div className="min-h-screen bg-[#0F1115] pt-20 text-white flex items-center justify-center">Đang tải bài viết...</div>;
   }
 
-  const blogCategories = [
-    { id: "laptop", label: "Laptop" },
-    { id: "website", label: "Website" },
-    { id: "camera", label: "Camera" },
-    { id: "tech-tips", label: "Mẹo Tech" },
-  ];
-
   const relatedPosts = posts
     .filter((p) => p.category === post.category && p.id !== post.id)
     .sort((a, b) => (Date.parse(b.date) || 0) - (Date.parse(a.date) || 0))
     .slice(0, 3);
-
-  const categoryColors: Record<string, string> = {
-    laptop: "text-[#3B82F6] bg-blue-500/10 border-blue-500/20",
-    website: "text-purple-400 bg-purple-500/10 border-purple-500/20",
-    camera: "text-green-400 bg-green-500/10 border-green-500/20",
-    "tech-tips": "text-amber-400 bg-amber-500/10 border-amber-500/20",
-  };
 
   return (
     <div className="bg-[#0F1115] min-h-screen">
@@ -72,10 +59,10 @@ export function BlogPostPage() {
           >
             <div
               className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold mb-4 border ${
-                categoryColors[post.category]
+                getBlogCategory(post.category).color
               }`}
             >
-              {blogCategories.find((c) => c.id === post.category)?.label}
+              {getBlogCategory(post.category).label}
             </div>
 
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4 leading-tight">

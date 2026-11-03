@@ -11,6 +11,7 @@ import { Button } from "../components/ui/button";
 import { ProductCard } from "../components/ProductCard";
 import { testimonials } from "../data/products";
 import { fetchContentBootstrap } from "../lib/contentApi";
+import { getBlogCategory } from "../lib/blogCategories";
 
 const trustBadges = [
   { icon: Battery, label: "Kiểm Tra Pin", desc: "Ghi rõ thời lượng pin từng máy" },
@@ -18,13 +19,6 @@ const trustBadges = [
   { icon: ShieldCheck, label: "Bảo Hành Đi Kèm", desc: "Tối đa 3 tháng bảo hành" },
   { icon: Wrench, label: "Có Thể Nâng Cấp", desc: "Hỗ trợ mở rộng RAM & SSD" },
 ];
-
-const categoryColors: Record<string, string> = {
-  laptop: "text-[#3B82F6] bg-blue-500/10 border-blue-500/20",
-  website: "text-purple-400 bg-purple-500/10 border-purple-500/20",
-  camera: "text-green-400 bg-green-500/10 border-green-500/20",
-  "tech-tips": "text-amber-400 bg-amber-500/10 border-amber-500/20",
-};
 
 const heroSlides = [
   {
@@ -491,16 +485,10 @@ export function HomePage() {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                   <div
                     className={`absolute top-2 sm:top-3 left-2 sm:left-3 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-semibold border ${
-                      categoryColors[post.category]
+                      getBlogCategory(post.category).color
                     }`}
                   >
-                    {post.category === "laptop"
-                      ? "Laptop"
-                      : post.category === "website"
-                      ? "Website"
-                      : post.category === "camera"
-                      ? "Camera"
-                      : "Mẹo Tech"}
+                    {getBlogCategory(post.category).label}
                   </div>
                 </Link>
 

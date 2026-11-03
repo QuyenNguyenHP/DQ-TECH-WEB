@@ -66,6 +66,11 @@ checking the page in the browser.
   styled by `@tailwindcss/typography` (`@plugin` in `src/styles/tailwind.css`).
   Do not remove either.
 - Blog dates are ISO strings in `post.date`; sort with `Date.parse`.
+- Blog categories live only in `src/app/lib/blogCategories.ts`: `tech-tips`
+  (Tech Tip), `robotic`, `ai`, `laptop`. `website` and `camera` are retired but
+  old posts still show their badge. The backend does not validate categories.
+- Laptop brands (catalogue filter + admin select) live in
+  `src/app/lib/laptopBrands.ts`; the filter matches brands case-insensitively.
 - Colors: background `#0F1115` / `#0A0D11`, primary blue `#3B82F6`. Icons from
   `lucide-react`, animation from `motion/react`, toasts from `sonner`.
 - Keep `vite.config.ts` React and Tailwind plugins in place.

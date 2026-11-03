@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { motion } from "motion/react";
 import { Calendar, Clock, Tag, ArrowRight, Search } from "lucide-react";
 import { fetchBlogs } from "../lib/contentApi";
+import { BLOG_CATEGORIES, getBlogCategory } from "../lib/blogCategories";
 
 export function BlogPage() {
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -22,10 +23,11 @@ export function BlogPage() {
 
   const blogCategories = [
     { id: "all", label: "Tất cả", count: blogPosts.length },
-    { id: "laptop", label: "Laptop", count: blogPosts.filter((post) => post.category === "laptop").length },
-    { id: "website", label: "Website", count: blogPosts.filter((post) => post.category === "website").length },
-    { id: "camera", label: "Camera", count: blogPosts.filter((post) => post.category === "camera").length },
-    { id: "tech-tips", label: "Mẹo Tech", count: blogPosts.filter((post) => post.category === "tech-tips").length },
+    ...BLOG_CATEGORIES.map((c) => ({
+      id: c.id,
+      label: c.label,
+      count: blogPosts.filter((post) => post.category === c.id).length,
+    })),
   ];
 
   const filteredPosts = blogPosts.filter((post) => {
@@ -37,13 +39,6 @@ export function BlogPage() {
       post.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()));
     return matchesCategory && matchesSearch;
   });
-
-  const categoryColors: Record<string, string> = {
-    laptop: "text-[#3B82F6] bg-blue-500/10 border-blue-500/20",
-    website: "text-purple-400 bg-purple-500/10 border-purple-500/20",
-    camera: "text-green-400 bg-green-500/10 border-green-500/20",
-    "tech-tips": "text-amber-400 bg-amber-500/10 border-amber-500/20",
-  };
 
   return (
     <div className="bg-[#0F1115] min-h-screen">
@@ -66,8 +61,8 @@ export function BlogPage() {
               Công Nghệ, AI & Tự Động Hóa Cho Kinh Doanh
             </h1>
             <p className="text-gray-400 max-w-2xl mx-auto">
-              Chia sẻ kinh nghiệm chọn laptop, ứng dụng AI và tự động hóa quy trình để kinh doanh hiệu quả hơn,
-              tiết kiệm chi phí hơn.
+              Mẹo công nghệ, robotics, ứng dụng AI và kinh nghiệm chọn laptop — giúp làm việc và kinh doanh
+              hiệu quả hơn, tiết kiệm chi phí hơn.
             </p>
             <div className="flex flex-wrap gap-3 justify-center mt-6">
               <Link
@@ -154,10 +149,10 @@ export function BlogPage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                     <div
                       className={`absolute top-3 left-3 px-3 py-1.5 rounded-lg text-xs font-semibold border ${
-                        categoryColors[post.category]
+                        getBlogCategory(post.category).color
                       }`}
                     >
-                      {blogCategories.find((c) => c.id === post.category)?.label}
+                      {getBlogCategory(post.category).label}
                     </div>
                   </Link>
 

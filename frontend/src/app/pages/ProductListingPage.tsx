@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { LAPTOP_BRANDS, isSameBrand } from "../lib/laptopBrands";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Search,
@@ -54,7 +55,7 @@ const whyUs = [
   },
 ];
 
-const brands = ["Apple", "Dell", "Lenovo", "HP", "MSI"];
+const brands = LAPTOP_BRANDS;
 const ramList = ["8GB", "16GB", "32GB"];
 const ssdList = ["256GB", "512GB", "1TB"];
 const conditionList = [
@@ -173,7 +174,7 @@ export function ProductListingPage() {
       );
     }
 
-    if (selectedBrands.length) list = list.filter((p) => selectedBrands.includes(p.brand));
+    if (selectedBrands.length) list = list.filter((p) => selectedBrands.some((b) => isSameBrand(b, p.brand)));
     if (selectedRam.length) list = list.filter((p) => selectedRam.some((r) => p.specs.ram.includes(r)));
     if (selectedSsd.length) list = list.filter((p) => selectedSsd.some((s) => p.specs.ssd.includes(s)));
     if (selectedCondition.length) list = list.filter((p) => selectedCondition.includes(p.condition));

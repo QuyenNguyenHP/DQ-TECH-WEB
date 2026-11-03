@@ -7,6 +7,7 @@ import { isAuthenticated, logout } from "../utils/auth";
 import { toast } from "sonner";
 import { ProductModal } from "../components/admin/ProductModal";
 import { BlogModal } from "../components/admin/BlogModal";
+import { getBlogCategory } from "../lib/blogCategories";
 import {
   fetchAdminProducts,
   fetchAdminBlogs,
@@ -447,7 +448,7 @@ function BlogsManager() {
               <div className="relative aspect-[16/9] overflow-hidden">
                 <img src={blog.image} alt={blog.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                 <div className="absolute top-3 left-3 px-2 py-1 bg-[#3B82F6]/80 backdrop-blur-sm rounded-lg text-xs font-medium text-white">
-                  {blog.category}
+                  {getBlogCategory(blog.category).label}
                 </div>
               </div>
 

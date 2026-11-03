@@ -3,6 +3,7 @@ import { X, Upload, Images, Trash2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { toast } from "sonner";
 import { deleteUploadedAsset, fetchUploadedAssets, uploadAsset, type UploadedAsset } from "../../lib/contentApi";
+import { BLOG_CATEGORIES, getBlogCategory, isLegacyBlogCategory } from "../../lib/blogCategories";
 
 interface BlogModalProps {
   blog?: any;
@@ -18,7 +19,7 @@ export function BlogModal({ blog, onClose, onSave, onAssetsChanged }: BlogModalP
     slug: blog?.slug || "",
     excerpt: blog?.excerpt || "",
     content: blog?.content || "",
-    category: blog?.category || "laptop",
+    category: blog?.category || BLOG_CATEGORIES[0].id,
     author: blog?.author || "DQ TECH Team",
     date: blog?.date || new Date().toISOString().slice(0, 10),
     readTime: blog?.readTime || "5 phút đọc",
@@ -290,10 +291,15 @@ export function BlogModal({ blog, onClose, onSave, onAssetsChanged }: BlogModalP
                 onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:border-[#3B82F6] [&>option]:bg-[#0F1115] [&>option]:text-white"
               >
-                <option value="laptop">Laptop</option>
-                <option value="website">Website</option>
-                <option value="camera">Camera</option>
-                <option value="tech-tips">Mẹo tech</option>
+                {BLOG_CATEGORIES.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.label}
+                  </option>
+                ))}
+                {/* Keep an old post's retired category selectable so saving doesn't change it. */}
+                {blog?.category && isLegacyBlogCategory(blog.category) && (
+                  <option value={blog.category}>{getBlogCategory(blog.category).label} (cũ)</option>
+                )}
               </select>
             </div>
             <div>

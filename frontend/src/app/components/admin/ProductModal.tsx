@@ -3,6 +3,7 @@ import { Images, Trash2, Upload, X } from "lucide-react";
 import { toast } from "sonner";
 import { deleteUploadedAsset, fetchUploadedAssets, uploadAsset, type UploadedAsset } from "../../lib/contentApi";
 import { normalizeCatalogPriceVnd } from "../../lib/currency";
+import { LAPTOP_BRANDS } from "../../lib/laptopBrands";
 import { Button } from "../ui/button";
 
 interface ProductModalProps {
@@ -494,11 +495,15 @@ export function ProductModal({ product, onClose, onSave, onAssetsChanged }: Prod
                 className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white focus:border-[#3B82F6] focus:outline-none [&>option]:bg-[#0F1115] [&>option]:text-white"
               >
                 <option value="">Chọn thương hiệu</option>
-                <option value="Apple">Apple</option>
-                <option value="Dell">Dell</option>
-                <option value="Lenovo">Lenovo</option>
-                <option value="HP">HP</option>
-                <option value="MSI">MSI</option>
+                {LAPTOP_BRANDS.map((brand) => (
+                  <option key={brand} value={brand}>
+                    {brand}
+                  </option>
+                ))}
+                {/* Keep a brand that is not in the list selectable so saving doesn't clear it. */}
+                {formData.brand && !LAPTOP_BRANDS.includes(formData.brand) && (
+                  <option value={formData.brand}>{formData.brand}</option>
+                )}
               </select>
             </div>
           </div>
