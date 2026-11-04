@@ -160,7 +160,7 @@ export function ProductDetailPage() {
               </div>
               {!product.inStock && (
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">Hết Hàng</span>
+                  <span className="text-white font-bold text-xl">Đã Bán</span>
                 </div>
               )}
               {zoomed && (
@@ -292,10 +292,10 @@ export function ProductDetailPage() {
                   </>
                 ) : (
                   <div className="p-4 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-center">
-                    <p className="text-gray-500 font-medium mb-2">Sản phẩm hiện đã hết hàng</p>
+                    <p className="text-gray-500 font-medium mb-2">Sản phẩm này đã bán</p>
                     <Link to="/contact">
                       <Button variant="outline" className="border-gray-200 dark:border-white/10 rounded-xl">
-                        Báo Khi Có Hàng
+                        Tư Vấn Máy Tương Tự
                       </Button>
                     </Link>
                   </div>

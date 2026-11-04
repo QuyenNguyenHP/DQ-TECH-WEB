@@ -41,7 +41,7 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
         {!product.inStock && (
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-            <span className="text-white font-semibold bg-black/60 px-4 py-2 rounded-lg text-sm">Hết Hàng</span>
+            <span className="text-white font-semibold bg-black/60 px-4 py-2 rounded-lg text-sm">Đã Bán</span>
           </div>
         )}
       </div>
