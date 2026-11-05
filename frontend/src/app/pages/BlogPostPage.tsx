@@ -45,6 +45,8 @@ function HtmlEmbed({ src }: { src: string }) {
       ref={frameRef}
       src={src}
       title="Nội dung bài viết"
+      // No allow-scripts: embedded pages are static and must not run code on this origin.
+      sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
       style={{ height }}
       className="not-prose block w-full rounded-xl border border-white/10 bg-[#0f1720]"
     />
