@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="vi" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<base target="_blank">
+</head>
+<body style="margin:0">
+<title>Huấn luyện R1 đứng một chân</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: cùng hệ thống với "Quy trình dạy R1 một động tác": dải dòng chảy file, trục dọc 8 bước theo đúng thứ tự đã làm, hộp việc tiếp theo và hộp lưu ý. */
+:root {
+  --bg: #f3f5f7; --surface: #ffffff; --ink: #142230; --muted: #5a6b7b; --line: #d6dde4;
+  --accent: #1f5fbf; --accent-soft: #e3ecfa; --warn: #b36b00; --warn-soft: #fbf0dc;
+  --ok: #1d7a4f; --ok-soft: #e1f2e9; --code-bg: #eef1f5;
+  --display: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --body: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1720; --surface: #16212c; --ink: #e6edf3; --muted: #9db0c2; --line: #2a3a4a;
+    --accent: #7fb0ff; --accent-soft: #1b2d47; --warn: #f0b552; --warn-soft: #3a2c14;
+    --ok: #6fd3a0; --ok-soft: #15322a; --code-bg: #0b121a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1720; --surface: #16212c; --ink: #e6edf3; --muted: #9db0c2; --line: #2a3a4a;
+  --accent: #7fb0ff; --accent-soft: #1b2d47; --warn: #f0b552; --warn-soft: #3a2c14;
+  --ok: #6fd3a0; --ok-soft: #15322a; --code-bg: #0b121a; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.6; }
+.wrap { max-width: 980px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 56px; display: grid; gap: 28px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(1.7rem, 4.2vw, 2.5rem); font-weight: 800; letter-spacing: -0.01em; line-height: 1.2; }
+h2 { font-size: 1.3rem; font-weight: 700; }
+h3 { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 68ch; }
+code, .mono { font-family: var(--mono); font-size: 0.86em; }
+code { background: var(--code-bg); padding: 0.05em 0.35em; border-radius: 4px; overflow-wrap: anywhere; }
+.flow { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+.flow .f { display: grid; gap: 2px; padding: 8px 12px; border-radius: 8px; background: var(--accent-soft); min-width: 0; flex: 1 1 120px; }
+.flow .f b { font-family: var(--mono); font-size: 0.92rem; color: var(--accent); overflow-wrap: anywhere; }
+.flow .f span { font-size: 0.8rem; color: var(--muted); line-height: 1.35; }
+.flow .arrow { align-self: center; color: var(--muted); font-weight: 700; }
+.flow .f.final { background: var(--warn-soft); }
+.flow .f.final b { color: var(--warn); }
+.stages { display: grid; gap: 0; position: relative; }
+.stage { display: grid; grid-template-columns: 56px 1fr; gap: 16px; position: relative; padding-bottom: 22px; }
+.stage::before { content: ""; position: absolute; left: 27px; top: 50px; bottom: 0; width: 2px; background: var(--line); }
+.stage:last-child::before { display: none; }
+.num { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--surface); font-family: var(--display); font-weight: 800; font-size: 1.35rem; position: relative; z-index: 1; }
+.stage.critical .num { background: var(--warn); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; display: grid; gap: 14px; min-width: 0; }
+.head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 12px; }
+.where { font-size: 0.78rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: var(--code-bg); color: var(--muted); }
+.goal { color: var(--muted); }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.cols > div { display: grid; gap: 6px; align-content: start; min-width: 0; }
+ul, ol { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+pre { margin: 0; background: var(--code-bg); border-radius: 8px; padding: 10px 12px; font-family: var(--mono); font-size: 0.8rem; line-height: 1.5; overflow-x: auto; white-space: pre; }
+.out { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.chip { font-family: var(--mono); font-size: 0.8rem; padding: 3px 10px; border-radius: 6px; background: var(--ok-soft); color: var(--ok); font-weight: 600; overflow-wrap: anywhere; }
+.gate { border-left: 3px solid var(--ok); background: var(--ok-soft); border-radius: 0 8px 8px 0; padding: 10px 14px; display: grid; gap: 4px; }
+.gate strong { color: var(--ok); font-size: 0.85rem; }
+.example { font-size: 0.9rem; border-top: 1px dashed var(--line); padding-top: 10px; color: var(--muted); }
+.example b { color: var(--ink); }
+table { border-collapse: collapse; width: 100%; font-size: 0.86rem; }
+th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 600; color: var(--muted); }
+td.n { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tablebox { overflow-x: auto; }
+.loop { font-size: 0.85rem; color: var(--accent); font-weight: 600; }
+.caution { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
+.caution div { background: var(--warn-soft); border-radius: 8px; padding: 8px 10px; font-size: 0.85rem; line-height: 1.4; }
+.caution b { color: var(--warn); display: block; }
+.note { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; display: grid; gap: 10px; }
+.note.warnbox { border-color: var(--warn); }
+.note h2 { font-size: 1.1rem; }
+.foot { color: var(--muted); font-size: 0.82rem; }
+.st-ok { color: var(--ok); font-weight: 700; white-space: nowrap; }
+.st-warn { color: var(--warn); font-weight: 700; white-space: nowrap; }
+@media (max-width: 720px) {
+  .cols { grid-template-columns: 1fr; }
+  .stage { grid-template-columns: 40px 1fr; gap: 10px; }
+  .num { width: 40px; height: 40px; font-size: 1.05rem; }
+  .stage::before { left: 19px; top: 40px; }
+  .flow .arrow { display: none; }
+}
+</style>
+
+<div class="wrap">
+  <header style="display:grid;gap:10px">
+    <h3>Unitree R1 · mjlab · Chặng 2–3 đã chạy thật</h3>
+    <h1>Từ file CSV đến file model: nhật ký huấn luyện R1 đứng một chân</h1>
+    <p class="lede">Tám bước theo đúng thứ tự đã làm ngày 05/11/2026, từ lúc kiểm tra file <code>one_leg_left.csv</code> đến khi có checkpoint đầu tiên. Mỗi bước ghi rõ đã sửa gì, chạy lệnh gì, sinh ra file nào và kết quả kiểm tra. Ví dụ xuyên suốt: <b>R1 đứng một chân trái</b>.</p>
+  </header>
+
+  <section aria-label="Dòng chảy file" style="display:grid;gap:8px">
+    <h3>Dòng chảy file trong buổi làm việc</h3>
+    <div class="flow">
+      <div class="f"><b>one_leg_left.csv</b><span>301 dòng · 31 cột · 30 fps</span></div>
+      <div class="arrow">→</div>
+      <div class="f"><b>r1.xml</b><span>đã sửa tên bộ phận cổ tay</span></div>
+      <div class="arrow">→</div>
+      <div class="f"><b>config/r1/</b><span>bài tracking mới cho R1</span></div>
+      <div class="arrow">→</div>
+      <div class="f"><b>one_leg_left.npz</b><span>500 khung · 50 fps</span></div>
+      <div class="arrow">→</div>
+      <div class="f final"><b>model_200.pt</b><span>checkpoint đầu tiên, còn non</span></div>
+    </div>
+  </section>
+
+  <section class="stages" aria-label="Tám bước">
+
+    <article class="stage">
+      <div class="num" aria-hidden="true">1</div>
+      <div class="card">
+        <div class="head"><h2>Kiểm tra dữ liệu đầu vào</h2><span class="where">PC · đọc file</span></div>
+        <p class="goal">Xác nhận file CSV đúng định dạng R1 và đúng thứ tự khớp trong mô hình trước khi làm gì khác.</p>
+        <div class="cols">
+          <div>
+            <h3>Việc đã làm</h3>
+            <ul>
+              <li>Đọc tài liệu quy trình và file <code>R1 Action/one_leg_left.csv</code>.</li>
+              <li>Đếm dòng, cột và tốc độ khung.</li>
+              <li>Đối chiếu thứ tự 24 khớp trong CSV với <code>r1.xml</code>.</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Cấu trúc file đã đọc</h3>
+            <div class="tablebox"><table>
+              <tr><th>Cột</th><th>Nội dung</th></tr>
+              <tr><td class="n">1–3</td><td>Vị trí thân x, y, z</td></tr>
+              <tr><td class="n">4–7</td><td>Hướng thân, quaternion</td></tr>
+              <tr><td class="n">8–31</td><td>24 góc khớp</td></tr>
+            </table></div>
+          </div>
+        </div>
+        <div class="gate"><strong>Điều kiện qua bước</strong><span>301 dòng (10 giây ở 30 fps), 31 cột, thứ tự 24 khớp khớp với mô hình.</span></div>
+        <div class="out"><h3>Đầu ra</h3><span class="chip">CSV đã xác nhận</span></div>
+      </div>
+    </article>
+
+    <article class="stage">
+      <div class="num" aria-hidden="true">2</div>
+      <div class="card">
+        <div class="head"><h2>Sửa lỗi mô hình R1</h2><span class="where">PC · sửa XML · có bản sao lưu</span></div>
+        <p class="goal">Làm cho MuJoCo nạp được <code>r1.xml</code>.</p>
+        <div class="cols">
+          <div>
+            <h3>Lỗi gặp phải</h3>
+            <p><code>r1.xml</code> tham chiếu bộ phận không tồn tại <code>*_wrist_pitch_link</code>, nên MuJoCo báo lỗi khi nạp mô hình.</p>
+          </div>
+          <div>
+            <h3>Cách sửa</h3>
+<pre>*_wrist_pitch_link  →  *_wrist_roll_link
+bản gốc giữ ở: r1.xml.bak</pre>
+          </div>
+        </div>
+        <div class="gate"><strong>Điều kiện qua bước</strong><span>MuJoCo nạp mô hình không còn báo lỗi.</span></div>
+        <div class="out"><h3>Đầu ra</h3><span class="chip">r1.xml</span><span class="chip">r1.xml.bak</span></div>
+      </div>
+    </article>
+
+    <article class="stage">
+      <div class="num" aria-hidden="true">3</div>
+      <div class="card">
+        <div class="head"><h2>Tạo cấu hình huấn luyện tracking cho R1</h2><span class="where">PC · repo unitree_rl_mjlab</span></div>
+        <p class="goal">Có bài tracking riêng cho R1, vì repo mới chỉ có bài cho G1.</p>
+        <div class="cols">
+          <div>
+            <h3>Việc đã làm</h3>
+            <ul>
+              <li>Tạo thư mục <code>src/tasks/tracking/config/r1/</code>, chép từ cấu hình G1.</li>
+              <li>Đổi sang robot R1.</li>
+              <li>Đổi tên bộ phận tay thành <code>*_wrist_roll_link</code>.</li>
+              <li>Đổi sang hệ số action của R1.</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Hai bài đã đăng ký</h3>
+<pre>Unitree-R1-Tracking
+Unitree-R1-Tracking-No-State-Estimation</pre>
+            <h3 style="margin-top:6px">Lưu log</h3>
+<pre>logs/rsl_rl/r1_tracking/
+1 checkpoint mỗi 200 iteration</pre>
+          </div>
+        </div>
+        <div class="out"><h3>Đầu ra</h3><span class="chip">config/r1/</span><span class="chip">2 bài tracking R1</span></div>
+      </div>
+    </article>
+
+    <article class="stage">
+      <div class="num" aria-hidden="true">4</div>
+      <div class="card">
+        <div class="head"><h2>Chuyển CSV sang NPZ</h2><span class="where">PC · Python + MuJoCo · không cần GPU</span></div>
+        <p class="goal">Biến chuỗi tư thế 30 fps thành file NPZ 50 fps có cả vận tốc từng bộ phận, đúng dạng bài tracking cần.</p>
+        <div class="cols">
+          <div>
+            <h3>Việc đã làm</h3>
+            <ul>
+              <li>Thêm nhánh <code>--robot r1</code> vào <code>csv_to_npz.py</code>.</li>
+              <li>Chạy chuyển đổi, bật <code>--render</code> để có video xem lại.</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Lệnh</h3>
+<pre>python scripts/csv_to_npz.py \
+  --input-file one_leg_left.csv \
+  --output-name one_leg_left.npz \
+  --input-fps 30 --output-fps 50 \
+  --robot r1 --render</pre>
+          </div>
+        </div>
+        <div class="gate"><strong>Điều kiện qua bước</strong><span>File NPZ có 500 khung ở 50 fps (đúng 10 giây), video mở được.</span></div>
+        <div class="out"><h3>Đầu ra</h3><span class="chip">src/assets/motions/r1/one_leg_left.npz</span><span class="chip">one_leg_left.mp4</span></div>
+      </div>
+    </article>
+
+    <article class="stage">
+      <div class="num" aria-hidden="true">5</div>
+      <div class="card">
+        <div class="head"><h2>Kiểm tra động tác mẫu</h2><span class="where">PC · video render + số đo</span></div>
+        <p class="goal">Điều kiện qua chặng 2 của quy trình: động tác mẫu phải khả thi về vật lý trước khi đem đi huấn luyện.</p>
+        <div class="tablebox"><table>
+          <tr><th>Tiêu chí</th><th>Kết quả</th><th>Đánh giá</th></tr>
+          <tr><td>Chân trụ trượt</td><td class="n">0 mm</td><td class="st-ok">Đạt</td></tr>
+          <tr><td>Xuyên sàn</td><td>Không</td><td class="st-ok">Đạt</td></tr>
+          <tr><td>Nhấc chân trái</td><td class="n">100 mm · 2,76 → 7,24 s</td><td class="st-ok">Đạt</td></tr>
+          <tr><td>Trọng tâm trong đế chân phải</td><td class="n">cách mép đế 24 mm</td><td class="st-ok">Đạt</td></tr>
+          <tr><td>Thân trên nghiêng</td><td class="n">0,01°</td><td class="st-ok">Đạt</td></tr>
+          <tr><td>Giới hạn khớp</td><td>Không khớp nào chạm. Ankle roll gần nhất, còn khoảng 4°</td><td class="st-warn">Cần để ý</td></tr>
+        </table></div>
+        <div class="example"><b>So với tài liệu:</b> kết quả khớp với ví dụ đã ghi trong quy trình (trượt 0 mm, trọng tâm cách mép đế 24 mm, nhấc khoảng 100 mm).</div>
+        <p class="loop">Nếu có tiêu chí không đạt: sửa lại CSV rồi chạy lại bước 4.</p>
+        <div class="out"><h3>Đầu ra</h3><span class="chip">NPZ đã qua kiểm tra</span></div>
+      </div>
+    </article>
+
+    <article class="stage">
+      <div class="num" aria-hidden="true">6</div>
+      <div class="card">
+        <div class="head"><h2>Chạy thử và xem trước</h2><span class="where">PC · GPU · vài phút</span></div>
+        <p class="goal">Bắt lỗi cấu hình bằng một lượt chạy rất ngắn, trước khi tốn hàng giờ GPU.</p>
+        <div class="cols">
+          <div>
+            <h3>Chạy thử 5 iteration</h3>
+            <p>Xác nhận toàn bộ quy trình chạy được từ đầu đến cuối: nạp mô hình, nạp NPZ, tạo môi trường, cập nhật model, ghi log.</p>
+          </div>
+          <div>
+            <h3>Xem robot chưa có model</h3>
+<pre>python scripts/play.py \
+  Unitree-R1-Tracking-No-State-Estimation \
+  --motion_file=src/assets/motions/r1/one_leg_left.npz \
+  --agent=zero</pre>
+            <p class="foot">Robot đổ ngay. Đúng như dự kiến, vì chưa học gì.</p>
+          </div>
+        </div>
+        <div class="gate"><strong>Điều kiện qua bước</strong><span>5 iteration chạy hết không báo lỗi; mô phỏng mở được và hiển thị đúng robot R1.</span></div>
+      </div>
+    </article>
+
+    <article class="stage critical">
+      <div class="num" aria-hidden="true">7</div>
+      <div class="card">
+        <div class="head"><h2>Huấn luyện</h2><span class="where">PC · GPU NVIDIA · 2048 robot ảo</span></div>
+        <p class="goal">Cho hàng nghìn R1 ảo cùng tập làm theo <code>one_leg_left.npz</code> và theo dõi tiến độ.</p>
+        <div class="cols">
+          <div>
+            <h3>Lệnh đã chạy</h3>
+<pre>PYTHONPATH=. python scripts/train.py \
+  Unitree-R1-Tracking-No-State-Estimation \
+  --motion_file=src/assets/motions/r1/one_leg_left.npz \
+  --env.scene.num-envs=2048 \
+  --agent.logger=tensorboard</pre>
+          </div>
+          <div>
+            <h3>Khác với lệnh trong tài liệu</h3>
+            <ul>
+              <li><code>PYTHONPATH=.</code> để Python tìm thấy các module trong repo.</li>
+              <li><code>--agent.logger=tensorboard</code> để xem điểm thưởng và độ dài lượt trên TensorBoard.</li>
+            </ul>
+            <p>Theo dõi trong một tab terminal riêng. Training được dừng tay ở <b>iteration 334</b>.</p>
+          </div>
+        </div>
+        <div class="caution">
+          <div><b>Tốn thời gian GPU</b>Một lượt đủ dài mất vài giờ. Luôn chạy thử 5 iteration trước (bước 6).</div>
+          <div><b>Checkpoint thưa</b>Chỉ lưu mỗi 200 iteration. Dừng ở 334 thì bản cuối giữ được là 200; 134 iteration sau đó mất.</div>
+        </div>
+        <div class="out"><h3>Đầu ra</h3><span class="chip">model_0.pt</span><span class="chip">model_200.pt</span><span class="chip">log TensorBoard</span></div>
+      </div>
+    </article>
+
+    <article class="stage">
+      <div class="num" aria-hidden="true">8</div>
+      <div class="card">
+        <div class="head"><h2>Xem kết quả: file model</h2><span class="where">PC · MuJoCo · play.py</span></div>
+        <p class="goal">Mở checkpoint trong mô phỏng để biết model đã học tới đâu.</p>
+<pre>logs/rsl_rl/r1_tracking/2026-11-05_13-55-59/
+├── model_0.pt
+└── model_200.pt</pre>
+        <div class="example"><b>Kết quả khi xem model_200.pt:</b> robot cố làm theo động tác một lúc rồi ngã. Model còn non, đúng với 200 iteration.</div>
+        <div class="gate"><strong>Điều kiện để coi là xong chặng 3</strong><span>Điểm thưởng tăng rồi đi ngang, độ dài mỗi lượt đạt hết 10 giây của động tác. Chưa đạt ở model_200.pt.</span></div>
+        <p class="loop">Chưa đạt: tiếp tục training từ model_200.pt (quay lại bước 7).</p>
+        <div class="out"><h3>Đầu ra</h3><span class="chip">model_200.pt (chưa dùng được)</span></div>
+      </div>
+    </article>
+  </section>
+
+  <section class="note">
+    <h2>Việc tiếp theo</h2>
+    <ol>
+      <li><b>Huấn luyện tiếp</b> từ <code>model_200.pt</code> bằng lệnh tiếp tục training đã gửi, đến vài nghìn iteration, cho tới khi điểm thưởng đi ngang và độ dài mỗi lượt đạt hết 10 giây.</li>
+      <li><b>Chặng 4, kiểm tra mô phỏng:</b> xuất <code>policy.onnx</code>, xem trong mjlab, rồi chạy sim2sim với <code>r1_ctrl --network=lo</code>.</li>
+      <li><b>Chặng 5, triển khai lên R1 thật:</b> trước đó phải chép chế độ Mimic từ G1 (<code>State_Mimic.h/.cpp</code>) và sửa cho 24 khớp, vì <code>deploy/robots/r1</code> mới có chế độ đi bộ.</li>
+    </ol>
+  </section>
+
+  <section class="note warnbox">
+    <h2>Rút ra từ buổi làm việc</h2>
+    <ul>
+      <li>Lệnh train trong tài liệu thiếu <code>PYTHONPATH=.</code> và <code>--agent.logger=tensorboard</code>. Nên cập nhật vào trang quy trình chính.</li>
+      <li>Ankle roll chỉ còn khoảng 4° tới giới hạn khi đứng một chân. Nếu robot hay chạm giới hạn cổ chân lúc huấn luyện, giảm độ nghiêng sang ngang trong CSV.</li>
+      <li>Muốn dừng training giữa chừng thì dừng ngay sau một mốc lưu (200, 400, 600…) để không mất công.</li>
+    </ul>
+  </section>
+
+  <p class="foot">Ghi lại từ buổi làm việc ngày 05/11/2026 trên repo unitreerobotics/unitree_rl_mjlab. Các số đo ở bước 5 và trạng thái model ở bước 8 là kết quả đã chạy thật. Chặng 4 và 5 chưa thực hiện. Trang đi kèm "Quy trình dạy R1 một động tác".</p>
+</div>
+</body>
+</html>

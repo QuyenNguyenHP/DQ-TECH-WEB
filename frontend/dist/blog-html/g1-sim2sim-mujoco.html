@@ -1,0 +1,318 @@
+<!doctype html><html lang="vi" data-theme="dark"><head><base target="_blank"><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>G1 Sim2Sim MuJoCo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root {
+  --bg: #f3f5f7; --surface: #ffffff; --ink: #142230; --muted: #5a6b7b; --line: #d6dde4;
+  --accent: #1f5fbf; --accent-soft: #e3ecfa; --warn: #b36b00; --warn-soft: #fbf0dc;
+  --ok: #1d7a4f; --ok-soft: #e1f2e9; --code-bg: #eef1f5;
+  --display: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --body: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1720; --surface: #16212c; --ink: #e6edf3; --muted: #9db0c2; --line: #2a3a4a;
+    --accent: #7fb0ff; --accent-soft: #1b2d47; --warn: #f0b552; --warn-soft: #3a2c14;
+    --ok: #6fd3a0; --ok-soft: #15322a; --code-bg: #0b121a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1720; --surface: #16212c; --ink: #e6edf3; --muted: #9db0c2; --line: #2a3a4a;
+  --accent: #7fb0ff; --accent-soft: #1b2d47; --warn: #f0b552; --warn-soft: #3a2c14;
+  --ok: #6fd3a0; --ok-soft: #15322a; --code-bg: #0b121a; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.6; }
+.wrap { max-width: 980px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 56px; display: grid; gap: 28px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(1.7rem, 4.2vw, 2.5rem); font-weight: 800; letter-spacing: -0.01em; line-height: 1.2; }
+h2 { font-size: 1.3rem; font-weight: 700; }
+h3 { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 68ch; }
+code, .mono { font-family: var(--mono); font-size: 0.86em; }
+code { background: var(--code-bg); padding: 0.05em 0.35em; border-radius: 4px; overflow-wrap: anywhere; }
+.flow { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+.flow .f { display: grid; gap: 2px; padding: 8px 12px; border-radius: 8px; background: var(--accent-soft); min-width: 0; flex: 1 1 120px; }
+.flow .f b { font-family: var(--mono); font-size: 0.92rem; color: var(--accent); }
+.flow .f span { font-size: 0.8rem; color: var(--muted); line-height: 1.35; }
+.flow .arrow { align-self: center; color: var(--muted); font-weight: 700; }
+.flow .f.final { background: var(--warn-soft); }
+.flow .f.final b { color: var(--warn); }
+.stages { display: grid; gap: 0; position: relative; }
+.stage { display: grid; grid-template-columns: 56px 1fr; gap: 16px; position: relative; padding-bottom: 22px; }
+.stage::before { content: ""; position: absolute; left: 27px; top: 50px; bottom: 0; width: 2px; background: var(--line); }
+.stage:last-child::before { display: none; }
+.num { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--surface); font-family: var(--display); font-weight: 800; font-size: 1.35rem; position: relative; z-index: 1; }
+.stage.critical .num { background: var(--warn); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; display: grid; gap: 14px; min-width: 0; }
+.head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 12px; }
+.where { font-size: 0.78rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: var(--code-bg); color: var(--muted); }
+.goal { color: var(--muted); }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.cols > div { display: grid; gap: 6px; align-content: start; min-width: 0; }
+ul, ol { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+pre { margin: 0; background: var(--code-bg); border-radius: 8px; padding: 10px 12px; font-family: var(--mono); font-size: 0.8rem; line-height: 1.5; overflow-x: auto; white-space: pre; }
+.out { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.chip { font-family: var(--mono); font-size: 0.8rem; padding: 3px 10px; border-radius: 6px; background: var(--ok-soft); color: var(--ok); font-weight: 600; }
+.gate { border-left: 3px solid var(--ok); background: var(--ok-soft); border-radius: 0 8px 8px 0; padding: 10px 14px; display: grid; gap: 4px; }
+.gate strong { color: var(--ok); font-size: 0.85rem; }
+.example { font-size: 0.9rem; border-top: 1px dashed var(--line); padding-top: 10px; color: var(--muted); }
+.example b { color: var(--ink); }
+table { border-collapse: collapse; width: 100%; font-size: 0.86rem; }
+th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 600; color: var(--muted); }
+td.n { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tablebox { overflow-x: auto; }
+.options { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; }
+.options div { background: var(--code-bg); border-radius: 8px; padding: 8px 10px; font-size: 0.85rem; line-height: 1.4; min-width: 0; }
+.options b { display: block; font-size: 0.88rem; }
+.loop { font-size: 0.85rem; color: var(--accent); font-weight: 600; }
+.caution { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
+.caution div { background: var(--warn-soft); border-radius: 8px; padding: 8px 10px; font-size: 0.85rem; line-height: 1.4; }
+.caution b { color: var(--warn); display: block; }
+.note { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; display: grid; gap: 10px; }
+.note.warnbox { border-color: var(--warn); }
+.note h2 { font-size: 1.1rem; }
+.foot { color: var(--muted); font-size: 0.82rem; }
+@media (max-width: 720px) {
+  .cols { grid-template-columns: 1fr; }
+  .stage { grid-template-columns: 40px 1fr; gap: 10px; }
+  .num { width: 40px; height: 40px; font-size: 1.05rem; }
+  .stage::before { left: 19px; top: 40px; }
+  .flow .arrow { display: none; }
+}
+</style>
+<div class="wrap">
+
+<header style="display:grid;gap:10px">
+  <h3>Robotics · unitree_mujoco · G1 Sim2Sim</h3>
+  <h1>Test a G1 policy in MuJoCo before the real robot</h1>
+  <p class="lede">7 steps in the order they were done. Running example: <b>model_30000.pt</b> from training run <code>g1_tracking/2026-11-04_13-10-18</code>, motion <b>dance1_subject2</b>, driven without a physical gamepad.</p>
+</header>
+
+<section aria-label="Flow" style="display:grid;gap:8px">
+  <h3>How the work flows</h3>
+  <div class="flow">
+    <div class="f"><b>model_30000.pt</b><span>PyTorch checkpoint (not used directly)</span></div>
+    <div class="arrow">→</div>
+    <div class="f"><b>policy.onnx</b><span>exported automatically with each checkpoint</span></div>
+    <div class="arrow">→</div>
+    <div class="f"><b>g1_ctrl</b><span>C++ controller that reads the ONNX and npz</span></div>
+    <div class="arrow">→</div>
+    <div class="f"><b>unitree_mujoco</b><span>virtual robot, DDS over <code>lo</code></span></div>
+    <div class="arrow">→</div>
+    <div class="f final"><b>Real G1</b><span>only after the sim is stable</span></div>
+  </div>
+</section>
+
+<section class="stages">
+
+<article class="stage">
+  <div class="num" aria-hidden="true">1</div>
+  <div class="card">
+    <div class="head"><h2>Put the ONNX policy in the deploy folder</h2><span class="where">Terminal · unitree_rl_mjlab · 1 min</span></div>
+    <p class="goal">Replace the sample Mimic policy with the policy from model 30000.</p>
+    <div class="cols">
+      <div><h3>Good to know</h3><ul>
+        <li>Deployment only uses <code>policy.onnx</code>; it never reads <code>.pt</code> files.</li>
+        <li>The tracking runner re-exports <code>policy.onnx</code> on every checkpoint save. The file in the log folder has the same timestamp as <code>model_30000.pt</code>, so it is model 30000.</li>
+        <li>The run's <code>params/env.yaml</code> shows the motion is <code>dance1_subject2.npz</code>, matching the existing <code>Mimic_Dance1_subject2</code> state.</li>
+        <li>The new ONNX file embeds its weights, so no <code>policy.onnx.data</code> is needed.</li>
+      </ul></div>
+      <div><h3>Commands</h3><pre>cd "/home/daikai/Robot Unitree/unitree_rl_mjlab/deploy/robots/g1/config/policy/mimic/dance1_subject2/exported"
+mkdir -p backup_old && mv policy.onnx policy.onnx.data backup_old/
+cp "/home/daikai/Robot Unitree/unitree_rl_mjlab/logs/rsl_rl/g1_tracking/2026-11-04_13-10-18/policy.onnx" .
+ls -la</pre></div>
+    </div>
+    <div class="gate"><strong>Exit check</strong><span><code>ls -la</code> shows the new <code>policy.onnx</code> and a <code>backup_old</code> folder.</span></div>
+    <div class="example"><b>Actual result:</b> <code>policy.onnx</code> is 991,955 bytes; the old files (14,216 + 990,416 bytes) are in <code>backup_old/</code>.</div>
+    <div class="out"><h3>Output</h3><span class="chip">exported/policy.onnx</span></div>
+  </div>
+</article>
+
+<article class="stage">
+  <div class="num" aria-hidden="true">2</div>
+  <div class="card">
+    <div class="head"><h2>Install the required libraries</h2><span class="where">Terminal · needs sudo · 5–10 min</span></div>
+    <p class="goal">Install Boost, yaml-cpp and unitree_sdk2 (with CycloneDDS), needed by both <code>g1_ctrl</code> and the simulator.</p>
+    <div class="cols">
+      <div><h3>What to do</h3><ol>
+        <li>Install the system packages with apt.</li>
+        <li>Clone unitree_sdk2 into <code>~</code> before building it.</li>
+        <li>Install it into <code>/usr/local</code>.</li>
+        <li>Run <code>sudo ldconfig</code> so the system finds <code>libddsc.so.0</code>.</li>
+      </ol>
+      <p class="foot">The sudo password prompt shows no characters while typing. A wrong password prints "Sorry, try again".</p></div>
+      <div><h3>Commands</h3><pre>sudo apt update && sudo apt install -y \
+  libboost-program-options-dev libyaml-cpp-dev \
+  libeigen3-dev libfmt-dev libspdlog-dev \
+  zlib1g-dev libglfw3-dev
+
+cd ~ && git clone https://github.com/unitreerobotics/unitree_sdk2.git
+cd ~/unitree_sdk2 && mkdir -p build && cd build
+cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
+make -j8 && sudo make install
+
+sudo ldconfig</pre></div>
+    </div>
+    <div class="gate"><strong>Exit check</strong><span><code>ls /usr/local/lib</code> lists <code>libddsc.so.0</code>, <code>libddscxx.so.0</code> and <code>libunitree_sdk2.a</code>.</span></div>
+    <div class="out"><h3>Output</h3><span class="chip">unitree_sdk2 + CycloneDDS</span><span class="chip">Boost, yaml-cpp</span></div>
+  </div>
+</article>
+
+<article class="stage">
+  <div class="num" aria-hidden="true">3</div>
+  <div class="card">
+    <div class="head"><h2>Build the g1_ctrl controller</h2><span class="where">Terminal · deploy/robots/g1 · 1 min</span></div>
+    <p class="goal">Compile the controller that runs the policy; the same binary is used in simulation and on the real robot.</p>
+    <pre>cd "/home/daikai/Robot Unitree/unitree_rl_mjlab/deploy/robots/g1"
+rm -rf build && mkdir build && cd build
+cmake .. && make -j8</pre>
+    <div class="gate"><strong>Exit check</strong><span>Last line: <code>[100%] Built target g1_ctrl</code>.</span></div>
+    <p class="loop">If it says "Could NOT find Boost" or unitree_sdk2 is missing: go back to step 2, then delete build and run again.</p>
+    <div class="out"><h3>Output</h3><span class="chip">build/g1_ctrl</span></div>
+  </div>
+</article>
+
+<article class="stage">
+  <div class="num" aria-hidden="true">4</div>
+  <div class="card">
+    <div class="head"><h2>Configure and build unitree_mujoco</h2><span class="where">Terminal + editor · 2 min</span></div>
+    <p class="goal">Set up the 29-DoF G1 in MuJoCo, talking to <code>g1_ctrl</code> over the <code>lo</code> interface.</p>
+    <div class="cols">
+      <div><h3>What to do</h3><ul>
+        <li><code>unitree_mujoco/simulate</code> is missing MuJoCo; link the copy bundled with unitree_rl_mjlab.</li>
+        <li>Edit <code>simulate/config.yaml</code> as in the table.</li>
+        <li>Build. The <code>uint8_t</code> error in <code>jstest</code> (a side tool) can be ignored.</li>
+      </ul>
+      <pre>ln -s "/home/daikai/Robot Unitree/unitree_rl_mjlab/simulate/mujoco" \
+      "/home/daikai/Robot Unitree/unitree_mujoco/simulate/mujoco"
+
+cd "/home/daikai/Robot Unitree/unitree_mujoco/simulate"
+rm -rf build && mkdir build && cd build
+cmake .. && make -j8</pre></div>
+      <div><h3>config.yaml</h3><div class="tablebox"><table>
+        <tr><th>Key</th><th>Value</th></tr>
+        <tr><td><code>robot</code></td><td class="n">"g1"</td></tr>
+        <tr><td><code>robot_scene</code></td><td class="n">"scene_29dof.xml"</td></tr>
+        <tr><td><code>domain_id</code></td><td class="n">0</td></tr>
+        <tr><td><code>interface</code></td><td class="n">"lo"</td></tr>
+        <tr><td><code>use_joystick</code></td><td class="n">1</td></tr>
+        <tr><td><code>joystick_type</code></td><td class="n">"xbox"</td></tr>
+        <tr><td><code>joystick_device</code></td><td>FIFO <code>simulate/vjs0</code> (step 5), or <code>/dev/input/js0</code> with a real gamepad</td></tr>
+      </table></div></div>
+    </div>
+    <div class="gate"><strong>Exit check</strong><span><code>Built target unitree_mujoco</code> appears; on launch it lists 29 joints and "Using unitree_hg DDS IDL for robot g1".</span></div>
+    <div class="out"><h3>Output</h3><span class="chip">build/unitree_mujoco</span></div>
+  </div>
+</article>
+
+<article class="stage">
+  <div class="num" aria-hidden="true">5</div>
+  <div class="card">
+    <div class="head"><h2>Keyboard as a virtual gamepad</h2><span class="where">Python 3 · no sudo</span></div>
+    <p class="goal">Stand in for an Xbox gamepad: a script writes joystick events into a FIFO that the simulator reads like <code>/dev/input/js0</code>.</p>
+    <div class="cols">
+      <div><h3>Key map</h3><div class="tablebox"><table>
+        <tr><th>Key</th><th>Gamepad</th><th>Effect</th></tr>
+        <tr><td class="n">1</td><td>LT + ↑</td><td>FixStand (stand up)</td></tr>
+        <tr><td class="n">2</td><td>RT + A</td><td>Velocity (walk)</td></tr>
+        <tr><td class="n">3</td><td>RB + A</td><td>Mimic dance1</td></tr>
+        <tr><td class="n">0</td><td>LT + B</td><td>Passive (emergency stop)</td></tr>
+        <tr><td class="n">w s a d</td><td>left stick</td><td>forward, back, sideways</td></tr>
+        <tr><td class="n">q e / x</td><td>right stick / release</td><td>turn / stop moving</td></tr>
+      </table></div></div>
+      <div><h3>Good to know</h3><ul>
+        <li>Script: <code>unitree_mujoco/simulate/keyboard_joystick.py</code>.</li>
+        <li>Run it in a real terminal window (Ctrl+Alt+T) because it reads key presses. Run from the chat box, it gets closed.</li>
+        <li>Start it before or together with the simulator; it waits until the simulator opens the FIFO.</li>
+      </ul>
+      <pre>python3 "/home/daikai/Robot Unitree/unitree_mujoco/simulate/keyboard_joystick.py"</pre></div>
+    </div>
+    <div class="gate"><strong>Exit check</strong><span>The script prints "Đã kết nối." (connected) and the key map.</span></div>
+    <div class="out"><h3>Output</h3><span class="chip">FIFO simulate/vjs0</span></div>
+  </div>
+</article>
+
+<article class="stage">
+  <div class="num" aria-hidden="true">6</div>
+  <div class="card">
+    <div class="head"><h2>Run sim2sim</h2><span class="where">3 terminal windows · Ctrl+Alt+T</span></div>
+    <p class="goal">Let model 30000 drive the virtual robot and watch the dance.</p>
+    <div class="cols">
+      <div><h3>Open in this order</h3><pre># Window 1: virtual gamepad
+python3 "/home/daikai/Robot Unitree/unitree_mujoco/simulate/keyboard_joystick.py"
+
+# Window 2: simulator
+cd "/home/daikai/Robot Unitree/unitree_mujoco/simulate/build" && ./unitree_mujoco
+
+# Window 3: controller
+cd "/home/daikai/Robot Unitree/unitree_rl_mjlab/deploy/robots/g1/build" && ./g1_ctrl --network=lo</pre></div>
+      <div><h3>Keys (in window 1)</h3><ol>
+        <li><code>1</code>: stand up, wait about 2 seconds.</li>
+        <li><code>2</code>: walk mode; try <code>w</code>/<code>s</code>, then <code>x</code>.</li>
+        <li><code>3</code>: start dance1.</li>
+        <li><code>0</code>: emergency stop if it falls.</li>
+      </ol>
+      <p class="foot">If the robot falls right at launch: press Backspace in the MuJoCo window to reset, then press <code>1</code>.</p></div>
+    </div>
+    <div class="gate"><strong>Exit check</strong><span>The robot finishes the dance without falling, joints don't shake or jerk, and the <code>g1_ctrl</code> log shows <code>Loaded motion file 'dance1_subject2'</code>.</span></div>
+    <p class="loop">If it falls or shakes: compare with <code>play.py</code> in mjlab; if mjlab is fine but this isn't, check <code>params/deploy.yaml</code> (kp/kd, joint order) and go back to step 1.</p>
+    <div class="out"><h3>Output</h3><span class="chip">sim2sim-validated policy</span></div>
+  </div>
+</article>
+
+<article class="stage critical">
+  <div class="num" aria-hidden="true">7</div>
+  <div class="card">
+    <div class="head"><h2>Move to the real G1</h2><span class="where">Real robot · Ethernet cable · 2 people</span></div>
+    <p class="goal">Run the same <code>g1_ctrl</code>, changing only the network interface, once step 6 passes.</p>
+    <div class="caution">
+      <div><b>Suspend the robot</b>Power on while it hangs, wait for zero-torque mode.</div>
+      <div><b>Debug mode</b>Press L2 + R2 on the Unitree remote to enter debug mode.</div>
+      <div><b>Network</b>Set the PC to <code>192.168.123.222/24</code>; find the interface name with <code>ifconfig</code>.</div>
+      <div><b>Control</b>Use the Unitree remote that ships with the robot, not the keyboard.</div>
+    </div>
+    <pre>cd "/home/daikai/Robot Unitree/unitree_rl_mjlab/deploy/robots/g1/build"
+./g1_ctrl --network=enp5s0   # replace with your interface name</pre>
+    <div class="out"><h3>Output</h3><span class="chip">G1 running the policy</span></div>
+  </div>
+</article>
+
+</section>
+
+<section class="note warnbox">
+  <h2>Errors hit and how they were fixed</h2>
+  <div class="tablebox"><table>
+    <tr><th>Error</th><th>Cause</th><th>Fix</th></tr>
+    <tr><td><code>Could NOT find Boost</code></td><td>apt packages not installed</td><td>Step 2, apt install</td></tr>
+    <tr><td><code>cd: ~/unitree_sdk2: No such file</code></td><td>Skipped <code>git clone</code></td><td>Clone first, then build</td></tr>
+    <tr><td>unitree_mujoco cmake can't find MuJoCo</td><td>Missing <code>simulate/mujoco</code> folder</td><td>Create the symlink (step 4)</td></tr>
+    <tr><td><code>uint8_t</code> error in <code>jstest.cc</code></td><td>Side tool missing <code>&lt;cstdint&gt;</code></td><td>Ignore; the simulator still builds</td></tr>
+    <tr><td><code>Error: Joystick open failed.</code></td><td>No gamepad connected</td><td>Use the virtual gamepad (step 5)</td></tr>
+    <tr><td><code>libddsc.so.0: cannot open shared object</code></td><td>Library cache not refreshed</td><td><code>sudo ldconfig</code></td></tr>
+  </table></div>
+</section>
+
+<section class="note">
+  <h2>Buying a gamepad for simulation</h2>
+  <div class="options">
+    <div><b>Xbox Wireless Controller</b>Genuine Microsoft; plug in USB-C and it works on Linux.</div>
+    <div><b>Logitech F310 / F710</b>Cheap and durable; set the back switch to X mode.</div>
+    <div><b>8BitDo Ultimate C / 2C</b>Good value; select X-input mode.</div>
+  </div>
+  <p class="foot">Pick an XInput controller. Avoid PS4/PS5 or no-name pads, whose button layout differs. With a real gamepad, set <code>joystick_device</code> back to <code>/dev/input/js0</code>.</p>
+</section>
+
+<p class="foot">Compiled from a working session on 5 Nov 2026 on the user's machine (Ubuntu, GCC 13.3, MuJoCo 3.3.6). Steps 1–5 were built and checked; the virtual gamepad FIFO was tested to send correctly formatted events. A full run of step 6 and all of step 7 are not yet verified.</p>
+</div>
+
+</body></html>

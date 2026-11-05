@@ -1,0 +1,340 @@
+<!doctype html><html lang="vi" data-theme="dark"><head><base target="_blank"><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Teaching R1 a Motion</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one vertical track of 5 stages (real work order), each stating where it runs and which files it produces; a "file flow" strip at the top. */
+:root {
+  --bg: #f3f5f7;
+  --surface: #ffffff;
+  --ink: #142230;
+  --muted: #5a6b7b;
+  --line: #d6dde4;
+  --accent: #1f5fbf;
+  --accent-soft: #e3ecfa;
+  --warn: #b36b00;
+  --warn-soft: #fbf0dc;
+  --ok: #1d7a4f;
+  --ok-soft: #e1f2e9;
+  --code-bg: #eef1f5;
+  --display: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --body: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1720; --surface: #16212c; --ink: #e6edf3; --muted: #9db0c2; --line: #2a3a4a;
+    --accent: #7fb0ff; --accent-soft: #1b2d47; --warn: #f0b552; --warn-soft: #3a2c14;
+    --ok: #6fd3a0; --ok-soft: #15322a; --code-bg: #0b121a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1720; --surface: #16212c; --ink: #e6edf3; --muted: #9db0c2; --line: #2a3a4a;
+  --accent: #7fb0ff; --accent-soft: #1b2d47; --warn: #f0b552; --warn-soft: #3a2c14;
+  --ok: #6fd3a0; --ok-soft: #15322a; --code-bg: #0b121a; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.6; }
+.wrap {
+  max-width: 980px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 56px;
+  display: grid; gap: 28px;
+}
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(1.7rem, 4.2vw, 2.5rem); font-weight: 800; letter-spacing: -0.01em; line-height: 1.2; }
+h2 { font-size: 1.3rem; font-weight: 700; }
+h3 { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 68ch; }
+code, .mono { font-family: var(--mono); font-size: 0.86em; }
+code { background: var(--code-bg); padding: 0.05em 0.35em; border-radius: 4px; overflow-wrap: anywhere; }
+
+.flow { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+.flow .f { display: grid; gap: 2px; padding: 8px 12px; border-radius: 8px; background: var(--accent-soft); min-width: 0; flex: 1 1 120px; }
+.flow .f b { font-family: var(--mono); font-size: 0.92rem; color: var(--accent); }
+.flow .f span { font-size: 0.8rem; color: var(--muted); line-height: 1.35; }
+.flow .arrow { align-self: center; color: var(--muted); font-weight: 700; }
+.flow .f.robot { background: var(--warn-soft); }
+.flow .f.robot b { color: var(--warn); }
+
+.stages { display: grid; gap: 0; position: relative; }
+.stage { display: grid; grid-template-columns: 56px 1fr; gap: 16px; position: relative; padding-bottom: 22px; }
+.stage::before { content: ""; position: absolute; left: 27px; top: 50px; bottom: 0; width: 2px; background: var(--line); }
+.stage:last-child::before { display: none; }
+.num { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--surface); font-family: var(--display); font-weight: 800; font-size: 1.35rem; position: relative; z-index: 1; }
+.stage.real .num { background: var(--warn); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; display: grid; gap: 14px; min-width: 0; }
+.head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 12px; }
+.where { font-size: 0.78rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: var(--code-bg); color: var(--muted); }
+.goal { color: var(--muted); }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.cols > div { display: grid; gap: 6px; align-content: start; min-width: 0; }
+ul, ol { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+pre { margin: 0; background: var(--code-bg); border-radius: 8px; padding: 10px 12px; font-family: var(--mono); font-size: 0.8rem; line-height: 1.5; overflow-x: auto; white-space: pre; }
+.out { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.chip { font-family: var(--mono); font-size: 0.8rem; padding: 3px 10px; border-radius: 6px; background: var(--ok-soft); color: var(--ok); font-weight: 600; }
+.gate { border-left: 3px solid var(--ok); background: var(--ok-soft); border-radius: 0 8px 8px 0; padding: 10px 14px; display: grid; gap: 4px; }
+.gate strong { color: var(--ok); font-size: 0.85rem; }
+.example { font-size: 0.9rem; border-top: 1px dashed var(--line); padding-top: 10px; color: var(--muted); }
+.example b { color: var(--ink); }
+table { border-collapse: collapse; width: 100%; font-size: 0.86rem; }
+th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 600; color: var(--muted); }
+td.n { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tablebox { overflow-x: auto; }
+.src { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.src div { background: var(--code-bg); border-radius: 8px; padding: 8px 10px; font-size: 0.85rem; line-height: 1.4; min-width: 0; }
+.src b { display: block; font-size: 0.88rem; }
+.loop { font-size: 0.85rem; color: var(--accent); font-weight: 600; }
+.safety { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.safety div { background: var(--warn-soft); border-radius: 8px; padding: 8px 10px; font-size: 0.85rem; line-height: 1.4; }
+.safety b { color: var(--warn); display: block; }
+.note { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; display: grid; gap: 10px; }
+.note.warnbox { border-color: var(--warn); }
+.note h2 { font-size: 1.1rem; }
+.foot { color: var(--muted); font-size: 0.82rem; }
+@media (max-width: 720px) {
+  .cols { grid-template-columns: 1fr; }
+  .src { grid-template-columns: 1fr 1fr; }
+  .safety { grid-template-columns: 1fr; }
+  .stage { grid-template-columns: 40px 1fr; gap: 10px; }
+  .num { width: 40px; height: 40px; font-size: 1.05rem; }
+  .stage::before { left: 19px; top: 40px; }
+  .flow .arrow { display: none; }
+}
+</style>
+
+<div class="wrap">
+  <header style="display:grid;gap:10px">
+    <h3>Unitree R1 · MuJoCo · Motion tracking</h3>
+    <h1>Teaching the robot a motion, from idea to the real robot</h1>
+    <p class="lede">Five stages in the actual order of work. Each stage states where it runs, what to do, which files it produces, and which condition must be met before moving on. Running example: <b>R1 standing on one leg</b>.</p>
+  </header>
+
+  <section aria-label="File flow" style="display:grid;gap:8px">
+    <h3>How files flow through the stages</h3>
+    <div class="flow">
+      <div class="f"><b>Script</b><span>phases + timing</span></div>
+      <div class="arrow">→</div>
+      <div class="f"><b>.csv</b><span>reference pose sequence, 31 values per frame</span></div>
+      <div class="arrow">→</div>
+      <div class="f"><b>.npz</b><span>poses + per-body velocities</span></div>
+      <div class="arrow">→</div>
+      <div class="f"><b>model_xx.pt</b><span>model during training</span></div>
+      <div class="arrow">→</div>
+      <div class="f"><b>policy.onnx</b><span>exported model for the C++ controller</span></div>
+      <div class="arrow">→</div>
+      <div class="f robot"><b>Real R1</b><span>Mimic mode in r1_ctrl</span></div>
+    </div>
+  </section>
+
+  <section class="stages" aria-label="Five stages">
+
+    <article class="stage">
+      <div class="num" aria-hidden="true">1</div>
+      <div class="card">
+        <div class="head"><h2>Come up with the idea and write the script</h2><span class="where">Pen and paper</span></div>
+        <p class="goal">Describe the motion in words and split it into phases with concrete timings.</p>
+        <div class="cols">
+          <div>
+            <h3>What to do</h3>
+            <ul>
+              <li>Pick the teaching approach: <b>tracking</b> (follow a reference) for motions with a specific shape.</li>
+              <li>Split into phases, each at least about 1 second long.</li>
+              <li>Start and end in the <b>default standing pose</b>.</li>
+              <li>If it involves standing on one leg: <b>shift the centre of mass first</b>, then lift the leg.</li>
+              <li>Keep the total around 5–10 seconds for a first motion.</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Example script: "stand on one leg"</h3>
+            <div class="tablebox"><table>
+              <tr><th>Time</th><th>Phase</th></tr>
+              <tr><td class="n">0–1 s</td><td>Stand upright</td></tr>
+              <tr><td class="n">1–2.5 s</td><td>Shift weight onto the right leg</td></tr>
+              <tr><td class="n">2.5–3.5 s</td><td>Lift the left leg 10 cm</td></tr>
+              <tr><td class="n">3.5–6.5 s</td><td>Hold</td></tr>
+              <tr><td class="n">6.5–9 s</td><td>Lower the leg, shift weight back</td></tr>
+              <tr><td class="n">9–10 s</td><td>Stand upright</td></tr>
+            </table></div>
+          </div>
+        </div>
+        <div class="out"><h3>Output</h3><span class="chip">script</span></div>
+      </div>
+    </article>
+
+    <article class="stage">
+      <div class="num" aria-hidden="true">2</div>
+      <div class="card">
+        <div class="head"><h2>Create the reference motion data</h2><span class="where">PC · Python + MuJoCo · no GPU needed</span></div>
+        <p class="goal">Turn the script into a pose sequence for R1: each frame holds the base position, base orientation and 24 joint angles.</p>
+        <div style="display:grid;gap:6px">
+          <h3>Four ways to create a motion</h3>
+          <div class="src">
+            <div><b>Generate with IK</b>Set position targets (feet, centre of mass) and let Python solve the joint angles. Suits simple motions.</div>
+            <div><b>Film a person</b>GVHMR extracts 3D motion, GMR retargets it to the robot's joints.</div>
+            <div><b>Mocap libraries</b>AMASS, LAFAN1 (the dance1_subject2 dance comes from here).</div>
+            <div><b>Teleoperated demo</b>Quest 3 + xr_teleoperate --record. Suits arm motions.</div>
+          </div>
+        </div>
+        <div class="cols">
+          <div>
+            <h3>R1 CSV format (31 columns)</h3>
+            <div class="tablebox"><table>
+              <tr><th>Column</th><th>Contents</th></tr>
+              <tr><td class="n">1–3</td><td>Base position x, y, z (metres)</td></tr>
+              <tr><td class="n">4–7</td><td>Base orientation, quaternion x, y, z, w</td></tr>
+              <tr><td class="n">8–31</td><td>24 joint angles (radians), in r1.xml order</td></tr>
+            </table></div>
+            <p class="foot">30 frames per second. 10 seconds = 301 rows.</p>
+          </div>
+          <div>
+            <h3>Convert CSV to NPZ</h3>
+<pre>python scripts/csv_to_npz.py \
+  --input-file one_leg_left.csv \
+  --output-name one_leg_left.npz \
+  --input-fps 30 --output-fps 50 \
+  --robot r1 --render</pre>
+            <p class="foot">The <code>--robot r1</code> branch has to be added to the script yourself (the repo currently only has g1 and g1_23dof).</p>
+          </div>
+        </div>
+        <div class="gate">
+          <strong>Exit condition</strong>
+          <span>Watch the <code>--render</code> video. The stance foot does not slide (under 5 mm), does not tilt and does not sink into the floor. While on one leg, the centre of mass stays inside the stance foot's support area. No joint is close to its limit.</span>
+        </div>
+        <div class="example"><b>Results from the example run:</b> slide 0 mm · tilt 0° · lift height 101 mm · centre of mass 24 mm inside the foot edge · no joint near its limit.</div>
+        <div class="out"><h3>Output</h3><span class="chip">one_leg_left.csv</span><span class="chip">one_leg_left.npz</span></div>
+      </div>
+    </article>
+
+    <article class="stage">
+      <div class="num" aria-hidden="true">3</div>
+      <div class="card">
+        <div class="head"><h2>Train with RL (tracking)</h2><span class="where">PC · NVIDIA GPU (RTX 3080) · a few hours</span></div>
+        <p class="goal">Thousands of virtual R1s practise following the reference file at once. A robot is rewarded for matching the reference and its episode is ended when it drifts too far. The robot learns to balance by itself.</p>
+        <div class="cols">
+          <div>
+            <h3>One-time setup for R1</h3>
+            <ul>
+              <li>Edit <code>r1.xml</code>: in the <code>&lt;contact&gt;</code> section, change <code>wrist_pitch_link</code> to <code>wrist_roll_link</code>.</li>
+              <li>Copy <code>src/tasks/tracking/config/g1/</code> to <code>config/r1/</code>.</li>
+              <li>Switch to the R1 model, body names <code>*_wrist_roll_link</code>, task name <code>Unitree-R1-Tracking-No-State-Estimation</code>.</li>
+            </ul>
+            <h3 style="margin-top:6px">Training command</h3>
+<pre>python scripts/train.py \
+  Unitree-R1-Tracking-No-State-Estimation \
+  --motion_file=.../one_leg_left.npz \
+  --env.scene.num-envs=2048</pre>
+          </div>
+          <div>
+            <h3>How the robot is scored</h3>
+            <div class="tablebox"><table>
+              <tr><th>Criterion</th><th>Weight</th></tr>
+              <tr><td>Body part positions and orientations match the reference</td><td class="n">+1.0 / +1.0</td></tr>
+              <tr><td>Linear and angular velocities match</td><td class="n">+1.0 / +1.0</td></tr>
+              <tr><td>Base (torso) matches the reference</td><td class="n">+0.5 / +0.5</td></tr>
+              <tr><td>Jerky motion</td><td class="n">−0.1</td></tr>
+              <tr><td>Joints hitting limits, limbs colliding</td><td class="n">−10</td></tr>
+              <tr><td>Drift from the reference over 25 cm</td><td class="n">episode ends</td></tr>
+            </table></div>
+            <p class="foot">Plus deliberate pushes, friction changes and centre-of-mass offsets so the model holds up better on the real robot.</p>
+          </div>
+        </div>
+        <div class="gate">
+          <strong>Exit condition</strong>
+          <span>In TensorBoard: reward rises and then levels off, and episode length approaches the full motion length (the robot no longer falls or drifts off the reference).</span>
+        </div>
+        <div class="out"><h3>Output</h3><span class="chip">logs/rsl_rl/…/model_xx.pt</span><span class="chip">policy.onnx + policy.onnx.data</span></div>
+      </div>
+    </article>
+
+    <article class="stage">
+      <div class="num" aria-hidden="true">4</div>
+      <div class="card">
+        <div class="head"><h2>Test in simulation</h2><span class="where">PC · MuJoCo · USB game controller</span></div>
+        <p class="goal">Two layers of testing. The second layer runs the exact C++ program used on the real robot, with the robot swapped for the simulator.</p>
+        <div class="cols">
+          <div>
+            <h3>4a · View the model in mjlab</h3>
+<pre>python scripts/play.py \
+  Unitree-R1-Tracking-No-State-Estimation \
+  --motion_file=.../one_leg_left.npz \
+  --checkpoint_file=logs/rsl_rl/.../model_xx.pt</pre>
+            <p class="foot">Open intermediate checkpoints too, to watch the robot improve over time.</p>
+          </div>
+          <div>
+            <h3>4b · Sim2sim with the real program</h3>
+<pre># terminal 1
+./simulate/build/unitree_mujoco
+# terminal 2
+cd deploy/robots/r1/build
+./r1_ctrl --network=lo</pre>
+            <p class="foot"><code>lo</code> means talking to the simulator on the same machine. Use the controller exactly as on the real robot.</p>
+          </div>
+        </div>
+        <div class="gate">
+          <strong>Exit condition</strong>
+          <span>Completes the full motion several times in a row with no falls and no shaking. Entering and leaving Mimic mode is smooth.</span>
+        </div>
+        <p class="loop">Robot falls or moves oddly: go back to stage 2 (fix the reference) or stage 3 (train more).</p>
+      </div>
+    </article>
+
+    <article class="stage real">
+      <div class="num" aria-hidden="true">5</div>
+      <div class="card">
+        <div class="head"><h2>Deploy to the real R1</h2><span class="where">PC ↔ R1 over LAN cable · robot remote</span></div>
+        <p class="goal">Add the model to the control program as a new mode (state), then run it step by step on a gantry.</p>
+        <div class="cols">
+          <div>
+            <h3>Place the files and declare the mode</h3>
+<pre>deploy/robots/r1/config/policy/mimic/one_leg/
+├── exported/policy.onnx (+ .data)
+└── params/one_leg_left.npz, deploy.yaml</pre>
+<pre>Mimic_OneLeg:
+  transitions: {Passive: LT + B.on_pressed}
+  motion_file: config/policy/mimic/one_leg/params/one_leg_left.npz
+  policy_dir:  config/policy/mimic/one_leg/
+  end_state: Velocity</pre>
+            <p class="foot">Add this to <code>config.yaml</code>, along with a button combo to enter the mode from Velocity. Then <code>cmake .. &amp;&amp; make</code>.</p>
+          </div>
+          <div>
+            <h3>Run on the robot</h3>
+            <ol>
+              <li>Hang the robot on the gantry, power on, wait for <b>zero-torque</b>.</li>
+              <li>Press <b>L2 + R2</b> to enter debug mode (turns off the factory software).</li>
+              <li>Plug in the LAN, set the PC IP to <code>192.168.123.222</code>, netmask <code>255.255.255.0</code>.</li>
+              <li>Run <code>./r1_ctrl --network=enp5s0</code> (find the interface name with <code>ifconfig</code>).</li>
+              <li><b>LT + ↑</b> stand up → <b>RT + A</b> walk → combo to enter Mimic.</li>
+              <li>When the motion ends, the robot returns to Velocity by itself (<code>end_state</code>).</li>
+            </ol>
+          </div>
+        </div>
+        <div class="safety">
+          <div><b>Emergency stop</b>LT + B returns to Passive. Keep a finger on it at all times.</div>
+          <div><b>Use a gantry</b>Always hang the robot the first time, feet just touching, then lower gradually.</div>
+          <div><b>Self-protection</b>If the robot tilts too far or loses connection, it drops to Passive by itself.</div>
+        </div>
+        <div class="out"><h3>Result</h3><span class="chip">R1 performs the motion</span></div>
+      </div>
+    </article>
+  </section>
+
+  <section class="note warnbox">
+    <h2>What R1 is still missing compared with G1 (per the source code, 04/2026)</h2>
+    <ul>
+      <li><code>r1.xml</code> references a body that does not exist (<code>*_wrist_pitch_link</code>), so MuJoCo errors on load. Fix it before training.</li>
+      <li>No tracking task exists for R1 yet: create <code>config/r1/</code> and add an <code>r1</code> branch to <code>csv_to_npz.py</code>.</li>
+      <li><code>deploy/robots/r1</code> only has the walking mode. The Mimic mode must be copied from G1 (<code>State_Mimic.h/.cpp</code>) and adapted for 24 joints.</li>
+      <li>For a shortcut to learn the workflow: G1 already has all five stages working with the <code>dance1_subject2</code> dance.</li>
+    </ul>
+  </section>
+
+  <p class="foot">Commands, file names and weights are taken from the unitreerobotics/unitree_rl_mjlab repo (commit 13/04/2026). The R1 parts marked "add yourself" are proposals and have not been test-run on a GPU. English version of "Quy trình dạy R1 một động tác".</p>
+</div>
+
+</body></html>

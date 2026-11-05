@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="vi" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<base target="_blank">
+</head>
+<body style="margin:0">
+<title>Sinh động tác R1 bằng IK</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: cùng hệ thống với "Quy trình dạy R1 một động tác": dải dòng chảy, trục dọc 7 bước của make_one_leg_motion.py, hộp lưu ý và chú thích nguồn. */
+:root {
+  --bg: #f3f5f7; --surface: #ffffff; --ink: #142230; --muted: #5a6b7b; --line: #d6dde4;
+  --accent: #1f5fbf; --accent-soft: #e3ecfa; --warn: #b36b00; --warn-soft: #fbf0dc;
+  --ok: #1d7a4f; --ok-soft: #e1f2e9; --code-bg: #eef1f5;
+  --display: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --body: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1720; --surface: #16212c; --ink: #e6edf3; --muted: #9db0c2; --line: #2a3a4a;
+    --accent: #7fb0ff; --accent-soft: #1b2d47; --warn: #f0b552; --warn-soft: #3a2c14;
+    --ok: #6fd3a0; --ok-soft: #15322a; --code-bg: #0b121a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1720; --surface: #16212c; --ink: #e6edf3; --muted: #9db0c2; --line: #2a3a4a;
+  --accent: #7fb0ff; --accent-soft: #1b2d47; --warn: #f0b552; --warn-soft: #3a2c14;
+  --ok: #6fd3a0; --ok-soft: #15322a; --code-bg: #0b121a; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.6; }
+.wrap { max-width: 980px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 56px; display: grid; gap: 28px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(1.7rem, 4.2vw, 2.5rem); font-weight: 800; letter-spacing: -0.01em; line-height: 1.2; }
+h2 { font-size: 1.3rem; font-weight: 700; }
+h3 { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 68ch; }
+code, .mono { font-family: var(--mono); font-size: 0.86em; }
+code { background: var(--code-bg); padding: 0.05em 0.35em; border-radius: 4px; overflow-wrap: anywhere; }
+.flow { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+.flow .f { display: grid; gap: 2px; padding: 8px 12px; border-radius: 8px; background: var(--accent-soft); min-width: 0; flex: 1 1 120px; }
+.flow .f b { font-family: var(--mono); font-size: 0.92rem; color: var(--accent); }
+.flow .f span { font-size: 0.8rem; color: var(--muted); line-height: 1.35; }
+.flow .arrow { align-self: center; color: var(--muted); font-weight: 700; }
+.flow .f.final { background: var(--warn-soft); }
+.flow .f.final b { color: var(--warn); }
+.stages { display: grid; gap: 0; position: relative; }
+.stage { display: grid; grid-template-columns: 56px 1fr; gap: 16px; position: relative; padding-bottom: 22px; }
+.stage::before { content: ""; position: absolute; left: 27px; top: 50px; bottom: 0; width: 2px; background: var(--line); }
+.stage:last-child::before { display: none; }
+.num { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--surface); font-family: var(--display); font-weight: 800; font-size: 1.35rem; position: relative; z-index: 1; }
+.stage.critical .num { background: var(--warn); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; display: grid; gap: 14px; min-width: 0; }
+.head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 12px; }
+.where { font-size: 0.78rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: var(--code-bg); color: var(--muted); }
+.goal { color: var(--muted); }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.cols > div { display: grid; gap: 6px; align-content: start; min-width: 0; }
+ul, ol { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+pre { margin: 0; background: var(--code-bg); border-radius: 8px; padding: 10px 12px; font-family: var(--mono); font-size: 0.8rem; line-height: 1.5; overflow-x: auto; white-space: pre; }
+.out { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.chip { font-family: var(--mono); font-size: 0.8rem; padding: 3px 10px; border-radius: 6px; background: var(--ok-soft); color: var(--ok); font-weight: 600; }
+.gate { border-left: 3px solid var(--ok); background: var(--ok-soft); border-radius: 0 8px 8px 0; padding: 10px 14px; display: grid; gap: 4px; }
+.gate strong { color: var(--ok); font-size: 0.85rem; }
+.example { font-size: 0.9rem; border-top: 1px dashed var(--line); padding-top: 10px; color: var(--muted); }
+.example b { color: var(--ink); }
+table { border-collapse: collapse; width: 100%; font-size: 0.86rem; }
+th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 600; color: var(--muted); }
+td.n { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tablebox { overflow-x: auto; }
+.options { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; }
+.options div { background: var(--code-bg); border-radius: 8px; padding: 8px 10px; font-size: 0.85rem; line-height: 1.4; min-width: 0; }
+.options b { display: block; font-size: 0.88rem; }
+.loop { font-size: 0.85rem; color: var(--accent); font-weight: 600; }
+.caution { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
+.caution div { background: var(--warn-soft); border-radius: 8px; padding: 8px 10px; font-size: 0.85rem; line-height: 1.4; }
+.caution b { color: var(--warn); display: block; }
+.note { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; display: grid; gap: 10px; }
+.note.warnbox { border-color: var(--warn); }
+.note h2 { font-size: 1.1rem; }
+.foot { color: var(--muted); font-size: 0.82rem; }
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.split div { border-radius: 8px; padding: 10px 12px; font-size: 0.88rem; line-height: 1.45; display: grid; gap: 4px; align-content: start; }
+.split .who { background: var(--accent-soft); }
+.split .who b { color: var(--accent); }
+.split .machine { background: var(--ok-soft); }
+.split .machine b { color: var(--ok); }
+@media (max-width: 720px) {
+  .cols, .split { grid-template-columns: 1fr; }
+  .stage { grid-template-columns: 40px 1fr; gap: 10px; }
+  .num { width: 40px; height: 40px; font-size: 1.05rem; }
+  .stage::before { left: 19px; top: 40px; }
+  .flow .arrow { display: none; }
+}
+</style>
+
+<div class="wrap">
+  <header style="display:grid;gap:10px">
+    <h3>Unitree R1 · Python + MuJoCo · Động học ngược</h3>
+    <h1>Từ câu "đứng một chân" tới 301 dòng CSV</h1>
+    <p class="lede">Bảy bước script <code>make_one_leg_motion.py</code> đi qua để tạo file động tác mẫu. Không mocap, không video: mọi con số đều tính ra từ mô hình robot. Ví dụ xuyên suốt: <b>R1 nhấc chân trái 10 cm, giữ 3 giây</b>.</p>
+  </header>
+
+  <section aria-label="Dòng chảy" style="display:grid;gap:8px">
+    <h3>Dữ liệu biến đổi qua các bước</h3>
+    <div class="flow">
+      <div class="f"><b>Ý tưởng</b><span>"đứng một chân"</span></div>
+      <div class="arrow">→</div>
+      <div class="f"><b>Kịch bản 7 pha</b><span>người viết</span></div>
+      <div class="arrow">→</div>
+      <div class="f"><b>Mục tiêu từng khung</b><span>chân, trọng tâm</span></div>
+      <div class="arrow">→</div>
+      <div class="f"><b>IK (MuJoCo)</b><span>máy tự tìm góc khớp</span></div>
+      <div class="arrow">→</div>
+      <div class="f final"><b>CSV 301 × 31</b><span>đã kiểm tra trượt, trọng tâm</span></div>
+    </div>
+  </section>
+
+  <section class="stages" aria-label="Bảy bước">
+
+    <article class="stage">
+      <div class="num" aria-hidden="true">1</div>
+      <div class="card">
+        <div class="head"><h2>Viết ý tưởng thành kịch bản có thời gian</h2><span class="where">Người quyết định · trong script</span></div>
+        <p class="goal">Đây là phần duy nhất do người quyết định: chân nào nhấc, cao bao nhiêu, trong bao lâu.</p>
+        <div class="cols">
+          <div>
+            <h3>Kịch bản trong code</h3>
+<pre>phases = [("stand", 1.0), ("shift", 1.5),
+          ("lift", 1.0),  ("hold", 3.0),
+          ("lower", 1.0), ("unshift", 1.5),
+          ("stand2", 1.0)]   # tổng 10 giây</pre>
+            <p class="foot">Hai thông số chính: chân nhấc là chân trái, cao 10 cm.</p>
+          </div>
+          <div>
+            <h3>Dòng thời gian</h3>
+            <div class="tablebox"><table>
+              <tr><th>Thời gian</th><th>Pha</th></tr>
+              <tr><td class="n">0–1 s</td><td>stand · đứng thẳng</td></tr>
+              <tr><td class="n">1–2,5 s</td><td>shift · dồn trọng tâm sang phải</td></tr>
+              <tr><td class="n">2,5–3,5 s</td><td>lift · nhấc chân trái</td></tr>
+              <tr><td class="n">3,5–6,5 s</td><td>hold · giữ</td></tr>
+              <tr><td class="n">6,5–7,5 s</td><td>lower · hạ chân</td></tr>
+              <tr><td class="n">7,5–9 s</td><td>unshift · trả trọng tâm</td></tr>
+              <tr><td class="n">9–10 s</td><td>stand2 · đứng thẳng</td></tr>
+            </table></div>
+          </div>
+        </div>
+        <div class="out"><h3>Đầu ra</h3><span class="chip">danh sách phases</span></div>
+      </div>
+    </article>
+
+    <article class="stage">
+      <div class="num" aria-hidden="true">2</div>
+      <div class="card">
+        <div class="head"><h2>Nạp mô hình R1 và sửa lỗi</h2><span class="where">MuJoCo · repo unitree_rl_mjlab</span></div>
+        <p class="goal">Có một mô hình R1 nạp được để tính toán trên đó.</p>
+        <ul>
+          <li>Đọc <code>r1.xml</code> trong repo <code>unitree_rl_mjlab</code>.</li>
+          <li>Sửa tên bộ phận <code>wrist_pitch_link</code> thành <code>wrist_roll_link</code>. Không sửa thì MuJoCo không nạp được mô hình.</li>
+        </ul>
+        <div class="gate"><strong>Điều kiện qua bước</strong><span>MuJoCo nạp <code>r1.xml</code> không báo lỗi.</span></div>
+        <div class="out"><h3>Đầu ra</h3><span class="chip">mô hình R1 trong MuJoCo</span></div>
+      </div>
+    </article>
+
+    <article class="stage">
+      <div class="num" aria-hidden="true">3</div>
+      <div class="card">
+        <div class="head"><h2>Lấy tư thế đứng chuẩn làm điểm xuất phát</h2><span class="where">r1_constants.py · HOME_KEYFRAME</span></div>
+        <p class="goal">Bắt đầu từ đúng tư thế Unitree đặt cho R1, đặt robot chạm sàn và ghi lại các mốc tham chiếu.</p>
+        <div class="cols">
+          <div>
+            <h3>Tư thế mặc định (radian)</h3>
+            <div class="tablebox"><table>
+              <tr><th>Khớp</th><th>Góc</th></tr>
+              <tr><td>Hông</td><td class="n">−0,1</td></tr>
+              <tr><td>Gối</td><td class="n">0,3</td></tr>
+              <tr><td>Cổ chân</td><td class="n">−0,2</td></tr>
+              <tr><td>Vai, khuỷu</td><td>hơi co</td></tr>
+            </table></div>
+          </div>
+          <div>
+            <h3>Việc làm</h3>
+            <ul>
+              <li>Hạ thân tới khi đế chân vừa chạm sàn (z = 0). Hông robot cao <b>0,734 m</b>. Đây là dòng đầu tiên của file.</li>
+              <li>Ghi lại 3 mốc: vị trí bàn chân phải (chân trụ), bàn chân trái (chân sẽ nhấc), và trọng tâm ban đầu (giữa hai chân).</li>
+            </ul>
+          </div>
+        </div>
+        <div class="out"><h3>Đầu ra</h3><span class="chip">khung 0</span><span class="chip">3 mốc tham chiếu</span></div>
+      </div>
+    </article>
+
+    <article class="stage">
+      <div class="num" aria-hidden="true">4</div>
+      <div class="card">
+        <div class="head"><h2>Tính mục tiêu cho từng khung hình</h2><span class="where">Mỗi 1/30 giây · smoothstep</span></div>
+        <p class="goal">Từ kịch bản, suy ra ở mỗi khung bàn chân và trọng tâm phải nằm ở đâu.</p>
+        <p>Script xem khung đang ở pha nào và đã đi được bao nhiêu phần trăm pha đó. Phần trăm này đưa qua đường cong <b>smoothstep</b> để chuyển động bắt đầu và kết thúc êm. Từ đó ra ba mục tiêu:</p>
+        <div class="tablebox"><table>
+          <tr><th>Mục tiêu</th><th>Giá trị theo thời gian</th></tr>
+          <tr><td>Bàn chân phải</td><td>Luôn đứng yên ở vị trí ban đầu</td></tr>
+          <tr><td>Trọng tâm (chiếu xuống sàn)</td><td>Trượt từ giữa hai chân tới giữa đế chân phải, lệch về mũi chân 3,5 cm, trong pha shift; trượt về trong pha unshift</td></tr>
+          <tr><td>Bàn chân trái</td><td>Ở nguyên chỗ, nâng thẳng lên 10 cm trong pha lift, giữ, rồi hạ xuống</td></tr>
+        </table></div>
+        <div class="out"><h3>Đầu ra</h3><span class="chip">301 bộ mục tiêu</span></div>
+      </div>
+    </article>
+
+    <article class="stage">
+      <div class="num" aria-hidden="true">5</div>
+      <div class="card">
+        <div class="head"><h2>Giải động học ngược để ra góc khớp</h2><span class="where">MuJoCo Jacobian · bình phương tối thiểu</span></div>
+        <p class="goal">Máy tính tự tìm bộ góc khớp sao cho robot đạt các mục tiêu. Mục tiêu trọng số lớn được ưu tiên hơn.</p>
+        <div class="cols">
+          <div>
+            <h3>Mục tiêu và trọng số</h3>
+            <div class="tablebox"><table>
+              <tr><th>Mục tiêu</th><th>Trọng số</th></tr>
+              <tr><td>Bàn chân phải đúng vị trí / phẳng</td><td class="n">10 / 10</td></tr>
+              <tr><td>Bàn chân trái đúng vị trí / phẳng</td><td class="n">10 / 5</td></tr>
+              <tr><td>Trọng tâm đúng vị trí (x, y)</td><td class="n">8</td></tr>
+              <tr><td>Thân trên thẳng đứng</td><td class="n">3</td></tr>
+              <tr><td>Khớp gần tư thế đứng chuẩn</td><td class="n">0,05</td></tr>
+            </table></div>
+          </div>
+          <div>
+            <h3>Vòng lặp mỗi khung (60 lần)</h3>
+            <ol>
+              <li>MuJoCo tính sai lệch so với mục tiêu và ảnh hưởng của từng khớp lên sai lệch đó (ma trận Jacobian).</li>
+              <li>Giải bình phương tối thiểu để tìm bước chỉnh nhỏ nhất làm giảm sai lệch.</li>
+              <li>Xoay các khớp theo bước đó, tối đa 0,2 rad mỗi bước, luôn giữ trong giới hạn khớp.</li>
+            </ol>
+          </div>
+        </div>
+        <div class="options">
+          <div><b>Được phép thay đổi</b>Chân, eo và vị trí thân.</div>
+          <div><b>Giữ nguyên</b>Hai tay ở tư thế mặc định.</div>
+          <div><b>Khởi đầu mỗi khung</b>Từ kết quả của khung trước, nên chuyển động liền mạch, không nhảy cóc.</div>
+        </div>
+        <div class="out"><h3>Đầu ra</h3><span class="chip">24 góc khớp × 301 khung</span></div>
+      </div>
+    </article>
+
+    <article class="stage">
+      <div class="num" aria-hidden="true">6</div>
+      <div class="card">
+        <div class="head"><h2>Ghi thành dòng CSV</h2><span class="where">31 số mỗi khung</span></div>
+        <p class="goal">Ghi mỗi khung thành một dòng đúng định dạng <code>csv_to_npz.py</code> đọc được.</p>
+        <div class="cols">
+          <div>
+            <h3>Cấu trúc một dòng</h3>
+<pre>x y z            vị trí thân (3)
+qx qy qz qw      hướng thân (4)
+j1 … j24         24 góc khớp</pre>
+          </div>
+          <div>
+            <h3>Đổi thứ tự quaternion</h3>
+<pre>MuJoCo lưu:        (w, x, y, z)
+csv_to_npz.py đọc: (x, y, z, w)</pre>
+            <p class="foot">Script đổi thứ tự trước khi ghi. Quên bước này thì robot bị xoay sai hướng khi chuyển sang NPZ.</p>
+          </div>
+        </div>
+        <h3>Ví dụ thật lấy từ file (radian)</h3>
+        <div class="tablebox"><table>
+          <tr><th>Thời điểm</th><th>Hông (x; y; z)</th><th>Gối trái</th><th>Gối phải</th><th>Hông phải nghiêng ngang</th><th>Eo nghiêng ngang</th></tr>
+          <tr><td>0 s · đứng</td><td class="n">(0; 0; 0,734)</td><td class="n">0,29</td><td class="n">0,29</td><td class="n">+0,01</td><td class="n">0,00</td></tr>
+          <tr><td>2,5 s · dồn trọng tâm xong</td><td class="n">(−0,03; −0,10; 0,728)</td><td class="n">0,23</td><td class="n">0,35</td><td class="n">+0,15</td><td class="n">−0,04</td></tr>
+          <tr><td>5 s · đứng một chân</td><td class="n">(−0,04; −0,12; 0,761)</td><td class="n">0,67</td><td class="n">0,16</td><td class="n">−0,28</td><td class="n">−0,40</td></tr>
+        </table></div>
+        <div class="example"><b>IK tự tìm ra, không có luật nào viết sẵn:</b> hông dịch sang phải 10–12 cm để trọng tâm nằm trên chân phải; gối trái gập mạnh (0,67) để nhấc chân mà bàn chân vẫn phẳng; gối phải duỗi gần thẳng (0,16) nên hông cao lên 0,761 m; xương chậu nghiêng và eo nghiêng ngược −0,40 rad để thân trên vẫn thẳng đứng.</div>
+        <div class="out"><h3>Đầu ra</h3><span class="chip">one_leg_left.csv</span></div>
+      </div>
+    </article>
+
+    <article class="stage">
+      <div class="num" aria-hidden="true">7</div>
+      <div class="card">
+        <div class="head"><h2>Kiểm tra</h2><span class="where">check_motion.py · MuJoCo</span></div>
+        <p class="goal">Đọc lại file, dựng từng khung trong MuJoCo và đo xem động tác có khả thi về hình học không.</p>
+        <div class="tablebox"><table>
+          <tr><th>Tiêu chí</th><th>Kết quả</th></tr>
+          <tr><td>Chân trụ trượt</td><td class="n">0 mm</td></tr>
+          <tr><td>Bàn chân nghiêng</td><td class="n">0°</td></tr>
+          <tr><td>Chân trái nhấc cao</td><td class="n">101 mm</td></tr>
+          <tr><td>Trọng tâm cách mép đế chân trụ</td><td class="n">24 mm</td></tr>
+          <tr><td>Khớp sát giới hạn</td><td>Không có</td></tr>
+        </table></div>
+        <div class="gate"><strong>Điều kiện qua bước</strong><span>Chân trụ không trượt (dưới 5 mm), không nghiêng, không xuyên sàn; khi đứng một chân trọng tâm nằm trong đế chân trụ; không khớp nào sát giới hạn.</span></div>
+        <p class="loop">Không đạt: chỉnh kịch bản (bước 1) hoặc trọng số IK (bước 5) rồi chạy lại.</p>
+        <div class="out"><h3>Đầu ra</h3><span class="chip">one_leg_left.csv đã kiểm tra</span></div>
+      </div>
+    </article>
+  </section>
+
+  <section class="note">
+    <h2>Ai làm phần nào</h2>
+    <div class="split">
+      <div class="who"><b>Người quyết định muốn gì</b>Chân nào nhấc, cao bao nhiêu, trong bao lâu. Viết thành 7 pha.</div>
+      <div class="machine"><b>Máy tìm cách làm, ở mức hình học</b>24 góc khớp mỗi khung, sao cho chân phẳng và trọng tâm đúng chỗ.</div>
+    </div>
+    <p>Giữ thăng bằng thật trước trọng lực và quán tính không nằm trong file CSV. Đó là phần RL học khi huấn luyện tracking.</p>
+  </section>
+
+  <section class="note warnbox">
+    <h2>Lỗi dễ gặp khi tự viết script tương tự</h2>
+    <ul>
+      <li>Ghi quaternion theo thứ tự của MuJoCo (w, x, y, z) thay vì (x, y, z, w) như <code>csv_to_npz.py</code> đọc.</li>
+      <li>Nhấc chân trước khi dồn xong trọng tâm: trọng tâm rơi ra ngoài đế chân trụ.</li>
+      <li>Giải IK mỗi khung từ tư thế chuẩn thay vì từ khung trước: góc khớp có thể nhảy giữa các nghiệm, động tác giật.</li>
+      <li>Không giới hạn bước xoay (0,2 rad) và giới hạn khớp: IK có thể ra tư thế robot thật không làm được.</li>
+    </ul>
+  </section>
+
+  <p class="foot">Mô tả theo script make_one_leg_motion.py và check_motion.py của người dùng, chạy trên r1.xml của repo unitreerobotics/unitree_rl_mjlab. Số liệu ở bước 3, 6, 7 lấy từ file đã tạo. Trang đi kèm "Quy trình dạy R1 một động tác" (chặng 2) và "Huấn luyện R1 đứng một chân".</p>
+</div>
+</body>
+</html>

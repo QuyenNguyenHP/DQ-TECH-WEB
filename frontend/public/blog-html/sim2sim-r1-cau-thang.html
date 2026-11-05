@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="vi" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<base target="_blank">
+</head>
+<body style="margin:0">
+<title>Sim2sim R1 cầu thang</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: cùng hệ thống với "Quy trình dạy R1 một động tác": dải dòng chảy file, trục dọc 6 bước (chuẩn bị → chạy), rồi các hộp xử lý lỗi, va chạm và giới hạn kết luận. */
+:root {
+  --bg: #f3f5f7; --surface: #ffffff; --ink: #142230; --muted: #5a6b7b; --line: #d6dde4;
+  --accent: #1f5fbf; --accent-soft: #e3ecfa; --warn: #b36b00; --warn-soft: #fbf0dc;
+  --ok: #1d7a4f; --ok-soft: #e1f2e9; --code-bg: #eef1f5;
+  --display: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --body: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1720; --surface: #16212c; --ink: #e6edf3; --muted: #9db0c2; --line: #2a3a4a;
+    --accent: #7fb0ff; --accent-soft: #1b2d47; --warn: #f0b552; --warn-soft: #3a2c14;
+    --ok: #6fd3a0; --ok-soft: #15322a; --code-bg: #0b121a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1720; --surface: #16212c; --ink: #e6edf3; --muted: #9db0c2; --line: #2a3a4a;
+  --accent: #7fb0ff; --accent-soft: #1b2d47; --warn: #f0b552; --warn-soft: #3a2c14;
+  --ok: #6fd3a0; --ok-soft: #15322a; --code-bg: #0b121a; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.6; }
+.wrap { max-width: 980px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 56px; display: grid; gap: 28px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(1.7rem, 4.2vw, 2.5rem); font-weight: 800; letter-spacing: -0.01em; line-height: 1.2; }
+h2 { font-size: 1.3rem; font-weight: 700; }
+h3 { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 68ch; }
+code, .mono { font-family: var(--mono); font-size: 0.86em; }
+code { background: var(--code-bg); padding: 0.05em 0.35em; border-radius: 4px; overflow-wrap: anywhere; }
+.flow { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+.flow .f { display: grid; gap: 2px; padding: 8px 12px; border-radius: 8px; background: var(--accent-soft); min-width: 0; flex: 1 1 120px; }
+.flow .f b { font-family: var(--mono); font-size: 0.92rem; color: var(--accent); overflow-wrap: anywhere; }
+.flow .f span { font-size: 0.8rem; color: var(--muted); line-height: 1.35; }
+.flow .arrow { align-self: center; color: var(--muted); font-weight: 700; }
+.flow .f.final { background: var(--warn-soft); }
+.flow .f.final b { color: var(--warn); }
+.stages { display: grid; gap: 0; position: relative; }
+.stage { display: grid; grid-template-columns: 56px 1fr; gap: 16px; position: relative; padding-bottom: 22px; }
+.stage::before { content: ""; position: absolute; left: 27px; top: 50px; bottom: 0; width: 2px; background: var(--line); }
+.stage:last-child::before { display: none; }
+.num { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--surface); font-family: var(--display); font-weight: 800; font-size: 1.35rem; position: relative; z-index: 1; }
+.stage.critical .num { background: var(--warn); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; display: grid; gap: 14px; min-width: 0; }
+.head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 12px; }
+.where { font-size: 0.78rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: var(--code-bg); color: var(--muted); }
+.goal { color: var(--muted); }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.cols > div { display: grid; gap: 6px; align-content: start; min-width: 0; }
+ul, ol { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+pre { margin: 0; background: var(--code-bg); border-radius: 8px; padding: 10px 12px; font-family: var(--mono); font-size: 0.8rem; line-height: 1.5; overflow-x: auto; white-space: pre; }
+.out { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.chip { font-family: var(--mono); font-size: 0.8rem; padding: 3px 10px; border-radius: 6px; background: var(--ok-soft); color: var(--ok); font-weight: 600; overflow-wrap: anywhere; }
+.gate { border-left: 3px solid var(--ok); background: var(--ok-soft); border-radius: 0 8px 8px 0; padding: 10px 14px; display: grid; gap: 4px; }
+.gate strong { color: var(--ok); font-size: 0.85rem; }
+.example { font-size: 0.9rem; border-top: 1px dashed var(--line); padding-top: 10px; color: var(--muted); }
+.example b { color: var(--ink); }
+table { border-collapse: collapse; width: 100%; font-size: 0.86rem; }
+th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 600; color: var(--muted); }
+td.n { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tablebox { overflow-x: auto; }
+.options { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; }
+.options div { background: var(--code-bg); border-radius: 8px; padding: 8px 10px; font-size: 0.85rem; line-height: 1.4; min-width: 0; }
+.options b { display: block; font-size: 0.88rem; }
+.loop { font-size: 0.85rem; color: var(--accent); font-weight: 600; }
+.caution { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 8px; }
+.caution div { background: var(--warn-soft); border-radius: 8px; padding: 8px 10px; font-size: 0.85rem; line-height: 1.4; }
+.caution b { color: var(--warn); display: block; }
+.note { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; display: grid; gap: 10px; min-width: 0; }
+.note.warnbox { border-color: var(--warn); }
+.note h2 { font-size: 1.1rem; }
+.foot { color: var(--muted); font-size: 0.82rem; }
+.trouble { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.trouble > div { display: grid; gap: 6px; align-content: start; min-width: 0; }
+@media (max-width: 720px) {
+  .cols, .trouble { grid-template-columns: 1fr; }
+  .stage { grid-template-columns: 40px 1fr; gap: 10px; }
+  .num { width: 40px; height: 40px; font-size: 1.05rem; }
+  .stage::before { left: 19px; top: 40px; }
+  .flow .arrow { display: none; }
+}
+</style>
+
+<div class="wrap">
+  <header style="display:grid;gap:10px">
+    <h3>Unitree R1 · r1_ctrl + unitree_mujoco · Sim2sim qua DDS</h3>
+    <h1>Chạy policy leo cầu thang của R1 trong Unitree MuJoCo</h1>
+    <p class="lede">Sáu bước theo đúng thứ tự đã làm ngày 05/11/2026: đưa policy đã huấn luyện vào controller C++, dựng scene cầu thang có vật thể, rồi mở ba terminal để điều khiển robot bằng bàn phím. Ví dụ xuyên suốt: <b>policy blind stairs <code>r1_stairs_blind</code> trên cầu thang bậc 15 cm</b>.</p>
+  </header>
+
+  <section aria-label="Dòng chảy file" style="display:grid;gap:8px">
+    <h3>Dòng chảy file</h3>
+    <div class="flow">
+      <div class="f"><b>logs/…/policy.onnx</b><span>policy nguồn từ lần train 03/11</span></div>
+      <div class="arrow">→</div>
+      <div class="f"><b>v0/exported/policy.onnx</b><span>bản chép cho deployment</span></div>
+      <div class="arrow">→</div>
+      <div class="f"><b>deploy.yaml</b><span>scale, lệnh vận tốc, ánh xạ khớp</span></div>
+      <div class="arrow">→</div>
+      <div class="f"><b>r1_ctrl</b><span>controller C++, Release</span></div>
+      <div class="arrow">→</div>
+      <div class="f"><b>scene_stairs.xml</b><span>cầu thang + 2 vật thể</span></div>
+      <div class="arrow">→</div>
+      <div class="f final"><b>R1 đi trong MuJoCo</b><span>điều khiển qua DDS, interface lo</span></div>
+    </div>
+  </section>
+
+  <section class="note">
+    <h2>Hai thư mục chính</h2>
+<pre>/home/daikai/Robot Unitree/
+├── unitree_rl_mjlab/  # huấn luyện và deployment controller
+└── unitree_mujoco/    # simulator, robot và scene</pre>
+    <p>Policy nguồn: <code>unitree_rl_mjlab/logs/rsl_rl/r1_stairs_blind/2026-11-03_15-05-45/policy.onnx</code>. Đây là policy <b>blind</b>: actor không nhận height scan, chỉ dùng cảm biến cơ thể, trạng thái khớp và lệnh vận tốc. Critic có thể thấy địa hình khi train nhưng không chạy khi deployment.</p>
+  </section>
+
+  <section class="stages" aria-label="Sáu bước">
+
+    <article class="stage">
+      <div class="num" aria-hidden="true">1</div>
+      <div class="card">
+        <div class="head"><h2>Kiểm tra và đưa ONNX vào controller</h2><span class="where">PC · Python · không cần GPU</span></div>
+        <p class="goal">Chắc chắn file policy đúng kích thước và đúng bản, rồi đặt vào chỗ controller sẽ đọc.</p>
+        <div class="cols">
+          <div>
+            <h3>Việc đã làm</h3>
+            <ul>
+              <li>Kiểm tra đầu vào <code>obs</code> là <code>[1, 83]</code>, đầu ra <code>actions</code> là <code>[1, 24]</code>.</li>
+              <li>Chép sang <code>deploy/robots/r1/config/policy/velocity/v0/exported/policy.onnx</code>.</li>
+              <li>So SHA256 bản chép với bản nguồn.</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Thứ tự 83 observations</h3>
+<pre>angular velocity            3
+projected gravity           3
+velocity command            3
+gait phase sin/cos          2
+joint pos − nominal        24
+joint velocity             24
+previous raw action        24</pre>
+            <p class="foot">Gait period 0,6 s; phase về 0 khi độ lớn lệnh vận tốc dưới 0,1.</p>
+          </div>
+        </div>
+        <div class="gate"><strong>Điều kiện qua bước</strong><span>ONNX graph hợp lệ, SHA256 trùng nguồn, thứ tự 24 khớp khớp ánh xạ motor trong XML, nominal pose và PD gain khớp metadata.</span></div>
+        <div class="example"><b>SHA256 đã kiểm tra:</b> <code>5afde3d0bbc8c247b38371d69913d52e35ba0d4dc4267ecec52b6bd8baa301fb</code></div>
+        <div class="out"><h3>Đầu ra</h3><span class="chip">v0/exported/policy.onnx</span></div>
+      </div>
+    </article>
+
+    <article class="stage">
+      <div class="num" aria-hidden="true">2</div>
+      <div class="card">
+        <div class="head"><h2>Sửa cấu hình deployment cho khớp lần train</h2><span class="where">deploy.yaml · State_RLBase.h · main.cpp</span></div>
+        <p class="goal">Mọi con số controller dùng phải giống hệt môi trường train, nếu không policy nhận và xuất sai.</p>
+        <div class="cols">
+          <div>
+            <h3>Bốn chỗ đã sửa</h3>
+            <ul>
+              <li><b>Action scale</b> lấy từ <code>params/env.yaml</code> của lần train. Cấu hình cũ dùng <code>0.25</code> cho mọi khớp.</li>
+              <li><b>Giới hạn lệnh vận tốc</b> theo cấu hình train.</li>
+              <li><b>PD gain</b> áp qua <code>joint_ids_map</code> trong <code>deploy/include/FSM/State_RLBase.h</code>.</li>
+              <li>Thông báo nút vào Velocity trong <code>main.cpp</code> thành <code>RT + A</code>.</li>
+            </ul>
+            <h3 style="margin-top:6px">Action scale chính xác</h3>
+<pre>scale: [0.15, 0.15, 0.15, 0.15, 0.3125, 0.3125,
+        0.15, 0.15, 0.15, 0.15, 0.3125, 0.3125,
+        0.15, 0.15,
+        0.375, 0.375, 0.4125, 0.4125, 0.4125,
+        0.375, 0.375, 0.4125, 0.4125, 0.4125]</pre>
+            <p class="foot">Lệnh khớp = <code>nominal + scale × raw_action</code>. Metadata ONNX làm tròn scale còn 3 chữ số, nên lấy từ <code>env.yaml</code>.</p>
+          </div>
+          <div>
+            <h3>Thông số cần giữ đúng</h3>
+            <div class="tablebox"><table>
+              <tr><th>Thông số</th><th>Giá trị</th></tr>
+              <tr><td>Chu kỳ policy</td><td class="n">0,02 s · 50 Hz</td></tr>
+              <tr><td>Mô phỏng lúc train</td><td class="n">0,005 s · decimation 4</td></tr>
+              <tr><td>Số action</td><td class="n">24</td></tr>
+              <tr><td>Motor trong model sim</td><td class="n">29 (5 giả)</td></tr>
+              <tr><td>DDS domain</td><td class="n">0 (hard-code)</td></tr>
+              <tr><td>Message DDS</td><td class="n">unitree_hg</td></tr>
+              <tr><td>Tiến / lùi</td><td class="n">[−0,3; 1,0] m/s</td></tr>
+              <tr><td>Ngang</td><td class="n">[−0,3; 0,3] m/s</td></tr>
+              <tr><td>Xoay (yaw)</td><td class="n">[−1,0; 1,0] rad/s</td></tr>
+            </table></div>
+            <h3 style="margin-top:6px">Ánh xạ khớp policy → motor DDS</h3>
+<pre>joint_ids_map: [0,1,2,3,4,5,6,7,8,9,10,11,
+  12,13,15,16,17,18,19,22,23,24,25,26]</pre>
+            <p class="foot">Bỏ qua motor 14, 20, 21, 27, 28. Không ghi gain tuần tự vào motor 0..23.</p>
+          </div>
+        </div>
+        <div class="gate"><strong>Điều kiện qua bước</strong><span>Kiểm tra offline nạp YAML + ONNX, tạo đủ 83 observations và chạy 10 vòng suy luận ra 24 joint target hữu hạn (không gửi DDS).</span></div>
+        <div class="out"><h3>Đầu ra</h3><span class="chip">params/deploy.yaml</span><span class="chip">State_RLBase.h</span></div>
+      </div>
+    </article>
+
+    <article class="stage">
+      <div class="num" aria-hidden="true">3</div>
+      <div class="card">
+        <div class="head"><h2>Build r1_ctrl</h2><span class="where">PC · CMake · Release</span></div>
+        <p class="goal">Biên dịch controller. Chỉ cần làm lại khi sửa mã C++.</p>
+        <div class="cols">
+          <div>
+            <h3>Lệnh build</h3>
+<pre>cd "/home/daikai/Robot Unitree/unitree_rl_mjlab/deploy/robots/r1"
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j 4</pre>
+          </div>
+          <div>
+            <h3>Kiểm tra không cần DDS</h3>
+<pre>./build/r1_ctrl --help</pre>
+            <p class="foot">Sửa XML scene hoặc YAML policy chỉ cần khởi động lại chương trình liên quan, không build lại C++.</p>
+          </div>
+        </div>
+        <div class="gate"><strong>Điều kiện qua bước</strong><span><code>r1_ctrl --help</code> chạy được, tìm thấy đủ thư viện động.</span></div>
+        <div class="out"><h3>Đầu ra</h3><span class="chip">build/r1_ctrl</span></div>
+      </div>
+    </article>
+
+    <article class="stage">
+      <div class="num" aria-hidden="true">4</div>
+      <div class="card">
+        <div class="head"><h2>Dựng scene cầu thang và hai vật thể</h2><span class="where">unitree_mujoco/unitree_robots/r1/</span></div>
+        <p class="goal">Tạo <code>scene_stairs.xml</code> riêng để thử leo bậc, giữ <code>scene.xml</code> phẳng để thử trước.</p>
+        <div class="cols">
+          <div>
+            <h3>Cầu thang (robot đi theo +X từ gần 0, 0)</h3>
+            <div class="tablebox"><table>
+              <tr><th>Thông số</th><th>Giá trị</th></tr>
+              <tr><td>Bậc đầu bắt đầu</td><td class="n">x = 1,5 m</td></tr>
+              <tr><td>Rộng</td><td class="n">2 m</td></tr>
+              <tr><td>Sâu mặt bậc</td><td class="n">0,30 m</td></tr>
+              <tr><td>Chiều cao mỗi bậc</td><td class="n">0,15 m × 5 lần lên</td></tr>
+              <tr><td>Chiếu nghỉ</td><td class="n">dài 1,20 m · cao 0,75 m</td></tr>
+              <tr><td>Phía sau</td><td class="n">5 lần xuống tới sàn</td></tr>
+              <tr><td>Kết thúc</td><td class="n">x = 5,4 m</td></tr>
+            </table></div>
+            <p class="foot">Box trong MuJoCo dùng <b>nửa kích thước</b>: khối đầu <code>pos.z = 0.075</code>, <code>size.z = 0.075</code> nghĩa là đáy ở 0, mặt trên ở 0,15 m. Ban đầu dựng bậc 5 cm, sau tăng lên 15 cm.</p>
+          </div>
+          <div>
+            <h3>Hai vật thể cố định, có va chạm</h3>
+            <div class="options">
+              <div><b>Turbocharger · (1,0; 2,2; 0)</b>Từ GLB, đổi Y-up sang Z-up, tách 5 mesh STL màu xanh, va chạm từng phần. Khoảng 1,29 × 1,43 × 1,04 m. Script <code>example/python/convert_turbocharger.py</code> (cần <code>trimesh</code>, <code>numpy</code>).</div>
+              <div><b>Cylinder head · (1,0; −2,2; 0)</b>STL 403.305 mặt vượt giới hạn 200.000 của bộ nạp STL, nên chuyển sang OBJ. Giả định đơn vị mm, <code>scale="0.001 0.001 0.001"</code>, khoảng 0,75 × 1,44 × 1,66 m. Geom offset <code>(−0.0354, −0.1005, −0.6145)</code> để căn giữa và đặt đáy lên sàn.</div>
+            </div>
+            <p class="foot">Đường dẫn mesh tính từ <code>meshes/</code> do <code>&lt;compiler meshdir="meshes/"&gt;</code> trong <code>R1_C++.xml</code>. Cả hai đặt ngoài đường đi thẳng lên cầu thang.</p>
+          </div>
+        </div>
+        <div class="gate"><strong>Điều kiện qua bước</strong><span>MuJoCo nạp scene; các bậc tiếp giáp, cao đúng 15 cm; hai model hiển thị, cylinder head nằm sát sàn; đặt robot chồng lên vật thể thì phát hiện tiếp xúc.</span></div>
+        <div class="out"><h3>Đầu ra</h3><span class="chip">scene_stairs.xml</span><span class="chip">meshes/turbocharger/*.stl</span><span class="chip">CylinderHead.obj</span></div>
+      </div>
+    </article>
+
+    <article class="stage">
+      <div class="num" aria-hidden="true">5</div>
+      <div class="card">
+        <div class="head"><h2>Mở ba terminal theo thứ tự</h2><span class="where">PC · interface lo · domain 0</span></div>
+        <p class="goal">Bàn phím ảo, simulator và controller cùng nói chuyện qua DDS trên máy. Trước đó đóng mọi controller cũ đang gửi <code>rt/lowcmd</code> (<code>stand_r1.py</code>, <code>walk_r1_three_steps.py</code>, phiên <code>r1_ctrl</code> khác).</p>
+<pre># Terminal 1 · tay cầm ảo bằng bàn phím (chạy trước, giữ mở)
+cd "/home/daikai/Robot Unitree/unitree_mujoco"
+python3 simulate/keyboard_joystick.py
+
+# Terminal 2 · simulator với cầu thang
+cd "/home/daikai/Robot Unitree/unitree_mujoco/simulate/build"
+./unitree_mujoco -r r1 -s scene_stairs.xml -t 1 -i 0 -n lo
+
+# Terminal 3 · deployment controller
+cd "/home/daikai/Robot Unitree/unitree_rl_mjlab/deploy/robots/r1"
+./build/r1_ctrl -n lo</pre>
+        <div class="cols">
+          <div>
+            <h3>Cờ của simulator</h3>
+            <div class="tablebox"><table>
+              <tr><td class="n">-r r1</td><td>Chọn robot R1</td></tr>
+              <tr><td class="n">-s scene_stairs.xml</td><td>Scene cầu thang (đổi thành <code>scene.xml</code> để thử mặt phẳng)</td></tr>
+              <tr><td class="n">-t 1</td><td>DDS <code>unitree_hg</code></td></tr>
+              <tr><td class="n">-i 0</td><td>Domain, phải trùng controller</td></tr>
+              <tr><td class="n">-n lo</td><td>Loopback</td></tr>
+            </table></div>
+          </div>
+          <div>
+            <h3>Cấu hình simulator</h3>
+            <p><code>simulate/config.yaml</code> có <code>use_joystick: 1</code>, <code>joystick_type: xbox</code>, <code>joystick_bits: 16</code> và đường dẫn FIFO <code>simulate/vjs0</code>. Cờ dòng lệnh ghi đè robot, scene, domain, interface, nên YAML mặc định G1 vẫn ra R1.</p>
+            <p class="foot">Dùng gamepad thật: đổi <code>joystick_device</code> thành <code>/dev/input/js0</code>, bỏ script bàn phím.</p>
+          </div>
+        </div>
+        <div class="gate"><strong>Điều kiện qua bước</strong><span>Terminal 1 báo đang chờ mở FIFO (bình thường). Terminal 3 in <code>Connected to robot.</code></span></div>
+      </div>
+    </article>
+
+    <article class="stage">
+      <div class="num" aria-hidden="true">6</div>
+      <div class="card">
+        <div class="head"><h2>Cho robot đứng rồi đi lên cầu thang</h2><span class="where">Phím trong Terminal 1 · cửa sổ MuJoCo</span></div>
+        <p class="goal">Đi qua FixStand rồi mới vào Velocity, và điều khiển lệnh vận tốc bằng bàn phím.</p>
+        <div class="cols">
+          <div>
+            <h3>Trình tự</h3>
+            <ol>
+              <li>Có thể nhấn <b>Space</b> trong cửa sổ MuJoCo để tạm dừng lúc chuẩn bị.</li>
+              <li>Controller đã kết nối: nhấn <b>1</b> để vào FixStand.</li>
+              <li>Bỏ tạm dừng nếu đang dừng; chờ khoảng 3 giây để robot đứng.</li>
+              <li>Nhấn <b>2</b> để bật policy Velocity.</li>
+              <li>Nhấn <b>w</b> để đi về phía cầu thang; <b>x</b> để đưa lệnh về 0.</li>
+            </ol>
+            <p class="foot">Chuyển mode lúc tạm dừng không được nhận: bỏ tạm dừng rồi nhấn lại 1 trước khi nhấn 2.</p>
+          </div>
+          <div>
+            <h3>Bảng phím</h3>
+            <div class="tablebox"><table>
+              <tr><th>Phím</th><th>Tác dụng</th></tr>
+              <tr><td class="n">1</td><td>LT + Up → FixStand</td></tr>
+              <tr><td class="n">2</td><td>RT + A → Velocity</td></tr>
+              <tr><td class="n">w / s</td><td>Tăng / giảm lệnh tiến, lùi</td></tr>
+              <tr><td class="n">a / d</td><td>Lệnh sang trái / phải</td></tr>
+              <tr><td class="n">q / e</td><td>Lệnh xoay trái / phải</td></tr>
+              <tr><td class="n">x</td><td>Cả 3 lệnh về 0, policy vẫn chạy</td></tr>
+              <tr><td class="n">0</td><td>LT + B → Passive, robot có thể ngã</td></tr>
+              <tr><td class="n">Ctrl+C</td><td>Thoát script bàn phím</td></tr>
+            </table></div>
+          </div>
+        </div>
+        <div class="caution">
+          <div><b>Lệnh được giữ</b>Lệnh vận tốc không tự về 0 khi thả phím. Một lần <code>w</code> từ 0 đặt khoảng 0,5 m/s; nhấn thêm tăng tới giới hạn.</div>
+          <div><b>0 không phải đứng</b>Phím 0 về Passive (thả lỏng), không phải chế độ đứng giữ thăng bằng.</div>
+          <div><b>Phím 3 không dùng</b>Có trong script dùng chung nhưng FSM R1 hiện chưa có chế độ Mimic.</div>
+        </div>
+        <p class="loop">Nên thử trên <code>scene.xml</code> phẳng trước, rồi mới chuyển sang cầu thang.</p>
+        <div class="out"><h3>Kết quả mong đợi</h3><span class="chip">R1 đi tới và leo bậc 15 cm</span></div>
+      </div>
+    </article>
+  </section>
+
+  <section class="note">
+    <h2>Xử lý lỗi thường gặp</h2>
+    <div class="trouble">
+      <div>
+        <h3>Robot ngã</h3>
+        <ol>
+          <li>Nhấn <b>0</b> về Passive.</li>
+          <li>Tạm dừng simulation nếu cần.</li>
+          <li>Nhấn <b>Backspace</b> trong cửa sổ MuJoCo để reset vật lý.</li>
+          <li>Nhấn <b>1</b>, chờ đứng, rồi <b>2</b>.</li>
+        </ol>
+        <p class="foot">Backspace chỉ reset MuJoCo, không reset controller hay trạng thái policy. Về Passive rồi vào lại Velocity để reset policy. Khó khôi phục thì khởi động lại cả simulator và controller.</p>
+      </div>
+      <div>
+        <h3>Controller không kết nối</h3>
+        <ul>
+          <li>Simulator phải chạy R1 với <code>-t 1 -i 0 -n lo</code>.</li>
+          <li>Controller dùng <code>-n lo</code>, domain hard-code là 0.</li>
+          <li>Không dùng nhầm Python simulator: cấu hình Python trước đó dùng domain 1.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Lỗi joystick / FIFO</h3>
+        <ul>
+          <li>Chạy <code>keyboard_joystick.py</code> trước simulator, giữ terminal mở.</li>
+          <li><code>joystick_device</code> phải trỏ đúng <code>simulate/vjs0</code>.</li>
+          <li>Khởi động lại simulator làm script báo broken pipe: chạy lại script bàn phím.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Scene chưa có vật thể hoặc bậc chưa đổi</h3>
+        <ul>
+          <li>Kiểm tra đang dùng <code>-s scene_stairs.xml</code>.</li>
+          <li>Khởi động lại simulator sau khi sửa XML.</li>
+          <li>Mesh STL/OBJ phải đúng đường dẫn trong <code>meshes/</code>.</li>
+        </ul>
+      </div>
+    </div>
+    <p><b>Dừng phiên:</b> nhấn <code>x</code>, tạm dừng simulator, rồi thoát controller và script. Dừng controller là robot mất lệnh giữ tư thế.</p>
+  </section>
+
+  <section class="note">
+    <h2>Va chạm với vật thể: chính xác đến đâu</h2>
+    <ul>
+      <li>Hai model không có <code>freejoint</code> nên cố định; robot không đẩy được.</li>
+      <li><code>contype="1"</code>, <code>conaffinity="1"</code> bật va chạm với geom robot.</li>
+      <li>MuJoCo dùng <b>bao lồi</b> của từng mesh. Lỗ, khe, phần lõm bị coi là đặc dù hình vẫn rỗng. Turbocharger có 5 bao lồi, cylinder head chỉ có 1.</li>
+      <li>Cần chạm đúng lỗ, khe: phải có collision geometry đơn giản hóa hoặc convex decomposition.</li>
+      <li>Cylinder head nhiều mặt nên nạp và render chậm hơn; có thể làm bản visual nhẹ hơn.</li>
+    </ul>
+  </section>
+
+  <section class="note warnbox">
+    <h2>Chưa xác nhận</h2>
+    <ul>
+      <li><b>Chưa chạy được một phiên DDS hoàn chỉnh cho thấy R1 đi bộ và leo bậc 15 cm thành công.</b> Nạp model và suy luận được không chứng minh robot leo ổn định.</li>
+      <li>15 cm là mức cao nhất trong khoảng địa hình train (3–15 cm), không bảo đảm policy đã học tốt ở mức đó. Thử mặt phẳng trước, rồi tăng dần độ khó.</li>
+      <li>Scene deployment và môi trường train khác nhau về collision, friction, damping, giới hạn actuator. Robot đi tốt khi play mà ngã ở đây: so sánh các yếu tố này cùng timing và observations trước khi kết luận policy kém.</li>
+      <li>Kích thước cylinder head dựa trên giả định đơn vị mm; cần đối chiếu nếu có kích thước CAD thật.</li>
+      <li>Toàn bộ hướng dẫn chỉ cho simulation. Chưa chuyển hay kiểm chứng trên robot thật.</li>
+    </ul>
+  </section>
+
+  <p class="foot">Tổng hợp từ R1_SIMULATION_GUIDE.md, phiên làm việc ngày 05/11/2026 trên unitree_rl_mjlab và unitree_mujoco. Các kiểm tra ở bước 1–4 đã chạy thật; bước 6 chưa xác nhận thành công trên cầu thang. Trang đi kèm "Quy trình dạy R1 một động tác" (chặng 4, sim2sim).</p>
+</div>
+</body>
+</html>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, Link, Navigate } from "react-router";
 import { motion } from "motion/react";
 import { Calendar, Clock, Tag, ArrowLeft } from "lucide-react";
@@ -8,6 +8,48 @@ import { Button } from "../components/ui/button";
 import { ShareButtons } from "../components/ShareButtons";
 import { fetchBlogs } from "../lib/contentApi";
 import { getBlogCategory } from "../lib/blogCategories";
+
+// Same-origin frame that grows to the embedded page's full height.
+function HtmlEmbed({ src }: { src: string }) {
+  const [height, setHeight] = useState(800);
+  const frameRef = useRef<HTMLIFrameElement>(null);
+
+  useEffect(() => {
+    const frame = frameRef.current;
+    if (!frame) return;
+    let observer: ResizeObserver | undefined;
+    const attach = () => {
+      const doc = frame.contentDocument;
+      const body = doc?.body;
+      if (!doc || !body) return;
+      // The frame grows to fit, so the embedded page never needs its own scrollbar.
+      doc.documentElement.style.overflow = "hidden";
+      observer?.disconnect();
+      // Add the frame's top and bottom border so the content is not cut short.
+      const update = () => setHeight(body.offsetHeight + frame.offsetHeight - frame.clientHeight);
+      update();
+      observer = new ResizeObserver(update);
+      observer.observe(body);
+    };
+    // The frame may finish loading before this effect runs.
+    if (frame.contentDocument?.readyState === "complete" && frame.contentDocument.body?.childElementCount) attach();
+    frame.addEventListener("load", attach);
+    return () => {
+      frame.removeEventListener("load", attach);
+      observer?.disconnect();
+    };
+  }, [src]);
+
+  return (
+    <iframe
+      ref={frameRef}
+      src={src}
+      title="Nội dung bài viết"
+      style={{ height }}
+      className="not-prose block w-full rounded-xl border border-white/10 bg-[#0f1720]"
+    />
+  );
+}
 
 export function BlogPostPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -150,6 +192,16 @@ export function BlogPostPage() {
                     <table {...props} className="!my-0 w-full" />
                   </div>
                 ),
+                // A ```html-embed block holding a /blog-html/*.html path shows that standalone page in a frame.
+                pre: ({ node, ...props }) => {
+                  const code = node?.children?.[0] as any;
+                  const classes: string[] = code?.properties?.className ?? [];
+                  const src = String(code?.children?.[0]?.value ?? "").trim();
+                  if (classes.includes("language-html-embed") && /^\/blog-html\/[\w.-]+\.html$/.test(src)) {
+                    return <HtmlEmbed src={src} />;
+                  }
+                  return <pre {...props} />;
+                },
                 a: ({ node, href, ...props }) => {
                   const external = href?.startsWith("http");
                   return (

@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="vi" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<base target="_blank">
+</head>
+<body style="margin:0">
+<title>R1 Deployment Field Notes</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: same system as "Quy trình dạy R1 một động tác": file-flow strip, numbered run sequence for the real order of operations, then topic cards for the Q&A notes. */
+:root {
+  --bg: #f3f5f7; --surface: #ffffff; --ink: #142230; --muted: #5a6b7b; --line: #d6dde4;
+  --accent: #1f5fbf; --accent-soft: #e3ecfa; --warn: #b36b00; --warn-soft: #fbf0dc;
+  --ok: #1d7a4f; --ok-soft: #e1f2e9; --bad: #b3261e; --bad-soft: #fbe4e2; --code-bg: #eef1f5;
+  --display: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --body: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0f1720; --surface: #16212c; --ink: #e6edf3; --muted: #9db0c2; --line: #2a3a4a;
+    --accent: #7fb0ff; --accent-soft: #1b2d47; --warn: #f0b552; --warn-soft: #3a2c14;
+    --ok: #6fd3a0; --ok-soft: #15322a; --bad: #ff8a80; --bad-soft: #3d1a18; --code-bg: #0b121a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0f1720; --surface: #16212c; --ink: #e6edf3; --muted: #9db0c2; --line: #2a3a4a;
+  --accent: #7fb0ff; --accent-soft: #1b2d47; --warn: #f0b552; --warn-soft: #3a2c14;
+  --ok: #6fd3a0; --ok-soft: #15322a; --bad: #ff8a80; --bad-soft: #3d1a18; --code-bg: #0b121a; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.6; }
+.wrap {
+  max-width: 980px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 56px; display: grid; gap: 28px;
+}
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(1.7rem, 4.2vw, 2.5rem); font-weight: 800; letter-spacing: -0.01em; line-height: 1.2; }
+h2 { font-size: 1.3rem; font-weight: 700; }
+h3 { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+p { margin: 0; }
+.lede { color: var(--muted); max-width: 68ch; }
+code { font-family: var(--mono); font-size: 0.86em; background: var(--code-bg); padding: 0.05em 0.35em; border-radius: 4px; overflow-wrap: anywhere; }
+pre { margin: 0; background: var(--code-bg); border-radius: 8px; padding: 10px 12px; font-family: var(--mono); font-size: 0.8rem; line-height: 1.5; overflow-x: auto; white-space: pre; }
+ul, ol { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+b { font-weight: 700; }
+.foot { color: var(--muted); font-size: 0.82rem; }
+ 
+.flow { display: flex; flex-wrap: wrap; gap: 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+.flow .f { display: grid; gap: 2px; padding: 8px 12px; border-radius: 8px; background: var(--accent-soft); flex: 1 1 120px; min-width: 0; }
+.flow .f b { font-family: var(--mono); font-size: 0.88rem; color: var(--accent); }
+.flow .f span { font-size: 0.8rem; color: var(--muted); line-height: 1.35; }
+.flow .f.robot { background: var(--warn-soft); }
+.flow .f.robot b { color: var(--warn); }
+.flow .arrow { align-self: center; color: var(--muted); font-weight: 700; }
+ 
+.section-title { display: grid; gap: 4px; }
+ 
+.stages { display: grid; }
+.stage { display: grid; grid-template-columns: 56px 1fr; gap: 16px; position: relative; padding-bottom: 22px; }
+.stage::before { content: ""; position: absolute; left: 27px; top: 50px; bottom: 0; width: 2px; background: var(--line); }
+.stage:last-child::before { display: none; }
+.num { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--surface); font-family: var(--display); font-weight: 800; font-size: 1.35rem; position: relative; z-index: 1; }
+.stage.real .num { background: var(--warn); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; display: grid; gap: 14px; min-width: 0; }
+.head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 12px; }
+.where { font-size: 0.78rem; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: var(--code-bg); color: var(--muted); }
+.goal { color: var(--muted); }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.cols > div { display: grid; gap: 6px; align-content: start; min-width: 0; }
+ 
+.tablebox { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.86rem; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 600; color: var(--muted); }
+td.k { font-family: var(--mono); white-space: nowrap; font-size: 0.82rem; }
+ 
+.gate { border-left: 3px solid var(--ok); background: var(--ok-soft); border-radius: 0 8px 8px 0; padding: 10px 14px; display: grid; gap: 4px; }
+.gate strong { color: var(--ok); font-size: 0.85rem; }
+.danger { border-left: 3px solid var(--bad); background: var(--bad-soft); border-radius: 0 8px 8px 0; padding: 10px 14px; display: grid; gap: 4px; }
+.danger strong { color: var(--bad); font-size: 0.85rem; }
+ 
+.pill { display: inline-block; font-size: 0.74rem; font-weight: 700; padding: 1px 8px; border-radius: 999px; white-space: nowrap; }
+.pill.ok { background: var(--ok-soft); color: var(--ok); }
+.pill.bad { background: var(--bad-soft); color: var(--bad); }
+.pill.mid { background: var(--warn-soft); color: var(--warn); }
+ 
+.topics { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.topics .card.wide { grid-column: 1 / -1; }
+.qa { font-size: 0.84rem; color: var(--accent); font-weight: 600; }
+ 
+.layers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.layers div { border-radius: 8px; padding: 10px 12px; font-size: 0.86rem; line-height: 1.45; display: grid; gap: 4px; align-content: start; }
+.layers .l1 { background: var(--code-bg); }
+.layers .l2 { background: var(--warn-soft); }
+.layers .l3 { background: var(--ok-soft); }
+.layers b { display: block; }
+ 
+.checklist { list-style: none; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px 20px; }
+.checklist li { padding-left: 1.4em; position: relative; }
+.checklist li::before { content: ""; position: absolute; left: 0; top: 0.4em; width: 0.8em; height: 0.8em; border: 2px solid var(--accent); border-radius: 3px; }
+ 
+.note { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; display: grid; gap: 10px; }
+.note a { color: var(--accent); }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+ 
+@media (max-width: 720px) {
+  .cols, .topics, .checklist { grid-template-columns: 1fr; }
+  .layers { grid-template-columns: 1fr; }
+  .stage { grid-template-columns: 40px 1fr; gap: 10px; }
+  .num { width: 40px; height: 40px; font-size: 1.05rem; }
+  .stage::before { left: 19px; top: 40px; }
+  .flow .arrow { display: none; }
+}
+</style>
+ 
+<div class="wrap">
+  <header style="display:grid;gap:10px">
+    <h3>Unitree R1 · r1_ctrl · Deployment Q&amp;A notes</h3>
+    <h1>Running a trained motion on the real R1: what happens, and what can go wrong</h1>
+    <p class="lede">Notes from a follow-up discussion on stage 5 of the R1 motion-teaching workflow. Covers the run sequence after launching <code>r1_ctrl</code>, how the controller's modes relate to the factory software, failure cases, emergency stops, and how multiple motions fit together. Example motion throughout: <b>R1 standing on one leg</b> (<code>Mimic_OneLeg</code>).</p>
+  </header>
+ 
+  <section aria-label="Pipeline recap" style="display:grid;gap:8px">
+    <h3>Pipeline recap (from the original workflow)</h3>
+    <div class="flow">
+      <div class="f"><b>Script</b><span>phases + timing</span></div>
+      <div class="arrow">→</div>
+      <div class="f"><b>.csv</b><span>reference poses, 31 values per frame</span></div>
+      <div class="arrow">→</div>
+      <div class="f"><b>.npz</b><span>poses + body velocities</span></div>
+      <div class="arrow">→</div>
+      <div class="f"><b>model_xx.pt</b><span>RL training checkpoint</span></div>
+      <div class="arrow">→</div>
+      <div class="f"><b>policy.onnx</b><span>exported for the C++ controller</span></div>
+      <div class="arrow">→</div>
+      <div class="f robot"><b>Real R1</b><span>Mimic mode in r1_ctrl</span></div>
+    </div>
+  </section>
+ 
+  <section class="section-title">
+    <h2>The run sequence on the real robot</h2>
+    <p class="goal">Steps 1–3 (hang the robot, L2 + R2 for debug mode, set PC IP <code>192.168.123.222/24</code>) come first. These notes pick up from step 4.</p>
+  </section>
+ 
+  <section class="stages" aria-label="Run sequence">
+    <article class="stage">
+      <div class="num" aria-hidden="true">4</div>
+      <div class="card">
+        <div class="head"><h2>Launch the controller</h2><span class="where">PC terminal · robot still fully hung</span></div>
+<pre>cd deploy/robots/r1/build
+./r1_ctrl --network=enp5s0</pre>
+        <div class="cols">
+          <div>
+            <h3>What it is</h3>
+            <ul>
+              <li><code>r1_ctrl</code> is the C++ program built with <code>cmake .. &amp;&amp; make</code>, the same one used in sim2sim.</li>
+              <li>It reads joint angles and IMU from the robot and sends joint commands about 50 times per second, over DDS (unitree_sdk2).</li>
+              <li><code>--network</code> names the <b>PC's network interface</b> wired to the robot. In sim2sim this was <code>lo</code> (loopback).</li>
+              <li>Run it from inside <code>build/</code>: config and policy paths are relative.</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Finding the interface name</h3>
+            <ol>
+              <li>Run <code>ifconfig</code> or <code>ip a</code>.</li>
+              <li>Find the block with <code>inet 192.168.123.222</code>. Its name is the one to use.</li>
+              <li>Onboard NIC: <code>enp5s0</code>, <code>eno1</code>. USB adapter: <code>enx00e04c…</code>. Never <code>lo</code> or <code>wlp…</code>.</li>
+              <li><code>ping</code> the robot before launching. (<code>.161</code> on G1; confirm the address for R1.)</li>
+            </ol>
+          </div>
+        </div>
+        <div class="gate">
+          <strong>Healthy start</strong>
+          <span>The program reports it is receiving robot state and sits in <b>Passive</b>. If it waits forever: wrong interface name, wrong IP, or debug mode not entered (factory software still holds the joints).</span>
+        </div>
+      </div>
+    </article>
+ 
+    <article class="stage">
+      <div class="num" aria-hidden="true">5</div>
+      <div class="card">
+        <div class="head"><h2>Step through the modes</h2><span class="where">Robot remote · r1_ctrl state machine</span></div>
+        <p class="goal"><code>r1_ctrl</code> is a finite state machine. Each mode runs its own controller; button combos from <code>config.yaml</code> switch between them.</p>
+        <div class="tablebox"><table>
+          <tr><th>Mode</th><th>Enter with</th><th>What the robot does</th><th>What you do</th></tr>
+          <tr><td><b>Passive</b></td><td class="k">on start · LT + B</td><td>Joints damped, limp</td><td>Robot fully hung</td></tr>
+          <tr><td><b>FixStand</b></td><td class="k">LT + ↑</td><td>Interpolates to the default standing pose over a few seconds, holds with PD</td><td>Wait until still, then <b>lower the gantry</b>: feet flat, carrying most of the weight, rope slightly slack</td></tr>
+          <tr><td><b>Velocity</b></td><td class="k">RT + A</td><td>Walking policy runs, actively balancing. Left stick moves, right stick turns</td><td>Sticks centred. Let it stand still a few seconds</td></tr>
+          <tr><td><b>Mimic_OneLeg</b></td><td class="k">your own combo</td><td><code>policy.onnx</code> plays <code>one_leg_left.npz</code> from frame 0</td><td>Hands off the sticks. Finger on LT + B</td></tr>
+        </table></div>
+        <div class="cols">
+          <div>
+            <h3>Where the entry combo goes</h3>
+            <p>In <code>Mimic_OneLeg</code>, <code>transitions: {Passive: LT + B.on_pressed}</code> is the way <b>out</b>. The way <b>in</b> belongs in the <b>Velocity</b> state's <code>transitions</code>, e.g. <code>Mimic_OneLeg: RB + X.on_pressed</code>. Pick a combo that clashes with nothing. <code>.on_pressed</code> fires once per press.</p>
+          </div>
+          <div>
+            <h3>Why go through Velocity</h3>
+            <p>The motion starts from the default standing pose, and the policy only learned to start from there. Velocity hands it a robot that is balanced, still and in pose. Jumping in from FixStand or Passive risks a jolt or a fall on the first frame.</p>
+          </div>
+        </div>
+      </div>
+    </article>
+ 
+    <article class="stage real">
+      <div class="num" aria-hidden="true">6</div>
+      <div class="card">
+        <div class="head"><h2>Motion ends, Velocity takes over</h2><span class="where">Automatic · <code>end_state: Velocity</code></span></div>
+        <p class="goal">When playback passes the end of the <code>.npz</code> (10 s here), the state machine switches to Velocity by itself, so the walking policy catches the robot. FixStand would only hold joint angles stiffly and cannot rebalance a robot that is still swaying.</p>
+        <div class="cols">
+          <div>
+            <h3>Run it again</h3>
+            <p>Once standing still in Velocity, press the Mimic combo again.</p>
+          </div>
+          <div>
+            <h3>Shut down</h3>
+            <ol>
+              <li>Raise the gantry until the rope takes the weight.</li>
+              <li>LT + B into Passive. The robot goes limp into the rope.</li>
+              <li><code>Ctrl + C</code> to stop <code>r1_ctrl</code>, then power off.</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </article>
+  </section>
+ 
+  <section class="section-title">
+    <h2>Questions that came up</h2>
+  </section>
+ 
+  <section class="topics">
+ 
+    <article class="card">
+      <p class="qa">Are Passive, FixStand and Velocity built into the robot?</p>
+      <h2>Two brains, not one</h2>
+      <ul>
+        <li><b>Factory brain</b> lives on the robot: stand, walk, the moves printed on the remote. <b>L2 + R2 (debug mode) switches it off</b>. It is not erased; a reboot brings it back.</li>
+        <li><b>Your brain</b> is <code>r1_ctrl</code> on the PC. After debug mode, the robot only has low-level motor drivers. Every decision comes from <code>r1_ctrl</code>.</li>
+      </ul>
+      <div class="tablebox"><table>
+        <tr><th>Mode</th><th>Kind</th><th>Source</th></tr>
+        <tr><td>Passive</td><td>No AI · damping</td><td>Repo C++ code</td></tr>
+        <tr><td>FixStand</td><td>No AI · PD to fixed pose</td><td>Repo C++ code</td></tr>
+        <tr><td>Velocity</td><td>RL policy (.onnx)</td><td>Shipped in <code>deploy/robots/r1</code></td></tr>
+        <tr><td>Mimic_OneLeg</td><td>RL policy (.onnx)</td><td>You train and add it</td></tr>
+      </table></div>
+    </article>
+ 
+    <article class="card">
+      <p class="qa">Does the robot's own remote still work under r1_ctrl?</p>
+      <h2>Yes, via a relay through the robot</h2>
+<pre>Remote ──wireless──► R1 ──LAN / DDS──► PC: r1_ctrl</pre>
+      <ul>
+        <li>The robot packs button states into the state message it sends to the PC. <code>r1_ctrl</code> reads them. (This is how the G1 deploy works; confirm in the R1 code.)</li>
+        <li>Buttons now mean only what <code>config.yaml</code> says. The printed card on the remote no longer applies.</li>
+        <li><b>Cut the LAN and the remote is useless</b>: presses reach the robot but not <code>r1_ctrl</code>. LT + B does nothing.</li>
+        <li>Sim2sim uses a USB gamepad on the PC instead. Re-test every combo on the real remote while the robot is fully hung.</li>
+      </ul>
+    </article>
+ 
+    <article class="card wide">
+      <p class="qa">What happens if r1_ctrl stops, hangs, or the LAN cable comes out?</p>
+      <h2>The self-protection only covers half the cases</h2>
+      <p>The "fall back to Passive" logic lives inside <code>r1_ctrl</code>. It needs the program alive <b>and</b> a working path for the Passive command to reach the robot.</p>
+      <div class="cols">
+        <div class="gate">
+          <strong>Case 1 · program alive, detects the problem <span class="pill ok">protected</span></strong>
+          <span>Mimic, second 4, on one leg. The policy loses it and the body tilts past the safety limit. <code>r1_ctrl</code> sees it on the IMU, switches to Passive, sends damping. The robot goes limp into the rope instead of fighting.</span>
+          <span>Also covered: robot-to-PC data stops while PC-to-robot still works. <code>r1_ctrl</code> times out and sends Passive.</span>
+        </div>
+        <div class="danger">
+          <strong>Case 2 · command path cut <span class="pill bad">not protected</span></strong>
+          <span><b>A.</b> Someone trips on the LAN cable. Passive is sent but has nowhere to go.<br><b>B.</b> <code>r1_ctrl</code> crashes mid-motion. Nothing is left to detect or send.<br><b>C.</b> The PC sleeps or a heavy app starves the control loop.</span>
+          <span>What R1 does then depends on its low-level firmware (not confirmed): either holds the last command and topples like a statue, or drops torque and collapses. <b>Either way, only the gantry saves it.</b></span>
+        </div>
+      </div>
+      <h3>Mitigations</h3>
+      <ul>
+        <li>Find out R1's behaviour safely: fully hung, in FixStand, unplug the LAN and watch (stiff or limp).</li>
+        <li>Tie the cable to the gantry frame with enough slack; keep it out of walkways.</li>
+        <li>Disable PC sleep and screen lock; close browsers with many tabs and any running training job.</li>
+      </ul>
+    </article>
+ 
+    <article class="card">
+      <p class="qa">If the robot is still hung and I switch to Velocity, will it kick around?</p>
+      <h2>Yes. Expected, not a bug</h2>
+      <ul>
+        <li>Velocity was only ever trained with feet on the ground, carrying the body.</li>
+        <li>Hung, the legs are unloaded and the body sways. The policy reads "falling" and does the one thing it learned: step. Stepping into air fixes nothing, so it keeps stepping.</li>
+        <li>Many walking policies also step in place even at zero command.</li>
+        <li>Mimic policies have the same problem.</li>
+      </ul>
+      <div class="danger">
+        <strong>Rule</strong>
+        <span>Use RL modes only with feet on the floor. Hung: Passive or FixStand. Lifting the robot at the end: go to FixStand or Passive <b>before</b> raising the gantry. If it is already kicking, LT + B immediately; don't lower it onto kicking legs.</span>
+      </div>
+    </article>
+ 
+    <article class="card">
+      <p class="qa">Does the remote have an emergency stop that works in debug mode?</p>
+      <h2>Three stop layers, very different reliability</h2>
+      <div class="layers">
+        <div class="l1"><b>1 · LT + B in r1_ctrl</b>A mode switch defined in <code>config.yaml</code>. Needs r1_ctrl alive and the LAN connected. <span class="pill mid">software</span></div>
+        <div class="l2"><b>2 · Factory e-stop</b>R1 manual: hold L2 + B for 5+ s. Belongs to the factory software, which debug mode turns off. Unverified there. <span class="pill mid">test first</span></div>
+        <div class="l3"><b>3 · Physical STOP</b>Built-in STOP button on the upper-body panel, plus a GH1.25 external e-stop input. Works regardless of software. <span class="pill ok">hardware</span></div>
+      </div>
+      <p class="foot">LT (repo docs) and L2 (manual) are most likely the same left trigger. Check in the manual whether STOP cuts motor power or damps; the robot drops either way.</p>
+    </article>
+ 
+    <article class="card wide">
+      <p class="qa">Is every move on the remote a separate trained model that returns to Velocity afterwards?</p>
+      <h2>For the factory moves: unknown. For your system: yes, by design</h2>
+      <div class="cols">
+        <div>
+          <h3>Factory moves (printed card)</h3>
+          <p>The card lists Mode Switch items (standing, posture lock, damping/soft e-stop, running, stair climbing) and Customized Movements (stand up from lying, stretch, wave, dance…). Unitree does not publish how these are built. Commercial robots usually mix:</p>
+          <ul>
+            <li>separate RL policies for whole-body moves (dance, getting up);</li>
+            <li>recorded joint trajectories for simple ones (arm wave over a balancing lower body);</li>
+            <li>variants of the locomotion controller (running, stairs).</li>
+          </ul>
+        </div>
+        <div>
+          <h3>Your r1_ctrl setup</h3>
+<pre>Velocity ─combo A─► Mimic_OneLeg ─end─► Velocity
+         ─combo B─► Mimic_Dance  ─end─► Velocity
+         ─combo C─► Mimic_Wave   ─end─► Velocity</pre>
+          <ul>
+            <li>One Mimic state = one <code>.onnx</code> + one <code>.npz</code> + one entry combo.</li>
+            <li><code>end_state</code> can chain into another motion if the poses match. Velocity is the safest hub.</li>
+            <li>One policy can learn a whole motion library, but it is harder to train. Start with one motion per model.</li>
+            <li>Keep your own button map; the remote has limited buttons.</li>
+          </ul>
+        </div>
+      </div>
+    </article>
+  </section>
+ 
+  <section class="note">
+    <h2>Before every real-robot session</h2>
+    <ul class="checklist">
+      <li>Whole button sequence rehearsed in sim2sim (<code>--network=lo</code>)</li>
+      <li>Gantry attached; robot fully hung at power-on</li>
+      <li>Debug mode entered (L2 + R2) before launching r1_ctrl</li>
+      <li>Correct interface name; robot answers ping</li>
+      <li>LAN cable tied to the frame with slack</li>
+      <li>PC sleep and screen lock off; heavy apps closed</li>
+      <li>Every combo re-tested on the real remote while hung</li>
+      <li>Physical STOP location known; behaviour on LAN loss known</li>
+      <li>Operator: remote, finger on LT + B</li>
+      <li>Spotter: beside the gantry, hand near STOP, ready to pull the rope</li>
+    </ul>
+  </section>
+ 
+  <section class="note">
+    <h2>Sources and status</h2>
+    <ul>
+      <li>Workflow, commands and file names: repo unitreerobotics/unitree_rl_mjlab (commit 13/04/2026), via the original "Quy trình dạy R1 một động tác" page. R1 Mimic mode is not in the repo yet and must be ported from G1.</li>
+      <li>Emergency stop and interface panel: <a href="https://www.docs.mybotshop.de/r1.html" target="_blank" rel="noopener">MYBOTSHOP R1 docs</a> and <a href="https://www.docs.mybotshop.de/downloads/R1_User_Manual.pdf" target="_blank" rel="noopener">R1 User Manual</a>.</li>
+      <li>Wireless e-stop example (G1, third party): <a href="https://robosavvy.co.uk/robosavvy-unitree-g1-remote-emergency-stop.html" target="_blank" rel="noopener">RoboSavvy G1 Remote Emergency Stop</a>.</li>
+      <li>Not confirmed for R1: robot IP to ping, firmware behaviour on lost commands, whether the factory e-stop works in debug mode, how remote input reaches r1_ctrl.</li>
+    </ul>
+  </section>
+ 
+  <p class="foot">Summary of a Q&amp;A session, 4 Nov 2026. Companion to "Quy trình dạy R1 một động tác".</p>
+</div>
+</body>
+</html>
